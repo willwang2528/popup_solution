@@ -5,6 +5,21 @@
 > 范围：只读判断和消息生成；不执行弹窗动作
 > 进阶兼容：既有 Actionability-Gap-Gated Recovery 字段保留，但不参与 v1 成功判断
 
+## 0. 范围锚与进阶路线
+
+本规格受 [PPT 第 14 页五级回证边界](../sources/PPT_SLIDE_14_EVIDENCE.md) 约束。节点消失和截图／日志变化只能作为弱证据，不能证明原 Context、业务选择或原任务恢复。
+
+MG-PU 是更广义 **Actionability-Gap-Gated Recovery** 路线的 V1 perception/message 子层：
+
+```text
+V1: observability gap → popup presence + accessible message
+V2+: decision gap → user intent / safe candidate action
+V3+: execution → authorized dismissal
+V4+: recovery evidence → D + C_tech + C_a11y + B + T
+```
+
+只有 V1 在当前实验范围内。后续层级必须另建 profile、权限策略和动作后证据，不能用 V1 的 `VPMA` 替代。
+
 ## 1. 研究主张
 
 当移动端结构化 UI／可访问性表示无法完整、无歧义地表达弹窗消息时，MG-PU 通过一个可审计的 message-sufficiency gate 按需调用弹窗区域视觉信息，并融合各通道证据，输出弹窗存在性、可读消息和关键事实；证据仍不足时安全弃答。

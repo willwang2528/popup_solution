@@ -1,0 +1,54 @@
+{
+  "status": "pass",
+  "archive": {
+    "path": ".tmp/source-cache/rico-semantic-annotations.zip",
+    "size": 157800634,
+    "md5": "5dd3372e2d99b342958136e394d4de79",
+    "expected_size": null,
+    "expected_md5": null
+  },
+  "inventory": {
+    "member_count": 132522,
+    "extension_counts": {
+      ".json": 66261,
+      ".png": 66261
+    },
+    "top_level_counts": {
+      "semantic_annotations": 132522
+    },
+    "sample_members": [
+      "semantic_annotations/0.json",
+      "semantic_annotations/0.png",
+      "semantic_annotations/1.json",
+      "semantic_annotations/1.png",
+      "semantic_annotations/10.json",
+      "semantic_annotations/10.png",
+      "semantic_annotations/100.json",
+      "semantic_annotations/100.png",
+      "semantic_annotations/1000.json",
+      "semantic_annotations/1000.png",
+      "semantic_annotations/10000.json",
+      "semantic_annotations/10000.png",
+      "semantic_annotations/10002.json",
+      "semantic_annotations/10002.png",
+      "semantic_annotations/10003.json",
+      "semantic_annotations/10003.png",
+      "semantic_annotations/10004.json",
+      "semantic_annotations/10004.png",
+      "semantic_annotations/10005.json",
+      "semantic_annotations/10005.png"
+    ]
+  },
+  "safety": {
+    "unsafe_paths": [],
+    "symlinks": [],
+    "total_uncompressed_bytes": 1874954792,
+    "total_compressed_bytes": 132795832,
+    "expansion_ratio": 14.119078616865023,
+    "max_total_uncompressed_bytes": 53687091200,
+    "max_members": 1000000,
+    "max_expansion_ratio": 1000.0
+  },
+  "errors": [],
+  "warnings": []
+}

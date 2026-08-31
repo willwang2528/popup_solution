@@ -17,6 +17,12 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 9. [`refine-logs/FINAL_PROPOSAL.md`](./refine-logs/FINAL_PROPOSAL.md)：当前 proposal，状态为 `provisional`。
 10. [`dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md`](./dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md)：schema、fixture、QA 与负向变异验证。
 11. [`refine-logs/V1_SCOPE_LOCAL_REVIEW.md`](./refine-logs/V1_SCOPE_LOCAL_REVIEW.md)：同模型家族独立复核；状态 PASS/provisional，不是 cross-family acceptance。
+12. [`sources/PPT_SLIDE_14_EVIDENCE.md`](./sources/PPT_SLIDE_14_EVIDENCE.md)：PPT 第 14 页“五级回证表”的可审计转录与 v1 分层解释。
+13. [`sources/SOURCE_LEDGER.md`](./sources/SOURCE_LEDGER.md)：PopSweeper/RICO 许可、校验、实际清点、数量差异与 adapter-only 发布策略。
+14. [`refine-logs/NOVELTY_CHECK.md`](./refine-logs/NOVELTY_CHECK.md)：当前查新结论与不可宣称的 broad-first 边界。
+15. [`refine-logs/EXPERIMENT_PLAN.md`](./refine-logs/EXPERIMENT_PLAN.md)：claim-driven v1 实验计划、强基线、指标和停止条件。
+16. [`refine-logs/EXPERIMENT_TRACKER.md`](./refine-logs/EXPERIMENT_TRACKER.md)：真实数据摄取、标注、实验与发布的当前状态。
+17. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 
 ## v1 闭环
 
@@ -53,3 +59,7 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 数据 schema 继续保留动作、Dismissal、`C_tech`、`C_a11y`、`T`、`VTR-tech` 与 `A-VTR`，用于后续可选研究和兼容既有论文方法。它们在 v1 中应为空、`null` 或明确标为 `advanced`，不得成为 v1 纳入条件或主指标。
 
 原始论文 PDF、PPT 和上游 ARIS 工作区未复制进本仓库；机器可读记录保留来源定位与证据等级。后续提交以 Git 历史追踪版本。
+
+## 当前完成度
+
+字段并集、v1 schema、非经验 fixture、验证器、方法与实验协议已经形成；PopSweeper 归档已完成本地完整性/安全审计，并冻结 120 条 adapter-only 来源候选。90 条 numeric 候选已逐一连接到 RICO semantic JSON/PNG，但该语义层级不含 message text/content-desc；全部候选仍只有 popup presence 标签。人工消息标注、可进入指标的 pilot item、基线结果和 iOS 数据尚未形成。仓库中的 3 条 fixture 只验证数据契约，不构成论文实验数据或方法效果证据。

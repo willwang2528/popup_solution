@@ -1,3 +1,20 @@
+# Round 1 Refinement
+
+## Anchor Check
+
+- 原始瓶颈：屏幕可见 popup message 没有完整暴露给屏幕阅读器可读的结构化表示。
+- 保持方式：V1 只做动作前 presence/message 判断；视觉只补可观察消息。
+- 拒绝的漂移：统一弹窗解决器、自动点击、从弱变化证据推导完整 Recovery。
+
+## Simplicity Check
+
+- Dominant contribution：PMAB popup-message measurement/benchmark。
+- Supporting contribution：MG-PU message-gap-gated selective fusion。
+- 删除：多层 action policy、用户意图推断、end-to-end RL、跨平台统一执行器。
+- 保留理由：一个数据集贡献 + 一个最小方法足以直接检验 problem anchor。
+
+## Revised Proposal
+
 # Research Proposal：When Pop-ups Go Silent
 
 > 副标题：面向屏幕阅读器用户的移动弹窗消息可观测性评测与缺口门控恢复
@@ -350,17 +367,13 @@ Human-readable-message oracle 只作上界，不是 deployable baseline。
 - 90 + 165 = 255 条 source-field crosswalk；
 - schema `1.1.0-provisional`；
 - 3 条不可进入经验指标的 synthetic fixtures；
-- PopSweeper 归档本地大小／MD5／安全清点与 2105 张真实图片目录标签审计；
-- RICO semantic 归档 66261 个 JSON/PNG 对安全清点；
-- 1923/1923 个去重 numeric 候选完成 RICO ID join；
-- 固定 seed 的 120 条 adapter-only 来源候选清单（消息标注 pending，不进入指标）；
+- PopSweeper Zenodo 许可／文件／校验和核验；
 - 初步查新。
 
 未完成：
 
+- PopSweeper archive 解包与 RICO ID join；
 - 真实 pilot items；
-- 30-item 双人 message annotation pilot；
-- 可提供 text/content-desc 的详细 hierarchy 或等价结构化 observation；
 - 双人标注与 adjudication；
 - Android controlled capture；
 - iOS capability/data；
@@ -369,7 +382,7 @@ Human-readable-message oracle 只作上界，不是 deployable baseline。
 - cross-family review；
 - 公开 benchmark release。
 
-因此当前状态是 **research-ready protocol + source audit complete + candidate manifest frozen**，不是可进入 VPMA 的数据集或论文实验已经完成。
+因此当前状态是 **research-ready protocol + active source ingestion**，不是数据集或论文实验已经完成。
 
 ## 13. Timeline
 

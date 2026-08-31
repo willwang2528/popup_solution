@@ -1,0 +1,47 @@
+{
+  "archive_image_count": 2105,
+  "candidate_count": 120,
+  "deduplication": {
+    "deduplicated_candidates": 2008,
+    "input_candidates": 2105,
+    "removed_exact_content": 33,
+    "removed_group_leakage": 64
+  },
+  "eligible_for_v1_message_metrics": false,
+  "empirical_message_dataset_complete": false,
+  "inventory_by_label_and_kind": {
+    "ads/recorded_app_frame": 45,
+    "ads/rico_numeric_candidate": 726,
+    "no_ads/recorded_app_frame": 40,
+    "no_ads/rico_numeric_candidate": 1197
+  },
+  "inventory_count_after_deduplication": 2008,
+  "message_annotation_status": "pending",
+  "named_per_label": 15,
+  "official_split_usage": "audit_stratum_only_not_final_leakage_safe_split",
+  "per_label": 60,
+  "raw_image_distribution": "adapter_only_not_redistributed",
+  "rico_join_inventory": {
+    "not_applicable": 85,
+    "numeric_verified": 1923
+  },
+  "rico_join_selected": {
+    "not_applicable": 30,
+    "numeric_verified": 90
+  },
+  "rico_source_url": "https://www.interactionmining.org/archive/rico",
+  "sampling_profile": "n120_audit",
+  "sampling_purpose": "audit_balanced_not_natural_prevalence",
+  "sampling_seed": 20260901,
+  "selected_by_label_and_kind": {
+    "ads/recorded_app_frame": 15,
+    "ads/rico_numeric_candidate": 45,
+    "no_ads/recorded_app_frame": 15,
+    "no_ads/rico_numeric_candidate": 45
+  },
+  "source_archive": "popsweeper-basic.zip",
+  "source_dataset": "PopSweeper basic",
+  "source_doi": "10.5281/zenodo.13754620",
+  "source_record": 13754620,
+  "use_sampling_weights_for_source_population_estimates": true
+}

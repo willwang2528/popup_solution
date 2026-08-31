@@ -44,11 +44,12 @@
 
 - Schema：`1.1.0-provisional`；
 - 当前仅有 3 条 synthetic schema fixture：positive/no-popup/abstain；
+- 已冻结 120 条 PopSweeper 来源候选（60 popup / 60 no-popup；每类 45 numeric + 15 named；seed `20260901`）；90 条 numeric 候选均验证有 RICO semantic JSON/PNG，但源仍只有目录级 presence label，message gold 为 pending，且 raw image 采用 adapter-only、不在仓库中再分发；
 - real-app item：0；controlled fixture item：0；iOS item：0；
 - 255 条来源 crosswalk 保持完整；
 - v1 QA 4 个 full-automated、2 个 partial-automated；发布前仍需人工证据、隐私、权限和标注门。
 
-因此当前产物是 **collection-ready contract**，不是公开实测 benchmark，也不是方法效果证据。
+因此当前产物是 **collection-ready contract + frozen source-candidate manifest**，不是公开实测 benchmark，也不是方法效果证据。
 
 ## Advanced compatibility
 

@@ -1,0 +1,56 @@
+{
+  "status": "pass",
+  "archive": {
+    "path": ".tmp/source-cache/popsweeper-basic.zip",
+    "size": 266010362,
+    "md5": "46a0fe5c4eeab2bd119aed800b7a81f3",
+    "expected_size": 266010362,
+    "expected_md5": "46a0fe5c4eeab2bd119aed800b7a81f3"
+  },
+  "inventory": {
+    "member_count": 4109,
+    "extension_counts": {
+      "": 11,
+      ".ds_store": 10,
+      ".jpg": 4088
+    },
+    "top_level_counts": {
+      "__MACOSX": 1994,
+      "app-blocking pop-ups": 2115
+    },
+    "sample_members": [
+      "__MACOSX/._app-blocking pop-ups",
+      "__MACOSX/app-blocking pop-ups/._.DS_Store",
+      "__MACOSX/app-blocking pop-ups/basic/._.DS_Store",
+      "__MACOSX/app-blocking pop-ups/basic/test/._.DS_Store",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._.DS_Store",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._12.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._1502.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._1534.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._1644.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._167.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._18446.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._19272.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._19719.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._19868.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._20094.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._20346.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._20349.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._20643.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._20695.jpg",
+      "__MACOSX/app-blocking pop-ups/basic/test/ads/._2093.jpg"
+    ]
+  },
+  "safety": {
+    "unsafe_paths": [],
+    "symlinks": [],
+    "total_uncompressed_bytes": 321062500,
+    "total_compressed_bytes": 264924270,
+    "expansion_ratio": 1.211902933619483,
+    "max_total_uncompressed_bytes": 53687091200,
+    "max_members": 1000000,
+    "max_expansion_ratio": 1000.0
+  },
+  "errors": [],
+  "warnings": []
+}

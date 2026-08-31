@@ -1,43 +1,21 @@
 {
-  "phase": "v1_message_contract_and_pilot_design",
+  "phase": "source_ingestion_active",
   "round": 1,
   "threadId": null,
-  "last_score": null,
-  "last_verdict": "REVISE_PROVISIONAL",
-  "status": "in_progress",
-  "acceptance_status": "provisional",
+  "last_score": 7.6,
+  "last_verdict": "REVISE",
+  "status": "active",
+  "refinement_status": "completed",
+  "research_status": "empirical_collection_pending",
+  "timestamp": "2026-09-01T00:57:00+08:00",
   "review_independence": "same-family",
-  "external_disclosure": "not_sent",
-  "blocker": "External cross-family review remains unauthorized for popup research; local validation is provisional.",
-  "target_population": "blind_and_low_vision_screen_reader_users",
-  "data_collection": {
-    "source": "existing_ppt_and_authorized_local_paper_evidence",
-    "paper_count": 14,
-    "strict_core_count": 6,
-    "schema_reference_count": 8,
-    "full_text_verified": 10,
-    "local_note_verified": 3,
-    "ppt_only": 1,
-    "ios_strict_closed_loop_count": 0,
-    "record_file": "popup-solution/data-collection/papers.jsonl",
-    "summary_file": "popup-solution/data-collection/COLLECTION_SUMMARY.json"
+  "acceptance_status": "provisional",
+  "external_review": {
+    "attempted": true,
+    "completed": false,
+    "reason": "host rejected disclosure because popup-solution is outside the existing ProbeBeforeReuse authorization",
+    "trace_path": ".aris/traces/research-refine/2026-09-01_run01/"
   },
-  "method": {
-    "name": "Message-Gap-Gated Popup Understanding",
-    "spec_file": "popup-solution/method/METHOD_SPEC.md",
-    "task_profile": "popup_message_judgment_v1",
-    "new_trainable_component": "message_sufficiency_gate",
-    "primary_metric": "VPMA",
-    "secondary_metrics": [
-      "Popup Presence Macro-F1",
-      "critical-information recall",
-      "critical-hallucination rate",
-      "coverage/abstention"
-    ],
-    "action_policy": "no_action",
-    "advanced_only_metrics": ["D", "C_tech", "C_a11y", "T", "VTR-tech", "A-VTR"]
-  },
-  "next_gate": "Collect a bounded Android/iOS action-free capability pilot, estimate message-gap prevalence and paired VPMA variance, then freeze N.",
-  "timestamp": "2026-08-31T23:45:00+08:00",
-  "scope_root": "popup-solution"
+  "problem_anchor": "popup message observability gap for blind and low-vision screen-reader users; v1 is no-action message judgment",
+  "next_action": "annotate 30 frozen source candidates for popup message and critical facts, then materialize schema-valid union items"
 }

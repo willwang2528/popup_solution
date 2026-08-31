@@ -44,7 +44,12 @@ identity + provenance + scenario + environment
 - [`schema/source_to_item_crosswalk.json`](./schema/source_to_item_crosswalk.json)：冻结的 255 条来源映射；
 - [`data/item.template.json`](./data/item.template.json)：positive v1 模板；
 - [`data/items.schema-fixture.jsonl`](./data/items.schema-fixture.jsonl)：positive、no-popup、abstain 三条 synthetic fixture；
+- [`candidates/popsweeper_candidates_n120.jsonl`](./candidates/popsweeper_candidates_n120.jsonl)：固定 seed 的 120 条真实来源候选；只有 presence 标签，消息标注待完成，原图不随仓库分发；
+- [`candidates/popsweeper_candidates_n120.summary.json`](./candidates/popsweeper_candidates_n120.summary.json)：2105 张来源图片的清点与 60 positive/60 negative 抽样配额；
+- [`../sources/SOURCE_LEDGER.md`](../sources/SOURCE_LEDGER.md)：PopSweeper/RICO 校验、join、数量差异与第三方媒体发布边界；
 - [`scripts/materialize_schema_fixture.py`](./scripts/materialize_schema_fixture.py)：fixture 生成器；
+- [`scripts/popsweeper_source_audit.py`](./scripts/popsweeper_source_audit.py)：归档完整性、安全与成员清点；不解压；
+- [`scripts/build_popsweeper_candidate_manifest.py`](./scripts/build_popsweeper_candidate_manifest.py)：只读 ZIP 元数据并生成 adapter-only 候选清单；
 - [`scripts/validate_dataset.py`](./scripts/validate_dataset.py)：验证器；
 - [`ANNOTATION_GUIDE.md`](./ANNOTATION_GUIDE.md)：v1 标注协议；
 - [`VALIDATION_REPORT_V1_MESSAGE.md`](./VALIDATION_REPORT_V1_MESSAGE.md)：当前验证报告。
@@ -56,6 +61,7 @@ identity + provenance + scenario + environment
 ```bash
 .venv/bin/python3 popup-solution/dataset-v1/scripts/materialize_schema_fixture.py
 .venv/bin/python3 popup-solution/dataset-v1/scripts/validate_dataset.py
+.venv/bin/python3 -m unittest discover -s popup-solution/tests -v
 ```
 
-当前 `pass` 只表示 synthetic fixtures 通过已实现断言；真实 Android/iOS 数据集和目标用户证据仍未产生。
+当前 `pass` 只表示 synthetic fixtures 通过已实现断言。N=120 清单是带真实来源 provenance 的**待标注候选集**，尚无 message gold，不能进入 VPMA 或消息指标；真实 Android/iOS item 和目标用户证据仍未产生。
