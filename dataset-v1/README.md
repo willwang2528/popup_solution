@@ -50,6 +50,7 @@ identity + provenance + scenario + environment
 - [`scripts/materialize_schema_fixture.py`](./scripts/materialize_schema_fixture.py)：fixture 生成器；
 - [`scripts/popsweeper_source_audit.py`](./scripts/popsweeper_source_audit.py)：归档完整性、安全与成员清点；不解压；
 - [`scripts/build_popsweeper_candidate_manifest.py`](./scripts/build_popsweeper_candidate_manifest.py)：只读 ZIP 元数据并生成 adapter-only 候选清单；
+- [`scripts/export_annotation_media.py`](./scripts/export_annotation_media.py)：校验两份归档 SHA-256、全部 ZIP 成员路径和冻结 pilot→候选 member 精确映射后，向 gitignored 本地目录导出标注媒体；
 - [`scripts/validate_dataset.py`](./scripts/validate_dataset.py)：验证器；
 - [`ANNOTATION_GUIDE.md`](./ANNOTATION_GUIDE.md)：v1 标注协议；
 - [`VALIDATION_REPORT_V1_MESSAGE.md`](./VALIDATION_REPORT_V1_MESSAGE.md)：当前验证报告。
@@ -59,9 +60,20 @@ identity + provenance + scenario + environment
 在项目根目录用 canonical Python：
 
 ```bash
+.venv/bin/python3 popup-solution/dataset-v1/scripts/export_annotation_media.py \
+  --candidates popup-solution/dataset-v1/candidates/popsweeper_candidates_n120.jsonl \
+  --pilot-manifest popup-solution/dataset-v1/annotation-pilot/manifests/pilot_batch_30.jsonl \
+  --popsweeper-archive .tmp/source-cache/popsweeper-basic.zip \
+  --popsweeper-sha256 90b7c5cfe3e78bfd8e19b0fda0884cd1f6b03086cb31c91d57eaadbe4d1b942c \
+  --rico-archive .tmp/source-cache/rico-semantic-annotations.zip \
+  --rico-sha256 c5c11d750cb9505e45a0ee57f2bb6186d6448f005bd8731615181310aeea0d70 \
+  --output-dir popup-solution/dataset-v1/work/annotation-media/pilot-batch-30 \
+  --pilot-count 30
 .venv/bin/python3 popup-solution/dataset-v1/scripts/materialize_schema_fixture.py
 .venv/bin/python3 popup-solution/dataset-v1/scripts/validate_dataset.py
 .venv/bin/python3 -m unittest discover -s popup-solution/tests -v
 ```
+
+正式标注只使用冻结的 `pilot_batch_30.jsonl`，并保留 `PMJ-PILOT-001` 至 `PMJ-PILOT-030`。`--candidate-sample` 仅供显式诊断，不得替代冻结 pilot 或生成另一组正式 N=30。导出的 JPG、RICO semantic JSON/PNG、逐项元数据与本地 manifest 均位于 `work/annotation-media/`，禁止加入 Git。
 
 当前 `pass` 只表示 synthetic fixtures 通过已实现断言。N=120 清单是带真实来源 provenance 的**待标注候选集**，尚无 message gold，不能进入 VPMA 或消息指标；真实 Android/iOS item 和目标用户证据仍未产生。

@@ -40,7 +40,7 @@ V1 不挑战完整 Recovery，也不执行点击。它只研究动作前的：
 - 必要时的视觉消息补全；
 - 关键事实保护、置信度和弃答。
 
-因此 V1 的“Recovery”只可解释为 **message-level accessibility recovery（消息层可访问恢复）**，不能解释为弹窗消失、焦点恢复或原任务恢复。
+因此 V1 直接命名为 **popup-message judgment（弹窗消息判断）**；不使用 Recovery 成功表述，也不能解释为弹窗消失、焦点恢复或原任务恢复。
 
 ## 4. 论文定位
 

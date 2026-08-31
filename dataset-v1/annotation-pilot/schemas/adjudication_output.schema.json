@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adjudication_output.schema.json",
+  "title": "Adjudicated popup-message annotation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "batch_id",
+    "pilot_item_id",
+    "record_status",
+    "adjudicator_id_pseudonymous",
+    "adjudication_status",
+    "presence_label_final",
+    "message_text_final",
+    "message_observability_final",
+    "semantic_slots_final",
+    "decision_rationale",
+    "evidence_rechecked_via_adapter",
+    "resolved_at"
+  ],
+  "properties": {
+    "protocol_version": {"const": "1.0.0"},
+    "batch_id": {"const": "popsweeper-message-pilot-30-v1"},
+    "pilot_item_id": {"type": ["string", "null"], "pattern": "^PMJ-PILOT-[0-9]{3}$"},
+    "record_status": {"enum": ["blank", "completed"]},
+    "adjudicator_id_pseudonymous": {"type": ["string", "null"], "minLength": 1},
+    "adjudication_status": {"enum": ["pending", "resolved", "cannot_resolve"]},
+    "presence_label_final": {"enum": ["popup", "no_popup", "uncertain", "unusable", null]},
+    "message_text_final": {"type": ["string", "null"], "minLength": 1},
+    "message_observability_final": {"enum": ["complete", "partial", "not_observable", "not_applicable", null]},
+    "semantic_slots_final": {
+      "type": "array",
+      "items": {"$ref": "annotation_record.schema.json#/$defs/semanticSlot"},
+      "uniqueItems": true
+    },
+    "decision_rationale": {"type": ["string", "null"], "minLength": 1},
+    "evidence_rechecked_via_adapter": {"type": ["boolean", "null"]},
+    "resolved_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"record_status": {"const": "blank"}}},
+      "then": {
+        "properties": {
+          "pilot_item_id": {"const": null},
+          "adjudicator_id_pseudonymous": {"const": null},
+          "adjudication_status": {"const": "pending"},
+          "presence_label_final": {"const": null},
+          "message_text_final": {"const": null},
+          "message_observability_final": {"const": null},
+          "semantic_slots_final": {"maxItems": 0},
+          "decision_rationale": {"const": null},
+          "evidence_rechecked_via_adapter": {"const": null},
+          "resolved_at": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"record_status": {"const": "completed"}}},
+      "then": {
+        "properties": {
+          "pilot_item_id": {"type": "string"},
+          "adjudicator_id_pseudonymous": {"type": "string", "minLength": 1},
+          "adjudication_status": {"enum": ["resolved", "cannot_resolve"]},
+          "decision_rationale": {"type": "string", "minLength": 1},
+          "evidence_rechecked_via_adapter": {"const": true},
+          "resolved_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    }
+  ]
+}

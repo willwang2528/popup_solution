@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "adjudication_input.schema.json",
+  "title": "Paired blind annotations submitted for adjudication",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "batch_id",
+    "pilot_item_id",
+    "record_status",
+    "disagreement_reasons",
+    "annotation_a",
+    "annotation_b",
+    "adjudication_status"
+  ],
+  "properties": {
+    "protocol_version": {"const": "1.0.0"},
+    "batch_id": {"const": "popsweeper-message-pilot-30-v1"},
+    "pilot_item_id": {"type": ["string", "null"], "pattern": "^PMJ-PILOT-[0-9]{3}$"},
+    "record_status": {"enum": ["blank", "ready"]},
+    "disagreement_reasons": {
+      "type": "array",
+      "items": {"enum": ["presence", "message_exact", "message_normalized", "message_observability", "semantic_slots"]},
+      "uniqueItems": true
+    },
+    "annotation_a": {"type": ["object", "null"]},
+    "annotation_b": {"type": ["object", "null"]},
+    "adjudication_status": {"const": "pending"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"record_status": {"const": "blank"}}},
+      "then": {
+        "properties": {
+          "pilot_item_id": {"const": null},
+          "disagreement_reasons": {"maxItems": 0},
+          "annotation_a": {"const": null},
+          "annotation_b": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"record_status": {"const": "ready"}}},
+      "then": {
+        "properties": {
+          "pilot_item_id": {"type": "string"},
+          "disagreement_reasons": {"minItems": 1},
+          "annotation_a": {"type": "object"},
+          "annotation_b": {"type": "object"}
+        }
+      }
+    }
+  ]
+}

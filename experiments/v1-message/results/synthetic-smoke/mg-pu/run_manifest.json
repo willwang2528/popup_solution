@@ -1,0 +1,37 @@
+{
+  "action_policy": "no_action",
+  "claims": {
+    "empirical_performance": false,
+    "recovery_or_dismissal": false,
+    "user_experience_improvement": false
+  },
+  "evaluated_item_count": 3,
+  "evidence_level": "synthetic_pipeline_fixture",
+  "excluded_item_count": 0,
+  "excluded_items": [],
+  "experiment_contract_version": "popup-message-eval-v1.0",
+  "implementation_sha256": {
+    "baselines.py": "f941a6d98600978bd10cf4499c635406ff3e5257817519c8e1ec528c1217b2e6",
+    "cli.py": "63c64c086a6e9f25fdda0b18c09087c948f1b60319777231d73111d78f5f3eb8",
+    "io.py": "f20b5c7ee79c6811bf3ba89cb17c1588bb36cc8f435eaea8cd29fe8597df6d2c",
+    "metrics.py": "40724fa01d5d7ac50e9f0cc18973bb01a1fed397af3fb6df042cc94ada02abba",
+    "runner.py": "5dfd8aa74ee303cbe089a3d3cf787d903ce15bdafdb6b162e5d4dd29b723e01a"
+  },
+  "input_item_count": 3,
+  "inputs": {
+    "items": {
+      "sha256": "1898d32683ae5d093957047263abf1cf48e1a9d26679394938ee488a451bf1e4"
+    },
+    "predictions": {
+      "sha256": "1898d32683ae5d093957047263abf1cf48e1a9d26679394938ee488a451bf1e4"
+    }
+  },
+  "method": "mg-pu",
+  "method_config": {},
+  "paper_result_eligible": false,
+  "route_counts": {
+    "visual:merged,non_actionable": 2,
+    "visual:missing": 1
+  },
+  "seed": 17
+}

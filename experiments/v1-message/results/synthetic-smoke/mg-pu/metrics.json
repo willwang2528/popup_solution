@@ -1,0 +1,55 @@
+{
+  "coverage": 0.6666666666666666,
+  "critical_hallucination": {
+    "count": 0,
+    "denominator": 1,
+    "mode": "critical_fact_set_proxy",
+    "rate": 0.0
+  },
+  "critical_information_recall": {
+    "denominator": 2,
+    "mean": 0.5
+  },
+  "evidence_level": "synthetic_pipeline_fixture",
+  "message": {
+    "denominator_popup_positive": 2,
+    "exact_match": 0.5,
+    "normalized_exact_match": 0.5,
+    "token_f1": 0.5
+  },
+  "metric_contract_version": "popup-message-v1.0",
+  "n_items": 3,
+  "n_judged": 2,
+  "paper_result_eligible": false,
+  "presence": {
+    "abstain": 1,
+    "accuracy_with_abstain_as_incorrect": 0.6666666666666666,
+    "f1": 0.6666666666666666,
+    "fn": 1,
+    "fp": 0,
+    "macro_f1_with_abstain_as_miss": 0.8333333333333333,
+    "negative_class_f1": 1.0,
+    "negative_class_precision": 1.0,
+    "negative_class_recall": 1.0,
+    "precision": 1.0,
+    "recall": 0.5,
+    "tn": 1,
+    "tp": 1
+  },
+  "visual_call_count": 3,
+  "visual_call_rate": 1.0,
+  "visual_called_items": 3,
+  "vpma": {
+    "covered_denominator": 2,
+    "item_values": {
+      "fixture.android.popup-message.abstain.0001": null,
+      "fixture.android.popup-message.negative.0001": true,
+      "fixture.android.popup-message.positive.0001": true
+    },
+    "mode": "normalized_exact_proxy",
+    "null_abstention_count": 1,
+    "overall_success_rate": 0.6666666666666666,
+    "rate_on_covered": 1.0,
+    "success_count": 2
+  }
+}

@@ -22,7 +22,11 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 14. [`refine-logs/NOVELTY_CHECK.md`](./refine-logs/NOVELTY_CHECK.md)：当前查新结论与不可宣称的 broad-first 边界。
 15. [`refine-logs/EXPERIMENT_PLAN.md`](./refine-logs/EXPERIMENT_PLAN.md)：claim-driven v1 实验计划、强基线、指标和停止条件。
 16. [`refine-logs/EXPERIMENT_TRACKER.md`](./refine-logs/EXPERIMENT_TRACKER.md)：真实数据摄取、标注、实验与发布的当前状态。
-17. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
+17. [`dataset-v1/annotation-pilot/README.md`](./dataset-v1/annotation-pilot/README.md)：冻结 30 条 pilot、双人盲标模板、一致性计算和裁决协议。
+18. [`experiments/v1-message/README.md`](./experiments/v1-message/README.md)：零动作 baseline／MG-PU 路由与 v1 指标评测骨架。
+19. [`dataset-v1/work/MODEL_PREANNOTATION_STATUS.md`](./dataset-v1/work/MODEL_PREANNOTATION_STATUS.md)：双模型预标注的非金标状态与唯一分歧项。
+20. [`experiments/v1-message/ocr/README.md`](./experiments/v1-message/ocr/README.md)：本地 Vision OCR、隐私 withholding 和公开聚合证据。
+21. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 
 ## v1 闭环
 
@@ -62,4 +66,10 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 ## 当前完成度
 
-字段并集、v1 schema、非经验 fixture、验证器、方法与实验协议已经形成；PopSweeper 归档已完成本地完整性/安全审计，并冻结 120 条 adapter-only 来源候选。90 条 numeric 候选已逐一连接到 RICO semantic JSON/PNG，但该语义层级不含 message text/content-desc；全部候选仍只有 popup presence 标签。人工消息标注、可进入指标的 pilot item、基线结果和 iOS 数据尚未形成。仓库中的 3 条 fixture 只验证数据契约，不构成论文实验数据或方法效果证据。
+字段并集、v1 schema、非经验 fixture、验证器、方法与实验协议已经形成；PopSweeper 归档已完成本地完整性/安全审计，并冻结 120 条 adapter-only 来源候选。90 条 numeric 候选已逐一连接到 RICO semantic JSON/PNG，但该语义层级不含 message text/content-desc。
+
+其中 30 条候选已冻结为首轮标注批次，并通过 fail-closed adapter 在 Git 忽略目录中真实导出 30 张截图及 44 份 RICO 结构化附件；双人盲标模板、agreement/adjudication 工具也已就绪。两个独立模型已完成 30+30 条盲式工作流预标注，但均明确为非人工、不可计分。
+
+七种零动作 baseline／MG-PU 路由已通过 synthetic smoke，但所有 smoke 输出都标明 `paper_result_eligible=false`。本地 macOS Vision OCR 也已在正式 30 图上运行；因为全屏 OCR 不能证明 popup presence，30 条全部安全弃答。原图和可能含第三方信息的 OCR 派生文本均不公开，仅发布不含文本的聚合摘要、配置与哈希。
+
+当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比结果或 iOS 数据。仓库中的 3 条 fixture 和 synthetic smoke 只验证数据／评测管线，不构成论文实验结果或用户体验证据。

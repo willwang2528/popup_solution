@@ -1,0 +1,43 @@
+{
+  "action_policy": "no_action",
+  "adapter_contract_version": "pmj-local-vision-ocr/1.0.0",
+  "claims": {
+    "dismissal_or_recovery": false,
+    "human_message_gold": false,
+    "method_effectiveness": false,
+    "ocr_accuracy": false,
+    "popup_presence": false,
+    "user_experience": false
+  },
+  "engine_sha256": "b66aa48e0ad715b673eb027289f4502b365c9982526c9a0174febafb5b2d082c",
+  "input_manifest_sha256": "2df7c98d78787e880da28469c4face345b7d0b0185a463753b5c80717ff5aabf",
+  "item_count": 30,
+  "ocr_status_counts": {
+    "no_text_observed": 0,
+    "text_observed": 30
+  },
+  "paper_result_eligible": false,
+  "presence_prediction_counts": {
+    "null_abstain": 30
+  },
+  "prediction_status_counts": {
+    "abstain": 30
+  },
+  "predictions_sha256": "220fb08fcf6b452656f27fbae6fc7a90093b00b45a54112805e86fb092409be1",
+  "privacy_status": "withheld_pending_privacy_review",
+  "private_artifact_policy": "raw_images_and_derived_ocr_text_not_published",
+  "recognition_configuration": {
+    "framework": "Vision",
+    "languages": [
+      "zh-Hans",
+      "en-US"
+    ],
+    "recognition_level": "accurate",
+    "request": "VNRecognizeTextRequest",
+    "request_revision": 3,
+    "uses_language_correction": true
+  },
+  "status": "private_run_pass_public_aggregate_only",
+  "swift_source_sha256": "b77d6b9d7694e7c3ba816d20bd58ad9f3752fa3b58734e67895002b4c0e2096b",
+  "total_latency_ms": 7261.791959
+}

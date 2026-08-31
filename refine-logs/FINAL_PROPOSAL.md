@@ -1,6 +1,6 @@
 # Research Proposal：When Pop-ups Go Silent
 
-> 副标题：面向屏幕阅读器用户的移动弹窗消息可观测性评测与缺口门控恢复
+> 副标题：面向屏幕阅读器用户的移动弹窗消息可观测性评测与缺口门控补全
 >
 > 当前版本：2026-09-01，ARIS refinement round 1
 >

@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "annotation_record.schema.json",
+  "title": "Blind popup-message annotation record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "batch_id",
+    "pilot_item_id",
+    "annotation_order",
+    "adapter_item_handle",
+    "annotator_role",
+    "annotator_id_pseudonymous",
+    "record_status",
+    "presence_label",
+    "message_text",
+    "message_observability",
+    "semantic_slots",
+    "confidence",
+    "evidence",
+    "blindness_attestation",
+    "annotation_started_at",
+    "annotation_completed_at",
+    "notes"
+  ],
+  "properties": {
+    "protocol_version": {"const": "1.0.0"},
+    "batch_id": {"const": "popsweeper-message-pilot-30-v1"},
+    "pilot_item_id": {"type": "string", "pattern": "^PMJ-PILOT-[0-9]{3}$"},
+    "annotation_order": {"type": "integer", "minimum": 1, "maximum": 30},
+    "adapter_item_handle": {"type": "string", "pattern": "^adapter://popsweeper/pilot/PMJ-PILOT-[0-9]{3}$"},
+    "annotator_role": {"enum": ["A", "B"]},
+    "annotator_id_pseudonymous": {"type": ["string", "null"], "minLength": 1},
+    "record_status": {"enum": ["blank", "completed"]},
+    "presence_label": {"enum": ["popup", "no_popup", "uncertain", "unusable", null]},
+    "message_text": {"type": ["string", "null"], "minLength": 1},
+    "message_observability": {"enum": ["complete", "partial", "not_observable", "not_applicable", null]},
+    "semantic_slots": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/semanticSlot"},
+      "uniqueItems": true
+    },
+    "confidence": {"type": ["integer", "null"], "minimum": 1, "maximum": 5},
+    "evidence": {"$ref": "#/$defs/evidence"},
+    "blindness_attestation": {"$ref": "#/$defs/blindnessAttestation"},
+    "annotation_started_at": {"type": ["string", "null"], "format": "date-time"},
+    "annotation_completed_at": {"type": ["string", "null"], "format": "date-time"},
+    "notes": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "semanticSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot_type", "value", "polarity"],
+      "properties": {
+        "slot_type": {
+          "enum": [
+            "amount",
+            "date_time",
+            "duration_deadline",
+            "action_choice",
+            "object_target",
+            "permission_data",
+            "restriction_negation",
+            "consequence",
+            "other_critical"
+          ]
+        },
+        "value": {"type": "string", "minLength": 1},
+        "polarity": {"enum": ["affirmed", "negated", "conditional", "unknown"]}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter_viewed", "view_session_id", "region_or_node_notes", "raw_image_copied"],
+      "properties": {
+        "adapter_viewed": {"type": ["boolean", "null"]},
+        "view_session_id": {"type": ["string", "null"], "minLength": 1},
+        "region_or_node_notes": {"type": ["string", "null"]},
+        "raw_image_copied": {"const": false}
+      }
+    },
+    "blindnessAttestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["peer_labels_unseen", "source_class_unseen", "model_output_unseen"],
+      "properties": {
+        "peer_labels_unseen": {"type": ["boolean", "null"]},
+        "source_class_unseen": {"type": ["boolean", "null"]},
+        "model_output_unseen": {"type": ["boolean", "null"]}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"record_status": {"const": "blank"}}},
+      "then": {
+        "properties": {
+          "annotator_id_pseudonymous": {"const": null},
+          "presence_label": {"const": null},
+          "message_text": {"const": null},
+          "message_observability": {"const": null},
+          "semantic_slots": {"maxItems": 0},
+          "confidence": {"const": null},
+          "annotation_started_at": {"const": null},
+          "annotation_completed_at": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"record_status": {"const": "completed"}}},
+      "then": {
+        "properties": {
+          "annotator_id_pseudonymous": {"type": "string", "minLength": 1},
+          "presence_label": {"enum": ["popup", "no_popup", "uncertain", "unusable"]},
+          "confidence": {"type": "integer", "minimum": 1, "maximum": 5},
+          "evidence": {
+            "properties": {"adapter_viewed": {"const": true}, "raw_image_copied": {"const": false}}
+          },
+          "blindness_attestation": {
+            "properties": {
+              "peer_labels_unseen": {"const": true},
+              "source_class_unseen": {"const": true},
+              "model_output_unseen": {"const": true}
+            }
+          },
+          "annotation_started_at": {"type": "string", "format": "date-time"},
+          "annotation_completed_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"presence_label": {"const": "no_popup"}}},
+      "then": {
+        "properties": {
+          "message_text": {"const": null},
+          "message_observability": {"const": "not_applicable"},
+          "semantic_slots": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"presence_label": {"const": "popup"}}},
+      "then": {
+        "properties": {
+          "message_observability": {"enum": ["complete", "partial", "not_observable"]}
+        }
+      }
+    }
+  ]
+}

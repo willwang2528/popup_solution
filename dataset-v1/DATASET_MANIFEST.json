@@ -3,7 +3,7 @@
   "schema_version": "1.1.0-provisional",
   "active_profile": "popup_message_judgment_v1",
   "unit": "one_action_free_popup_message_observation",
-  "status": "v1_message_contract_complete_source_candidates_frozen_message_annotation_pending",
+  "status": "v1_contract_pilot_private_ocr_and_harness_ready_human_message_annotation_pending",
   "target_population": "blind_and_low_vision_screen_reader_users",
   "source_field_union": {
     "ppt_papers": 14,
@@ -19,6 +19,8 @@
   "advanced_only": ["dismissal", "C_tech", "C_a11y", "T", "VTR-tech", "A-VTR"],
   "cohorts": {
     "source_candidates_pending_message_annotation": 120,
+    "frozen_annotation_pilot_candidates": 30,
+    "human_adjudicated_message_items": 0,
     "real_app_items": 0,
     "controlled_fixture_items": 0,
     "synthetic_schema_fixture_items": 3,
@@ -39,8 +41,8 @@
       "path": "candidates/popsweeper_candidates_n120.jsonl",
       "record_kind": "real_source_candidate_manifest",
       "item_count": 120,
-      "presence_positive": 60,
-      "presence_negative": 60,
+      "source_sampling_ads": 60,
+      "source_sampling_no_ads": 60,
       "numeric_rico_candidates": 90,
       "named_recorded_app_candidates": 30,
       "rico_semantic_json_png_join_verified": 90,
@@ -48,6 +50,47 @@
       "raw_image_distribution": "adapter_only_not_redistributed",
       "message_annotation_status": "pending",
       "empirical": false,
+      "eligible_for_training": false,
+      "eligible_for_metrics": false
+    },
+    {
+      "path": "annotation-pilot/manifests/pilot_batch_30.jsonl",
+      "record_kind": "real_source_annotation_pilot_manifest",
+      "item_count": 30,
+      "source_sampling_ads": 15,
+      "source_sampling_no_ads": 15,
+      "numeric_rico_candidates": 22,
+      "named_recorded_app_candidates": 8,
+      "raw_image_distribution": "adapter_only_not_redistributed",
+      "human_message_gold_status": "pending",
+      "empirical": false,
+      "eligible_for_training": false,
+      "eligible_for_metrics": false
+    },
+    {
+      "path": "work/model-preannotation-a.jsonl",
+      "record_kind": "model_preannotation_workflow_aid",
+      "item_count": 30,
+      "annotator_type": "AI model",
+      "not_human_gold": true,
+      "eligible_for_training": false,
+      "eligible_for_metrics": false
+    },
+    {
+      "path": "work/model-preannotation-b.jsonl",
+      "record_kind": "model_preannotation_workflow_aid",
+      "item_count": 30,
+      "annotator_type": "AI model",
+      "not_human_gold": true,
+      "eligible_for_training": false,
+      "eligible_for_metrics": false
+    },
+    {
+      "path": "../experiments/v1-message/ocr/PUBLIC_RUN_SUMMARY.json",
+      "record_kind": "private_ocr_run_public_aggregate",
+      "item_count": 30,
+      "privacy_status": "withheld_pending_privacy_review",
+      "derived_text_published": false,
       "eligible_for_training": false,
       "eligible_for_metrics": false
     }
@@ -59,7 +102,14 @@
     "union_qa_rules": "schema/qa_rules.json",
     "union_qa_implementation_coverage": "schema/qa_implementation_coverage.json",
     "v1_message_qa_rules": "schema/v1_message_qa_rules.json",
-    "annotation_guide": "ANNOTATION_GUIDE.md"
+    "annotation_guide": "ANNOTATION_GUIDE.md",
+    "annotation_pilot_protocol": "annotation-pilot/README.md",
+    "annotation_record_schema": "annotation-pilot/schemas/annotation_record.schema.json",
+    "adjudication_output_schema": "annotation-pilot/schemas/adjudication_output.schema.json",
+    "annotation_media_adapter": "scripts/export_annotation_media.py",
+    "v1_evaluation_harness": "../experiments/v1-message/README.md",
+    "local_vision_ocr_adapter": "../experiments/v1-message/ocr/README.md",
+    "local_vision_ocr_public_summary": "../experiments/v1-message/ocr/PUBLIC_RUN_SUMMARY.json"
   },
   "validation": {
     "status": "pass_implemented_checks",
@@ -73,8 +123,31 @@
       "total": 6
     },
     "errors": 0,
+    "dataset_pipeline_tests_passing": 33,
+    "evaluation_harness_tests_passing": 26,
+    "synthetic_smoke_methods_passing": 7,
+    "local_vision_ocr_tests_passing_authorized_host": 7,
+    "real_local_media_export": {
+      "status": "pass",
+      "selection_mode": "frozen_pilot_manifest",
+      "items": 30,
+      "artifacts": 74,
+      "raw_media_committed": false
+    },
+    "private_local_vision_ocr": {
+      "status": "pass_public_aggregate_only",
+      "items": 30,
+      "text_observed": 30,
+      "presence_abstained": 30,
+      "derived_text_committed": false,
+      "paper_result_eligible": false,
+      "privacy_status": "withheld_pending_privacy_review"
+    },
     "warnings": [
-      "120 real-source candidates are frozen but do not yet have message gold",
+      "120 real-source candidates and a 30-item pilot are frozen but do not yet have human message gold",
+      "two 30-item model preannotations are workflow aids only and are not human gold or metric eligible",
+      "private local OCR text is withheld pending privacy review; the public summary is unscored and all presence predictions abstain",
+      "seven-method smoke results are synthetic pipeline checks and are not paper-result eligible",
       "no empirical real-app episodes yet",
       "no iOS capability or episode record yet"
     ]
@@ -91,7 +164,37 @@
     "scripts/build_popsweeper_candidate_manifest.py": "7ff5b935f44058f1f762043ab168d9907d955ffef5872aea378274a04ebce433",
     "scripts/popsweeper_source_audit.py": "8453998b5b2f96412b942baaed82fd473aee5f9f8daa667d3f00b40a7e25172c",
     "work/popsweeper_source_audit.json": "2e58ef412e84cb79186d6f6aede1b190a6dd5ba798780b2a6a77ce5e55816df8",
-    "work/rico_semantic_source_audit.json": "e8c33c35c015c22058a2033882f563b2c56114c326e1ed975fe2259d620e57f2"
+    "work/rico_semantic_source_audit.json": "e8c33c35c015c22058a2033882f563b2c56114c326e1ed975fe2259d620e57f2",
+    "annotation-pilot/README.md": "5dc2fd9ac3e75fc83bcb100db3656fce35226b674acc3691cc27d490d5985962",
+    "annotation-pilot/manifests/pilot_batch_30.jsonl": "b44f47596bf992a398a09ebf05603cda800625899803029473f97c753a7613a1",
+    "annotation-pilot/schemas/annotation_record.schema.json": "7568afa58958eb5feac954da57c4fdc5df2c27288d1ee69624a48499e3a27719",
+    "annotation-pilot/schemas/adjudication_input.schema.json": "6b5b34254f6053ecc7ca0f8d8bb6983b371cd5d89996d857891597f4bc3dbade",
+    "annotation-pilot/schemas/adjudication_output.schema.json": "29853cebef58a1612b7a9ad8a73912959a3631055b76c5d5d0a9ed4e8ae96f99",
+    "annotation-pilot/scripts/build_pilot_bundle.py": "fc41275770cf275b3e8db187ad5a3fc6bbb7f5241e08c4ce70895a193f4e48d3",
+    "annotation-pilot/scripts/calculate_agreement.py": "d28702097672a741ea3e6d17d9710883b8fdc16c0cd0ee02203821e961c1d005",
+    "scripts/export_annotation_media.py": "8a6e6bd7d98467eaf0bb35a406669775b59223e31cbbd8d1ce23af3e9d3c1d0b",
+    "work/MODEL_PREANNOTATION_STATUS.md": "682f687191e61a2764efe4b2f5b562c03a4da80cc33eeceb1007cb24ccc08fa5",
+    "work/model-preannotation-a.jsonl": "d22c88edd87a29699f3a17ff406352af3f8d0200e2d3f2b0d5afa5d1c2f49b1c",
+    "work/model-preannotation-a-summary.md": "62a4363507d185da964fb4193f28243075e9cad272b3fb0a6d0d2793597b0d11",
+    "work/model-preannotation-b.jsonl": "8a71471a01ac6eb3a519f678a7573369378b5b61cafdd4c2aec4b67b549d6d3b",
+    "work/model-preannotation-b-summary.md": "2ed9ae8ac1ea1b72461b1ce41e7abfbe2a6fb1b7c40f45ac2e9a2691c1dae19f",
+    "../experiments/v1-message/README.md": "eba90e15e8e013c6a78eb7931fd56462b9a84a31eab6b1a706d69477bef6f832",
+    "../experiments/v1-message/run_eval.py": "32ff298f0dda1a07e62acb69b8cd47e0122caa504a1803bfb0c42bcb9fbbbda4",
+    "../experiments/v1-message/popup_eval/baselines.py": "f941a6d98600978bd10cf4499c635406ff3e5257817519c8e1ec528c1217b2e6",
+    "../experiments/v1-message/popup_eval/metrics.py": "40724fa01d5d7ac50e9f0cc18973bb01a1fed397af3fb6df042cc94ada02abba",
+    "../experiments/v1-message/popup_eval/runner.py": "5dfd8aa74ee303cbe089a3d3cf787d903ce15bdafdb6b162e5d4dd29b723e01a",
+    "../experiments/v1-message/popup_eval/io.py": "f20b5c7ee79c6811bf3ba89cb17c1588bb36cc8f435eaea8cd29fe8597df6d2c",
+    "../experiments/v1-message/popup_eval/cli.py": "63c64c086a6e9f25fdda0b18c09087c948f1b60319777231d73111d78f5f3eb8",
+    "../experiments/v1-message/tests/test_metrics.py": "71007caadd7afd0cf85b11266ca489e14279a0ed18f18aa5dc36ba5a7102ddb2",
+    "../experiments/v1-message/tests/test_runner.py": "59e68b4d29eb021b2b147e475e4c86af7cd093e6471785161974386be91a8f5b",
+    "../experiments/v1-message/ocr/.gitignore": "b400f4dbd4b086c79ddaee029a34920b2c7288a043eab6408ba07bbadb88bb30",
+    "../experiments/v1-message/ocr/README.md": "9d275e4842916c6c7c47881916d97d4e1d1f49797e3574f1ee478752db6717e7",
+    "../experiments/v1-message/ocr/run_ocr.py": "bf59d2c3001df4acd11b1ca4dcb06ca212a9ca94bc78de218c77d9c27d5245b2",
+    "../experiments/v1-message/ocr/vision_ocr.swift": "b77d6b9d7694e7c3ba816d20bd58ad9f3752fa3b58734e67895002b4c0e2096b",
+    "../experiments/v1-message/ocr/tests/test_ocr_adapter.py": "27e28236a8786e036a5fdd09e74f0826feb0391335dd53a04c3ce25ff5eeed53",
+    "../experiments/v1-message/ocr/PUBLIC_RUN_SUMMARY.json": "ec9a6da0dff061c318c2e752bc9f244c7e4b3f9f858764ac9c2753cbd16598d4",
+    "../experiments/v1-message/ocr/compute/local-macos-pmj-ocr.env-spec.json": "a5ce55cc070bc1937c12094b090207d78a3291a82d3289cd45164dc19e831782",
+    "../experiments/v1-message/ocr/compute/local-macos-pmj-ocr.md": "b977b0c42c123b95080c3c0d4fdce4248e4f8a7306761f0feb2ec9d0c40f230f"
   },
   "N": {
     "value": null,

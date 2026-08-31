@@ -25,7 +25,7 @@
 ## Overall Evolution
 
 - 从“统一消除弹窗”纠正为“承认不可观测性并测量 popup message gap”。
-- 从完整 Recovery 缩到 V1 action-free message-level accessibility recovery。
+- 从完整 Recovery 缩到 V1 action-free popup-message judgment，不再把消息判断命名为恢复成功。
 - 从 255 字段 contract 明确过渡到必须产生 empirical item 的 benchmark。
 - 从泛化的结构＋视觉融合缩到一个 message sufficiency gate。
 - 把 PPT 第 14 页的弱／强回证分层写成不可违反的 claim boundary。

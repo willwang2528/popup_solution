@@ -1,0 +1,15 @@
+{
+  "protocol_version": "1.0.0",
+  "batch_id": "popsweeper-message-pilot-30-v1",
+  "pilot_item_id": null,
+  "record_status": "blank",
+  "adjudicator_id_pseudonymous": null,
+  "adjudication_status": "pending",
+  "presence_label_final": null,
+  "message_text_final": null,
+  "message_observability_final": null,
+  "semantic_slots_final": [],
+  "decision_rationale": null,
+  "evidence_rechecked_via_adapter": null,
+  "resolved_at": null
+}

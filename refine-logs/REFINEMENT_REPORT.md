@@ -10,7 +10,7 @@
 
 ## Problem Anchor
 
-V1 只在动作前判断 popup presence 和恢复屏幕可见 message。它承认结构化 UI 的硬可观测边界，不执行关闭动作，也不把节点／截图变化升级为任务恢复。
+V1 只在动作前判断 popup presence 并提取屏幕可见 message。它承认结构化 UI 的硬可观测边界，不执行关闭动作，也不把节点／截图变化升级为任务恢复。
 
 ## Output Files
 
