@@ -278,9 +278,9 @@
         "scope_label": {
           "enum": ["ordinary_low_risk_popup", "abstain_only_sensitive_popup", "out_of_scope"]
         },
-        "popup_expected_gt": {"type": "boolean"},
+        "popup_expected_gt": {"$ref": "#/$defs/boolOrNull"},
         "popup_kind_gt": {"$ref": "#/$defs/stringOrNull"},
-        "popup_owner_type_gt": {"enum": ["app", "system", "browser", "webview", "cross_app", "unknown"]},
+        "popup_owner_type_gt": {"enum": ["app", "system", "browser", "webview", "cross_app", "unknown", null]},
         "popup_owner_gt": {"$ref": "#/$defs/stringOrNull"},
         "host_owner_gt": {"$ref": "#/$defs/stringOrNull"},
         "allowed_action_set_gt": {
@@ -291,8 +291,8 @@
           "type": "array",
           "items": {"type": "string"}
         },
-        "abstain_allowed_gt": {"type": "boolean"},
-        "unsafe_context_gt": {"type": "boolean"},
+        "abstain_allowed_gt": {"$ref": "#/$defs/boolOrNull"},
+        "unsafe_context_gt": {"$ref": "#/$defs/boolOrNull"},
         "safety_category_gt": {
           "enum": [
             "ordinary_exit",
@@ -301,11 +301,12 @@
             "payment_or_purchase",
             "install_delete_or_device_management",
             "risk_control_or_captcha",
-            "unknown"
+            "unknown",
+            null
           ]
         },
         "action_topology_gt": {
-          "enum": ["one_step", "multi_step", "verified_back", "verified_outside_tap", "no_safe_action", "unknown"]
+          "enum": ["one_step", "multi_step", "verified_back", "verified_outside_tap", "no_safe_action", "unknown", null]
         },
         "exposure_status_gt": {
           "enum": [
@@ -319,7 +320,8 @@
             "owner_mismatch",
             "stale_or_tool_failure",
             "visual_only",
-            "unknown_cause"
+            "unknown_cause",
+            null
           ]
         },
         "exposure_cause_gt": {
@@ -361,7 +363,7 @@
         "os_version": {"$ref": "#/$defs/stringOrNull"},
         "os_build": {"$ref": "#/$defs/stringOrNull"},
         "device_model": {"$ref": "#/$defs/stringOrNull"},
-        "device_kind": {"enum": ["physical", "emulator", "simulator", "browser_fixture"]},
+        "device_kind": {"enum": ["physical", "emulator", "simulator", "browser_fixture", null]},
         "screen_size_px": {"type": ["array", "null"], "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
         "app_or_package": {"$ref": "#/$defs/stringOrNull"},
         "app_version": {"$ref": "#/$defs/stringOrNull"},
@@ -454,11 +456,11 @@
           "additionalProperties": false,
           "required": ["popup_present_gt", "blocking_gt", "message_text_gt", "critical_facts_gt", "message_text_observability", "evidence_uris"],
           "properties": {
-            "popup_present_gt": {"type": "boolean"},
+            "popup_present_gt": {"$ref": "#/$defs/boolOrNull"},
             "blocking_gt": {"$ref": "#/$defs/boolOrNull"},
             "message_text_gt": {"$ref": "#/$defs/stringOrNull"},
             "critical_facts_gt": {"type": "array", "items": {"type": "string"}},
-            "message_text_observability": {"enum": ["complete", "partial", "not_observable", "not_applicable"]},
+            "message_text_observability": {"enum": ["complete", "partial", "not_observable", "not_applicable", "pending_annotation"]},
             "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
           }
         },

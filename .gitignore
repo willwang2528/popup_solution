@@ -9,3 +9,4 @@ refine-logs/FINAL_PROPOSAL_*.md
 refine-logs/REFINEMENT_REPORT_*.md
 refine-logs/REFINE_STATE_*.json
 dataset-v1/work/annotation-media/
+dataset-v1/annotation-pilot/private/

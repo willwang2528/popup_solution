@@ -21,7 +21,8 @@ annotation-pilot/
 │   └── adjudication_output.schema.json
 ├── scripts/
 │   ├── build_pilot_bundle.py
-│   └── calculate_agreement.py
+│   ├── calculate_agreement.py
+│   └── serve_blind_viewer.py
 ├── templates/
 │   ├── annotator_a.jsonl
 │   ├── annotator_b.jsonl
@@ -74,6 +75,8 @@ Annotator A 与 B 必须独立工作，在两份 annotation 都冻结前不得�
 - 模型 prediction、OCR 预标注或 agreement 输出。
 
 完成记录必须将 `blindness_attestation` 三项均设为 `true`。任一项不成立，该记录不能进入协议一致性计算。
+
+`serve_blind_viewer.py` 是 loopback-only 的截图查看器。它从 A/B 盲模板解析规范化 `adapter_item_handle`，按 `pilot_item_id` 直接定位本地截图；不会读取或渲染 `candidate.json`、pilot manifest、source label、RICO metadata、OCR 或模型输出。Coordinator 启动后只把随机 token URL 与 `view_session_id` 交给对应 annotator；annotator 不获得 adapter 根目录或 repo 文件权限。
 
 ### 4.2 Presence label
 
@@ -141,7 +144,7 @@ semantic-slot exact/Jaccard 是**结构化标注一致性**，不是“消息语
 
 ### 输入
 
-脚本只为存在以下任一分歧的 item 生成 `record_status=ready` 输入：
+脚本为全部 A/B 配对 item 生成 `record_status=ready` 的 final-review 输入。存在分歧时，`disagreement_reasons` 记录以下一项或多项；A/B 完全一致时该数组为空，但仍必须由第三位真实 adjudicator 重新查看 adapter evidence 并确认 final：
 
 ```text
 presence
@@ -151,7 +154,7 @@ message_observability
 semantic_slots
 ```
 
-输入内保留 A/B 的原始 completed record，`adjudication_status=pending`，不包含任何 `*_final` 字段，也不读取 source sampling label。
+输入内保留 A/B 的原始 completed record，`adjudication_status=pending`，不包含任何 `*_final` 字段，也不读取 source sampling label。协议不自动把 A/B 一致转换为 gold。
 
 ### 输出
 
@@ -199,6 +202,19 @@ test -x "$ARIS_PYTHON"
   --report /ABSOLUTE/PRIVATE/PATH/agreement.json \
   --adjudication-input /ABSOLUTE/PRIVATE/PATH/adjudication-input.jsonl
 ```
+
+启动 A/B 各自的隔离 viewer（示例为 A；服务只允许 loopback 地址）：
+
+```bash
+"$ARIS_PYTHON" \
+  popup-solution/dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py \
+  --annotations-template popup-solution/dataset-v1/annotation-pilot/templates/annotator_a.jsonl \
+  --adapter-root /ABSOLUTE/GIT-IGNORED/annotation-media
+```
+
+输出中的随机 URL 与 `view_session_id` 只用于该次人工会话；不要把它们提交到 Git。
+
+当前 checkout 已在 Git-ignored 的 `annotation-pilot/private/` 下建立 `0700/0600` 工作副本。A/B 和 adjudicator 只填写这些私有副本；tracked `templates/` 永远保持空白。
 
 运行本协议全部测试：
 

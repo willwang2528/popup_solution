@@ -45,7 +45,7 @@
       "then": {
         "properties": {
           "pilot_item_id": {"type": "string"},
-          "disagreement_reasons": {"minItems": 1},
+          "disagreement_reasons": {"minItems": 0},
           "annotation_a": {"type": "object"},
           "annotation_b": {"type": "object"}
         }

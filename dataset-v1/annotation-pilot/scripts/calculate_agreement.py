@@ -421,8 +421,6 @@ def build_adjudication_inputs(
     output: list[dict[str, Any]] = []
     for annotation_a, annotation_b in pair_annotations(records_a, records_b):
         reasons = disagreement_reasons(annotation_a, annotation_b)
-        if not reasons:
-            continue
         output.append(
             {
                 "protocol_version": PROTOCOL_VERSION,
@@ -467,15 +465,15 @@ def main() -> int:
     records_a = load_jsonl(args.annotations_a)
     records_b = load_jsonl(args.annotations_b)
     report = compute_agreement(records_a, records_b)
-    disagreements = build_adjudication_inputs(records_a, records_b)
+    final_review_inputs = build_adjudication_inputs(records_a, records_b)
     write_json(args.report, report)
-    write_jsonl(args.adjudication_input, disagreements)
+    write_jsonl(args.adjudication_input, final_review_inputs)
     print(
         json.dumps(
             {
                 "status": report["status"],
                 "paired_items": report["paired_items"],
-                "adjudication_items": len(disagreements),
+                "adjudication_items": len(final_review_inputs),
                 "report": str(args.report),
                 "adjudication_input": str(args.adjudication_input),
             },

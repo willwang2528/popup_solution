@@ -298,6 +298,7 @@ def check_message_judgment(item: dict[str, Any], index: int) -> list[str]:
     gate = judgment["gate"]
     evaluation = judgment["evaluation"]
     eligibility = judgment["eligibility"]
+    pending_annotation = labels["popup_present_gt"] is None
 
     if item["action_attempts"]:
         errors.append(f"{prefix}: v1 must not contain action attempts")
@@ -313,25 +314,80 @@ def check_message_judgment(item: dict[str, Any], index: int) -> list[str]:
         errors.append(f"{prefix}: prediction references a missing source observation")
     elif source["phase"] in forbidden_phases:
         errors.append(f"{prefix}: prediction source is not an action-free observation")
-    else:
+    elif not pending_annotation:
         if labels["popup_present_gt"] is not source["popup"]["present_gt"]:
             errors.append(f"{prefix}: popup gold conflicts with the source observation")
         if labels["blocking_gt"] is not source["popup"]["blocking_gt"]:
             errors.append(f"{prefix}: blocking gold conflicts with the source observation")
 
-    if labels["popup_present_gt"] is not item["scenario"]["popup_expected_gt"]:
-        errors.append(f"{prefix}: popup gold conflicts with scenario.popup_expected_gt")
-    if not labels["evidence_uris"]:
-        errors.append(f"{prefix}: popup/message gold has no evidence URI")
+    if pending_annotation:
+        scenario = item["scenario"]
+        pending_scenario_scalars = (
+            "popup_expected_gt",
+            "popup_kind_gt",
+            "popup_owner_type_gt",
+            "popup_owner_gt",
+            "host_owner_gt",
+            "abstain_allowed_gt",
+            "unsafe_context_gt",
+            "safety_category_gt",
+            "action_topology_gt",
+            "exposure_status_gt",
+            "exposure_cause_gt",
+        )
+        if item["identity"]["record_kind"] != "real_app" or item["identity"]["collection_status"] != "collected":
+            errors.append(f"{prefix}: pending gold is only allowed for collected real-app items")
+        if any(scenario[name] is not None for name in pending_scenario_scalars):
+            errors.append(f"{prefix}: pending item carries scenario ground truth")
+        if scenario["allowed_action_set_gt"] or scenario["disallowed_action_set_gt"] or scenario["exposure_cause_evidence"]:
+            errors.append(f"{prefix}: pending item carries scenario ground-truth lists")
+        if any(value is not None for value in (
+            labels["blocking_gt"],
+            labels["message_text_gt"],
+        )) or labels["critical_facts_gt"]:
+            errors.append(f"{prefix}: pending item carries popup/message ground truth")
+        if labels["message_text_observability"] != "pending_annotation":
+            errors.append(f"{prefix}: pending gold must use pending_annotation observability")
+        if labels["evidence_uris"]:
+            errors.append(f"{prefix}: pending gold must not carry label evidence")
+        popup_gt_fields = ("present_gt", "kind_gt", "bbox_gt", "owner_gt", "modal_gt", "blocking_gt")
+        if any(
+            observation["popup"][name] is not None
+            for observation in item["observations"]
+            for name in popup_gt_fields
+        ):
+            errors.append(f"{prefix}: pending item carries observation popup ground truth")
+        if any(
+            value is not None
+            for candidate in item["candidates"]
+            for value in candidate["ground_truth"].values()
+        ):
+            errors.append(f"{prefix}: pending item carries candidate ground truth")
+        if item["annotations"] or item["provenance"]["annotation_record_ids"]:
+            errors.append(f"{prefix}: pending item carries annotation records")
+        if "pending_human_annotation" not in eligibility["exclusion_reasons"]:
+            errors.append(f"{prefix}: pending item lacks pending_human_annotation exclusion")
+        if eligibility["eligible_for_v1_presence_metric"] or eligibility["eligible_for_v1_message_metric"]:
+            errors.append(f"{prefix}: pending item is eligible for a v1 metric")
+        verification_eligibility = item["verification"]["eligibility"]
+        if verification_eligibility["eligible_for_training"] or verification_eligibility["eligible_for_main_metric"]:
+            errors.append(f"{prefix}: pending item is eligible for training or a main metric")
+        if any(value is not None for value in evaluation.values()):
+            errors.append(f"{prefix}: pending item carries gold-dependent evaluation values")
+    else:
+        if labels["popup_present_gt"] is not item["scenario"]["popup_expected_gt"]:
+            errors.append(f"{prefix}: popup gold conflicts with scenario.popup_expected_gt")
+        if not labels["evidence_uris"]:
+            errors.append(f"{prefix}: popup/message gold has no evidence URI")
 
-    if not labels["popup_present_gt"]:
+    if not pending_annotation and not labels["popup_present_gt"]:
         if labels["blocking_gt"] is not None:
             errors.append(f"{prefix}: no-popup label must have blocking_gt=null")
         if labels["message_text_gt"] is not None or labels["critical_facts_gt"]:
             errors.append(f"{prefix}: no-popup label must not carry popup message content")
         if labels["message_text_observability"] != "not_applicable":
             errors.append(f"{prefix}: no-popup message observability must be not_applicable")
-    else:
+    elif not pending_annotation:
         if labels["blocking_gt"] is None:
             errors.append(f"{prefix}: popup label lacks blocking_gt")
         observable = labels["message_text_observability"] in {"complete", "partial"}
@@ -369,20 +425,20 @@ def check_message_judgment(item: dict[str, Any], index: int) -> list[str]:
         errors.append(f"{prefix}: message and summary visual-call counts disagree")
 
     expected_presence = None
-    if prediction["status"] == "judged":
+    if prediction["status"] == "judged" and not pending_annotation:
         expected_presence = prediction["popup_present_pred"] is labels["popup_present_gt"]
     if evaluation["presence_correct"] is not expected_presence:
         errors.append(f"{prefix}: presence_correct does not match gold/prediction")
 
     expected_recall: float | None = None
-    if labels["popup_present_gt"] and prediction["status"] == "judged" and labels["critical_facts_gt"]:
+    if not pending_annotation and labels["popup_present_gt"] and prediction["status"] == "judged" and labels["critical_facts_gt"]:
         gold = {fact.casefold().strip() for fact in labels["critical_facts_gt"]}
         predicted = {fact.casefold().strip() for fact in prediction["critical_facts_pred"]}
         expected_recall = len(gold & predicted) / len(gold)
     if evaluation["critical_information_recall"] != expected_recall:
         errors.append(f"{prefix}: critical_information_recall is not reproducible from canonical facts")
 
-    if prediction["status"] == "abstain":
+    if prediction["status"] == "abstain" or pending_annotation:
         expected_vpma = None
     elif not labels["popup_present_gt"]:
         expected_vpma = expected_presence
@@ -416,6 +472,7 @@ def check_item(item: dict[str, Any], index: int) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     prefix = f"item[{index}]"
+    pending_annotation = item["message_judgment"]["labels"]["popup_present_gt"] is None
     errors.extend(check_message_judgment(item, index))
 
     observations = item["observations"]
@@ -463,7 +520,20 @@ def check_item(item: dict[str, Any], index: int) -> tuple[list[str], list[str]]:
     platform = item["environment"]["platform"]
     if platform == "android":
         if not any(obs["structured_representation"]["android_raw"] is not None for obs in observations):
-            errors.append(f"{prefix}: Android item has no Android raw structured observation")
+            explicitly_unavailable = (
+                pending_annotation
+                and item["capability_profile"]["structured_read_status"] == "failed"
+                and all(
+                    observation["structured_representation"]["available"] is False
+                    and observation["structured_representation"]["node_count"] == 0
+                    and observation["structured_representation"]["interactive_node_count"] == 0
+                    for observation in observations
+                )
+            )
+            if explicitly_unavailable:
+                warnings.append(f"{prefix}: Android structured capture is explicitly unavailable")
+            else:
+                errors.append(f"{prefix}: Android item has no Android raw structured observation")
         if item["assistive_technology"]["name"] != "talkback" and item["verification"]["metrics"]["A_VTR"] is not None:
             errors.append(f"{prefix}: Android A-VTR item does not use TalkBack")
     elif platform == "ios":
@@ -480,7 +550,9 @@ def check_item(item: dict[str, Any], index: int) -> tuple[list[str], list[str]]:
     scenario = item["scenario"]
     decision = item["decision"]
     if scenario["scope_label"] == "ordinary_low_risk_popup":
-        if scenario["unsafe_context_gt"] or scenario["safety_category_gt"] != "ordinary_exit":
+        if not pending_annotation and (
+            scenario["unsafe_context_gt"] or scenario["safety_category_gt"] != "ordinary_exit"
+        ):
             errors.append(f"{prefix}: ordinary scope conflicts with unsafe/sensitive ground truth")
         if not set(scenario["allowed_action_set_gt"]).issubset(LOW_RISK_ACTIONS):
             errors.append(f"{prefix}: ordinary scope contains a non-low-risk allowed action")

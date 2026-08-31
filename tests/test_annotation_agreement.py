@@ -267,8 +267,9 @@ class AgreementCliTests(unittest.TestCase):
             ]
 
         self.assertEqual(report["paired_items"], 6)
-        self.assertEqual(len(disagreements), 3)
+        self.assertEqual(len(disagreements), 6)
         by_id = {row["pilot_item_id"]: row for row in disagreements}
+        self.assertEqual(by_id["PMJ-PILOT-001"]["disagreement_reasons"], [])
         self.assertEqual(
             by_id["PMJ-PILOT-002"]["disagreement_reasons"],
             ["message_exact"],
@@ -281,6 +282,8 @@ class AgreementCliTests(unittest.TestCase):
             by_id["PMJ-PILOT-004"]["disagreement_reasons"],
             ["presence"],
         )
+        self.assertEqual(by_id["PMJ-PILOT-005"]["disagreement_reasons"], [])
+        self.assertEqual(by_id["PMJ-PILOT-006"]["disagreement_reasons"], [])
         for row in disagreements:
             self.assertEqual(row["record_status"], "ready")
             self.assertEqual(row["adjudication_status"], "pending")
