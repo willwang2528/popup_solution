@@ -382,7 +382,7 @@ def main() -> None:
         raise SystemExit("Unmapped source fields:\n" + "\n".join(unmapped))
 
     output = {
-        "schema_version": "1.0.0-provisional",
+        "schema_version": "1.1.0-provisional",
         "item_schema": "item.schema.json",
         "source_counts": {
             "literature_14": len(literature["fields"]),

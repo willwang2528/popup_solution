@@ -2,6 +2,7 @@
 
 > 目标人群：使用 TalkBack、VoiceOver 等屏幕阅读器的视障人士。
 > 状态：`provisional`；字段来源已限定在现有 PPT、项目内论文原文与本地筛选证据，尚未经过 Android/iOS capability probe。
+> v1 范围：主任务已降为弹窗存在性与消息判断；动作和 Recovery 字段作为文献并集与 advanced compatibility layer 保留。
 
 ## 1. 采集结论
 
@@ -88,7 +89,7 @@ abstained + handoff_reason
 
 PPT 中出现的动作策略包括：协议语义、确定性多步路径、词表/正则/类型规则、已知类型固定动作、语义相似度、视觉/VLM 判断、遍历/探索。它们需要保留为基线或 provenance，不能合成一个没有来源的标签。
 
-### 2.5 解除与恢复回证字段
+### 2.5 解除与恢复回证字段（advanced compatibility）
 
 ```text
 visual_popup_gone
@@ -107,7 +108,7 @@ cross_app_jump
 evidence_uris
 ```
 
-主回证分解为：
+这些字段不参与 v1 success；只在未来 `dismissal_recovery_advanced` profile 中按以下方式回证：
 
 ```text
 D = visual_popup_gone ∧ semantic_popup_gone
@@ -137,9 +138,24 @@ A-VTR = D ∧ C_a11y ∧ T
 
 iOS 列目前是待 capability probe 验证的工程候选。测试框架能读取的 XCUI/Appium page source 不等于 VoiceOver 实际焦点顺序或朗读内容。
 
-## 4. 面向视障人士必须新增的字段
+## 4. 面向视障人士的 v1 与进阶新增字段
 
-现有 14 篇论文没有系统覆盖以下变量，本数据集必须单独采集：
+v1 必须单独采集：
+
+```text
+popup_present_gt/pred
+message_text_gt/pred
+critical_facts_gt/pred
+message_text_observability
+structured_message_complete
+message_gap_reasons
+visual_fallback_used
+message_semantically_correct
+critical_hallucination
+VPMA
+```
+
+现有 14 篇论文也没有系统覆盖以下 advanced 变量；它们保留但不阻塞 v1：
 
 ```text
 assistive_technology
@@ -213,10 +229,10 @@ PPT 第 5 页的示例图存在来源混标：图中 DiOS 旧 UI Automation hier
 
 ## 8. 对我们方法的直接约束
 
-1. 门控条件必须检查语义、可执行性、owner/context、置信 margin、安全动作策略和时序一致性；不能只检查“树是否为空”。
-2. 视觉只在 actionability gap 出现时补全候选，并与结构化候选一起重新评分。
+1. v1 门控检查弹窗 scope、消息覆盖、owner/context、阅读顺序、关键事实、跨通道矛盾和时序一致性；不能只检查“树是否为空”。
+2. 视觉只在 message gap 出现时补全弹窗消息；不得生成或执行点击动作。
 3. 平台原始字段、presence mask 和 provenance 必须保留，不能声称无损跨平台统一 schema。
-4. 自动动作限于低风险退出语义；权限正向授权、支付、身份认证和破坏性动作必须 abstain。
-5. 成功必须同时验证弹窗解除、无障碍上下文恢复和原任务后置条件。
+4. v1 对不确定、敏感或不可观察内容必须 abstain。
+5. v1 成功由 `VPMA` 与分项指标定义；弹窗解除、无障碍上下文和原任务回证只属于 advanced profile。
 
 逐篇、可机器读取的来源记录见 [`papers.jsonl`](./papers.jsonl)；浏览摘要见 [`papers.csv`](./papers.csv)。

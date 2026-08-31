@@ -1,23 +1,23 @@
 {
   "identity": {
-    "schema_version": "1.0.0-provisional",
-    "item_id": "fixture.android.visual-close.0001",
+    "schema_version": "1.1.0-provisional",
+    "item_id": "fixture.android.popup-message.positive.0001",
     "record_kind": "synthetic_schema_fixture",
     "collection_status": "adjudicated",
     "split": "schema_fixture",
-    "scenario_group_id": "fixture.visual-close",
+    "scenario_group_id": "fixture.popup-message",
     "app_group_id": "fixture.example-app",
     "popup_template_group_id": "fixture.center-modal-x",
     "sdk_or_cmp_group_id": null,
     "os_family_group_id": "fixture.android",
-    "near_duplicate_group_id": "fixture.visual-close-variant-a",
+    "near_duplicate_group_id": "fixture.popup-message-positive-a",
     "randomization_seed": 1,
     "started_at": "2026-08-31T00:00:00Z",
     "ended_at": "2026-08-31T00:00:01Z"
   },
   "provenance": {
     "dataset_name": "Popup Episode Union Dataset",
-    "field_catalog_version": "1.0.0-provisional",
+    "field_catalog_version": "1.1.0-provisional",
     "paper_method_ids": [
       "whispertest_2025",
       "abandon_all_hope_2024",
@@ -43,7 +43,7 @@
       "collector": "schema-fixture",
       "model": "schema-fixture"
     },
-    "annotation_record_ids": ["ann.fixture.valid-close"],
+    "annotation_record_ids": ["ann.fixture.popup-message"],
     "episode_evidence_uris": [],
     "evidence_level": "synthetic_schema_fixture",
     "license_or_permission": "internal schema-validation fixture; no empirical content",
@@ -54,20 +54,13 @@
     ]
   },
   "scenario": {
-    "scenario_id": "fixture.visual-close",
+    "scenario_id": "fixture.popup-message",
     "target_population": "blind_and_low_vision_screen_reader_users",
-    "task_goal": "Activate the synthetic search control after a blocking fixture popup appears.",
-    "blocked_step": "Focus and activate the search control.",
+    "task_goal": "Determine and report the synthetic popup message without interacting with it.",
+    "blocked_step": "Read the popup message.",
     "trigger_action": "Open the fixture screen.",
-    "blocked_target_gt": {
-      "stable_id": "fixture.search",
-      "name": "Search",
-      "owner": "org.example.popupfixture"
-    },
-    "task_postcondition_gt": {
-      "predicate": "fixture.search_is_operable",
-      "expected": true
-    },
+    "blocked_target_gt": null,
+    "task_postcondition_gt": null,
     "scope_label": "ordinary_low_risk_popup",
     "popup_expected_gt": true,
     "popup_kind_gt": "promotional_modal",
@@ -137,13 +130,56 @@
   },
   "capability_profile": {
     "structured_read_status": "verified",
-    "action_execution_status": "verified",
+    "action_execution_status": "not_applicable",
     "screen_reader_focus_observability": "verified_fixture",
     "utterance_observability": "verified_fixture",
-    "technical_closed_loop_status": "verified",
-    "accessible_closed_loop_status": "verified",
+    "technical_closed_loop_status": "not_applicable",
+    "accessible_closed_loop_status": "not_applicable",
     "ios_field_status": "not_applicable",
     "evidence_refs": []
+  },
+  "message_judgment": {
+    "profile": "popup_message_judgment_v1",
+    "labels": {
+      "popup_present_gt": true,
+      "blocking_gt": true,
+      "message_text_gt": "Special offer. Ends today.",
+      "critical_facts_gt": ["special offer", "ends today"],
+      "message_text_observability": "complete",
+      "evidence_uris": []
+    },
+    "prediction": {
+      "status": "judged",
+      "popup_present_pred": true,
+      "message_text_pred": "Special offer. Ends today.",
+      "critical_facts_pred": ["special offer", "ends today"],
+      "confidence": 0.92,
+      "source_observation_id": "obs.popup",
+      "evidence_uris": [],
+      "model_or_rule_version": "mg-pu-schema-fixture-v1",
+      "latency_ms": 120
+    },
+    "gate": {
+      "structured_message_complete": false,
+      "gap_reasons": ["merged", "visual_only_text"],
+      "visual_fallback_used": true,
+      "visual_call_count": 1,
+      "tree_screenshot_synchronized": true
+    },
+    "evaluation": {
+      "presence_correct": true,
+      "message_semantically_correct": true,
+      "critical_information_recall": 1.0,
+      "critical_hallucination": false,
+      "VPMA": true
+    },
+    "eligibility": {
+      "eligible_for_v1_presence_metric": false,
+      "eligible_for_v1_message_metric": false,
+      "eligible_for_advanced_recovery_metric": false,
+      "eligible_for_user_experience_claim": false,
+      "exclusion_reasons": ["synthetic_schema_fixture"]
+    }
   },
   "observations": [
     {
@@ -236,10 +272,15 @@
             "text": "Special offer",
             "bbox": [0.25, 0.3, 0.75, 0.4],
             "confidence": 0.99
+          },
+          {
+            "text": "Ends today",
+            "bbox": [0.25, 0.42, 0.75, 0.5],
+            "confidence": 0.98
           }
         ],
         "vlm_output": {
-          "candidate": "top-right close icon"
+          "message_completion": "Ends today"
         },
         "model_name": "schema-fixture-model",
         "model_version": "fixture",
@@ -292,154 +333,6 @@
           "source_ref": "fixture-oracle",
           "collector_version": "fixture",
           "timestamp": "2026-08-31T00:00:00Z",
-          "notes": "Synthetic label"
-        }
-      }
-    },
-    {
-      "observation_id": "obs.after",
-      "phase": "post_action",
-      "timestamp": "2026-08-31T00:00:01Z",
-      "stable_after_ms": 500,
-      "artifacts": {
-        "screenshot": null,
-        "accessibility_tree": null,
-        "dom": null,
-        "protocol_trace": null,
-        "screen_reader_trace": null,
-        "device_log": null
-      },
-      "synchronization": {
-        "tree_screenshot_sync_status": "synchronized",
-        "capture_delta_ms": 0,
-        "ui_fingerprint": "fixture-host-restored",
-        "stale_or_tool_failure": false
-      },
-      "owner_context": {
-        "foreground_owner": "org.example.popupfixture",
-        "window_or_context": "FixtureActivity",
-        "activity_or_page": "FixtureActivity",
-        "native_or_web": "native",
-        "origin_or_frame": null,
-        "protocol_event": null,
-        "owner_known": true
-      },
-      "popup": {
-        "present_gt": false,
-        "present_pred": false,
-        "kind_gt": null,
-        "bbox_gt": null,
-        "owner_gt": null,
-        "modal_gt": false,
-        "blocking_gt": false,
-        "overlay_ratio": 0.0,
-        "dimming_ratio": 0.0
-      },
-      "structured_representation": {
-        "available": true,
-        "source_channels": ["uiautomator", "accessibility"],
-        "node_count": 8,
-        "interactive_node_count": 2,
-        "tree_diff_from_previous": 0.42,
-        "host_tree_diff": 0.0,
-        "state_signature": "fixture-host-restored",
-        "state_similarity": 1.0,
-        "traversal_state": {
-          "visit_count": 2
-        },
-        "transition_graph_uri": null,
-        "transition_stack": ["fixture-host"],
-        "replay_path": ["open_fixture", "close_popup"],
-        "android_raw": {
-          "package": "org.example.popupfixture",
-          "activity": "FixtureActivity",
-          "window_id": "fixture-window-1",
-          "window_type": "application",
-          "window_bounds": [0.0, 0.0, 1.0, 1.0],
-          "source_layer": "view",
-          "uiautomator_xml_uri": null,
-          "accessibility_actions_available": ["ACTION_CLICK"]
-        },
-        "ios_raw": null,
-        "dom_raw": null
-      },
-      "visual_representation": {
-        "recording_id": "fixture-recording",
-        "frame_id": "fixture-frame-after",
-        "sample_interval_ms": 100,
-        "histogram_similarity": 0.39,
-        "frame_gate_threshold": 0.8,
-        "image_hash_change": 0.66,
-        "ocr_jaccard": 0.4,
-        "screen_change_proxy": true,
-        "popup_prediction_stage1": 0.02,
-        "popup_prediction_stage2": 0.01,
-        "popup_detector_class": "content",
-        "popup_detector_confidence": 0.98,
-        "popup_bbox_pred": null,
-        "popup_roi": null,
-        "hsv_interval": null,
-        "shadow_mask_ratio": 0.0,
-        "shadow_threshold": 0.4,
-        "ocr_items": [
-          {
-            "text": "Search",
-            "bbox": [0.1, 0.1, 0.4, 0.2],
-            "confidence": 0.99
-          }
-        ],
-        "vlm_output": null,
-        "model_name": "schema-fixture-model",
-        "model_version": "fixture",
-        "prompt_version": "fixture"
-      },
-      "screen_reader_state": {
-        "focus_item_ref": "fixture.search",
-        "focus_path": ["root", "search"],
-        "focus_label": "Search",
-        "focus_order_uri": null,
-        "utterance_text": "Search, button",
-        "utterance_trace_uri": null,
-        "spoken_context": "host_task",
-        "navigation_step_count": 0,
-        "unexpected_focus_loss": false,
-        "observable_by": "fixture"
-      },
-      "literature_signals": {
-        "text_rule_match": false,
-        "matched_keywords": [],
-        "negation_flag": false,
-        "normalized_tokens": ["search"],
-        "tfidf_vector_uri": null,
-        "cluster_id": null,
-        "semantic_match_score": null,
-        "cmp_id": null,
-        "iabtcf_values": {},
-        "interface_similarity": 1.0,
-        "destination_state": "fixture-host-restored",
-        "state_transition": {
-          "from": "fixture-popup",
-          "to": "fixture-host-restored"
-        },
-        "command_recognized": true,
-        "app_stopped": false,
-        "network_state": null,
-        "persistent_business_choice": null,
-        "dialog_present_after_relaunch": null
-      },
-      "presence": {
-        "/artifacts/screenshot": "not_available",
-        "/artifacts/accessibility_tree": "not_available",
-        "/structured_representation/ios_raw": "not_applicable",
-        "/structured_representation/dom_raw": "not_applicable",
-        "/screen_reader_state/focus_label": "annotated"
-      },
-      "field_provenance": {
-        "/popup/present_gt": {
-          "source_kind": "schema_fixture",
-          "source_ref": "fixture-oracle",
-          "collector_version": "fixture",
-          "timestamp": "2026-08-31T00:00:01Z",
           "notes": "Synthetic label"
         }
       }
@@ -657,8 +550,8 @@
     }
   ],
   "decision": {
-    "method_id": "actionability_gap_gated_recovery",
-    "method_version": "0.1-provisional",
+    "method_id": "message_gap_gated_popup_understanding",
+    "method_version": "1.0-provisional",
     "method_family": "ours",
     "candidate_input_ids": ["cand.struct.merged", "cand.visual.close"],
     "gate": {
@@ -671,34 +564,34 @@
       "structured_sufficient": false,
       "owner_consistent": true,
       "action_executable": false,
-      "low_risk_policy_satisfied": true,
+      "low_risk_policy_satisfied": null,
       "capture_fresh_and_synchronized": true,
-      "gap_reasons": ["merged", "non_actionable"],
+      "gap_reasons": ["v1_message_only_no_action"],
       "visual_fallback_triggered": true,
-      "final_candidate_id": "cand.visual.close",
-      "final_score": 0.94,
-      "final_state": "visual_selected",
+      "final_candidate_id": null,
+      "final_score": null,
+      "final_state": "no_action",
       "scorer_version": "fixture",
       "calibration_version": "fixture"
     },
     "policy": {
-      "allowed_action_policy_version": "fixture-low-risk-v1",
-      "allowed_semantics": ["close", "cancel", "later", "skip", "acknowledge"],
-      "blocked_semantics": ["allow", "purchase", "install", "delete", "authenticate"],
-      "risk_class": "ordinary_exit",
-      "decision": "execute"
+      "allowed_action_policy_version": "v1-message-no-action",
+      "allowed_semantics": [],
+      "blocked_semantics": ["all_actions_in_v1"],
+      "risk_class": "read_only",
+      "decision": "no_action"
     },
     "selection": {
-      "action_semantics_pred": "close",
-      "target_candidate_id_pred": "cand.visual.close",
-      "execution_channel_pred": "coordinate_tap",
-      "confidence": 0.92,
+      "action_semantics_pred": null,
+      "target_candidate_id_pred": null,
+      "execution_channel_pred": null,
+      "confidence": null,
       "alternative_candidate_id": null
     },
     "visual_fallback": {
       "required": true,
       "used": true,
-      "trigger_reasons": ["merged", "non_actionable"],
+      "trigger_reasons": ["merged", "visual_only_text"],
       "call_count": 1,
       "latency_ms": 60,
       "estimated_cost": 0.0
@@ -710,82 +603,58 @@
       "user_message": null
     },
     "rationale_trace": [
-      "Structured candidate is merged and has no executable exit action.",
-      "Visual completion identifies a low-risk close target within the popup ROI."
+      "v1 produces a popup message and forbids all popup actions.",
+      "Message-specific visual completion is recorded under message_judgment.gate."
     ],
     "model_versions": {
       "scorer": "fixture",
       "visual": "fixture"
     }
   },
-  "action_attempts": [
-    {
-      "attempt_id": "attempt.0",
-      "attempt_index": 0,
-      "observation_before_id": "obs.popup",
-      "observation_after_id": "obs.after",
-      "action_semantics": "close",
-      "target_candidate_id": "cand.visual.close",
-      "execution_channel": "coordinate_tap",
-      "confidence": 0.92,
-      "rationale_trace": [
-        "Selected the only fixture-oracle low-risk exit candidate after visual completion."
-      ],
-      "selector_or_locator": null,
-      "coordinate": [0.85, 0.25],
-      "protocol_handler": null,
-      "command_delivered": true,
-      "command_recognized": true,
-      "execution_error": null,
-      "latency_ms": 25,
-      "retry_count": 0,
-      "post_action_wait_ms": 500,
-      "evidence_uris": []
-    }
-  ],
+  "action_attempts": [],
   "verification": {
     "weak_proxies": {
-      "coordinate_hit": true,
-      "command_delivered": true,
-      "screen_changed": true,
-      "tree_changed": true,
-      "interface_similarity": 1.0,
-      "destination_state_changed": true,
-      "app_stopped": false,
-      "network_state_changed": false
+      "coordinate_hit": null,
+      "command_delivered": null,
+      "screen_changed": null,
+      "tree_changed": null,
+      "interface_similarity": null,
+      "destination_state_changed": null,
+      "app_stopped": null,
+      "network_state_changed": null
     },
     "dismissal": {
-      "visual_popup_gone": true,
-      "semantic_popup_gone": true,
-      "D": true,
-      "observability": "full",
+      "visual_popup_gone": null,
+      "semantic_popup_gone": null,
+      "D": null,
+      "observability": "not_observable",
       "evidence_uris": []
     },
     "technical_context_recovery": {
-      "owner_after": "org.example.popupfixture",
-      "window_context_after": "FixtureActivity",
-      "owner_context_restored": true,
-      "blocked_target_visible": true,
-      "blocked_target_operable": true,
-      "C_tech": true,
+      "owner_after": null,
+      "window_context_after": null,
+      "owner_context_restored": null,
+      "blocked_target_visible": null,
+      "blocked_target_operable": null,
+      "C_tech": null,
       "evidence_uris": []
     },
     "accessible_context_recovery": {
-      "focus_before": "cand.struct.merged",
-      "focus_after": "fixture.search",
-      "focus_restored_to_blocked_target_or_successor": true,
-      "utterance_before": "Special offer",
-      "utterance_after": "Search, button",
-      "spoken_context_consistent": true,
-      "C_a11y": true,
-      "observability": "fixture",
+      "focus_before": null,
+      "focus_after": null,
+      "focus_restored_to_blocked_target_or_successor": null,
+      "utterance_before": null,
+      "utterance_after": null,
+      "spoken_context_consistent": null,
+      "C_a11y": null,
+      "observability": "not_observable",
       "target_user_validation": null,
       "evidence_uris": []
     },
     "task": {
-      "postcondition_verifiable": true,
-      "task_postcondition_satisfied": true,
-      "T": true,
+      "postcondition_verifiable": false,
+      "task_postcondition_satisfied": null,
+      "T": null,
       "evidence_uris": []
     },
     "persistence": {
@@ -797,28 +666,28 @@
     },
     "safety": {
       "sensitive_context_flags": [],
-      "safe_exit_exists_gt": true,
+      "safe_exit_exists_gt": null,
       "policy_violation": false,
       "false_intervention": false,
       "harmful_action": false,
       "wrong_action": false,
       "side_effect_detected": false,
       "cross_app_jump": false,
-      "task_abandonment": false,
+      "task_abandonment": null,
       "user_handoff_required": false,
-      "retry_budget": 1,
+      "retry_budget": 0,
       "retry_count": 0,
       "retry_exhausted": false
     },
     "metrics": {
-      "VTR_tech": true,
-      "A_VTR": true,
-      "recovery_time_ms": 585,
-      "extra_navigation_steps_after_dismissal": 0,
-      "action_attempt_count": 1,
+      "VTR_tech": null,
+      "A_VTR": null,
+      "recovery_time_ms": null,
+      "extra_navigation_steps_after_dismissal": null,
+      "action_attempt_count": 0,
       "visual_call_count": 1,
-      "total_latency_ms": 585,
-      "estimated_model_cost": 0.0
+      "total_latency_ms": null,
+      "estimated_model_cost": null
     },
     "eligibility": {
       "eligible_for_training": false,
@@ -829,29 +698,30 @@
   },
   "feedback": {
     "status": "success",
-    "message": "Fixture popup closed; focus returned to Search.",
+    "message": "Detected popup: Special offer. Ends today.",
     "handoff_options": [],
     "delivered": true
   },
   "observability": {
     "field_status": {
-      "/assistive_technology/focus_observability": "annotated",
-      "/verification/accessible_context_recovery": "annotated",
-      "/capability_profile/ios_field_status": "not_applicable"
+      "/message_judgment/labels/message_text_gt": "annotated",
+      "/message_judgment/prediction/message_text_pred": "derived",
+      "/verification/metrics/A_VTR": "not_applicable"
     },
     "measurement_channel": {
-      "/verification/accessible_context_recovery": "fixture_oracle",
-      "/verification/task": "fixture_oracle"
+      "/message_judgment/labels/message_text_gt": "fixture_oracle",
+      "/message_judgment/prediction/message_text_pred": "fixture_model",
+      "/verification/metrics/A_VTR": "not_applicable"
     }
   },
   "annotations": [
     {
-      "annotation_id": "ann.fixture.valid-close",
-      "target_json_pointer": "/candidates/1/ground_truth/is_valid_exit_target_gt",
+      "annotation_id": "ann.fixture.popup-message",
+      "target_json_pointer": "/message_judgment/labels/message_text_gt",
       "annotator_id_pseudonymous": "fixture-oracle",
       "annotator_role": "fixture_oracle",
-      "label_name": "is_valid_exit_target_gt",
-      "label_value": true,
+      "label_name": "message_text_gt",
+      "label_value": "Special offer. Ends today.",
       "confidence": 1.0,
       "evidence_uris": [],
       "adjudication_status": "not_required",
@@ -872,6 +742,7 @@
     "review_status": "provisional",
     "review_notes": [
       "Schema fixture only; all apparent measurements are synthetic.",
+      "v1 fixture performs no action; recovery fields are not applicable.",
       "Must never enter empirical train/validation/test metrics."
     ]
   }

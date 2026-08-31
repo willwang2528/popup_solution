@@ -1,368 +1,212 @@
-# Actionability-Gap-Gated Recovery：方法规格 v0.1
+# Message-Gap-Gated Popup Understanding：方法规格 v1.0-provisional
 
-> 目标人群：使用 TalkBack、VoiceOver 等屏幕阅读器操作移动设备的视障人士，主要包括盲人和低视力用户。
-> 状态：`provisional`；这是可实现规格，不是实验结果或跨模型验收结论。
+> 任务 profile：`popup_message_judgment_v1`
+> 方法简称：MG-PU
+> 范围：只读判断和消息生成；不执行弹窗动作
+> 进阶兼容：既有 Actionability-Gap-Gated Recovery 字段保留，但不参与 v1 成功判断
 
-## 0. 证据输入
+## 1. 研究主张
 
-- 现有 PPT 的 14 篇论文已逐篇采集到 [`../data-collection/papers.jsonl`](../data-collection/papers.jsonl)。
-- 按“发现—真实动作—弹窗特异动作后回证”边界，6 篇进入 core experimental seed，8 篇只作为 schema/method reference。
-- 严格 6 篇没有 iOS 闭环；iOS 字段必须经过真实 capability probe 后才能冻结。
-- 14 篇均未把 TalkBack/VoiceOver 焦点、朗读和视障用户原任务恢复作为主要评测，因此 `C_a11y` 是本研究必须新增、不能从旧指标替代的回证层。
-- 字段并集、平台映射及 PPT 第 5 页来源混标警告见 [`../data-collection/FIELD_UNION.md`](../data-collection/FIELD_UNION.md)。
+当移动端结构化 UI／可访问性表示无法完整、无歧义地表达弹窗消息时，MG-PU 通过一个可审计的 message-sufficiency gate 按需调用弹窗区域视觉信息，并融合各通道证据，输出弹窗存在性、可读消息和关键事实；证据仍不足时安全弃答。
 
-## 1. 唯一主张
+v1 不主张自动消除弹窗，也不主张恢复屏幕阅读器焦点、原页面或被阻断任务。
 
-当结构化可访问性表示无法提供**语义明确、可执行、属于正确 owner/context 的低风险退出路径**时，系统才按需调用视觉补全动作候选；成功必须通过面向视障用户上下文的 `D ∧ C_a11y ∧ T` 回证。
+## 2. 输入与输出
 
-方法的贡献不是“结构化 UI＋视觉”，而是：
+### 2.1 输入
 
-1. 识别非空但不可操作的 accessibility actionability gap；
-2. 用同一个候选评分器决定“直接走结构化动作、调用视觉、还是 abstain”；
-3. 把屏幕阅读器焦点恢复纳入任务恢复证书。
+- 同一稳定 UI 状态下尽量同步的 screenshot；
+- Android accessibility/UI hierarchy、iOS XCTest/XCUI snapshot、移动 Web DOM 等平台原始结构；
+- 规范化的 owner/context、role/class、name/label/text/value/hint、层级、可见性与几何；
+- 可获得时的 TalkBack／VoiceOver focus/utterance 观察；
+- 每个字段的 presence status、provenance、时间戳和同步状态。
 
-## 2. 边界
+所有方法在同一个冻结 observation 上运行。不得使用点击后的截图、树或人工真值作为输入。
 
-### 自动处理范围
+### 2.2 输出
+
+```json
+{
+  "status": "judged",
+  "popup_present_pred": true,
+  "message_text_pred": "Special offer. Ends today.",
+  "critical_facts_pred": ["offer", "ends today"],
+  "confidence": 0.92,
+  "structured_message_complete": false,
+  "visual_fallback_used": true,
+  "source_observation_id": "obs.popup",
+  "evidence_uris": [],
+  "model_or_rule_version": "mg-pu-v1",
+  "latency_ms": 120
+}
+```
+
+`status` 只能是 `judged` 或 `abstain`。弃答时不得输出臆测消息。
+
+## 3. 安全与任务不变量
+
+1. `action_attempts=[]`。
+2. 决策必须是 `no_action` 或 `abstain`，不能是 `execute`。
+3. 不输出或调用 tap coordinate、element action、protocol handler、Back、外部跳转或业务 API。
+4. Dismissal、`C_tech`、`C_a11y`、`T`、`VTR-tech`、`A-VTR` 在 v1 中为 `null/not_applicable`。
+5. CAPTCHA、风控、身份认证、支付、权限安全控制等样本不进入主数据；若被观察到，只允许 `abstain/out_of_scope`。
+
+## 4. 方法模块
+
+### M1 Observation Synchronizer
+
+冻结一个动作前 UI 状态，记录树与截图时间戳、UI fingerprint、foreground owner、window/context 和采集错误。超过预设同步窗口或 fingerprint 不一致时标为 `stale`，不能静默融合。
+
+### M2 Cross-platform Normalizer
+
+保留原始平台字段，同时映射到公共层：
 
 ```text
-close
-cancel
-later
-skip
-acknowledge
-back（仅在已知不会退出原任务时）
-outside_tap（仅在已验证语义下）
+owner/context
+role_or_class
+name_or_text
+value_or_hint
+visible/focusable/enabled
+bounds + hierarchy + reading order
 ```
 
-### 必须 abstain / handoff
+规范化不允许删除否定词、金额、日期、单位、对象、动作后果或按钮文案。
+
+### M3 Popup Detector
+
+基于 window/owner/layer、modal 属性、层级隔离、bounds/overlay、文本聚类和可选视觉检测给出 `popup_present_pred`。结构证据不足时可以请求视觉 detector；无弹窗负样本必须用完整、稳定上下文确认，不能把“树中没找到”直接当成 no-popup。
+
+### M4 Structured Message Reconstructor
+
+在候选 popup scope 内按可访问阅读顺序重建：
+
+- title；
+- body；
+- list/option 文本；
+- 关键金额、时间、对象、限制与后果；
+- 有助于理解的按钮文案，但不据此执行动作。
+
+记录每个片段的 source node、原始字段和 provenance。宿主页面候选必须被 owner/context、layer 或 ROI 约束排除。
+
+### M5 Message Sufficiency Gate
+
+门控输出 `structured_message_complete`、缺口原因和置信度。结构化消息只有同时满足以下条件才可直接输出：
+
+- 弹窗 scope 与 owner/context 可识别；
+- 至少有非空主体消息，或明示该弹窗只有标题／图形；
+- 标题、正文和关键事实没有明显截断；
+- 结构内阅读顺序可解释；
+- 没有树—图不同步或跨通道矛盾；
+- 不存在关键图像文本只在 screenshot 中可见的证据。
+
+缺口枚举：`missing`、`merged`、`ambiguous`、`contradictory`、`stale`、`owner_mismatch`、`visual_only_text`、`unknown`。
+
+不得把 gate 简化为“树为空才调用视觉”。
+
+### M6 Visual Message Completer
+
+只在 gate 触发时处理 popup ROI：OCR、layout reading order、图标／警告语义和必要的 VLM transcription。视觉模块只能提出带证据定位的文本／关键事实候选，不能提出或执行点击动作。
+
+使用 frozen model、prompt、OCR version 和 decoding configuration。记录 visual call count、latency、cost 与每条候选的 confidence。
+
+### M7 Evidence Aligner and Message Composer
+
+对齐结构节点、OCR span 和视觉候选：
+
+1. 去重但保留原始文本；
+2. 对金额、日期、否定、对象和后果采用严格冲突检测；
+3. 通道一致时按可访问阅读顺序合成；
+4. 关键冲突无法解决时弃答，不多数投票臆断；
+5. 输出可读纯文本、关键事实列表和逐片段 evidence URI。
+
+### M8 Confidence and Abstention
+
+置信度应校准为“存在性与消息均可靠”的选择性风险，而不是模型 token probability。以下任一情况触发弃答或降覆盖：
+
+- popup scope 不确定；
+- 截图或结构不可读／过期；
+- 关键金额、时间、对象或否定发生冲突；
+- 关键消息仍不可观察；
+- 样本在安全边界之外。
+
+## 5. 训练与开发
+
+- 先以规则和冻结模型建立无训练 baseline，避免把通用 VLM 能力冒充方法贡献。
+- 若训练 gate，只使用 training split，特征必须来自动作前 observation。
+- App、popup template、SDK/CMP、UI framework、OS family 与 near-duplicate group 不得跨 split。
+- 校准阈值只在 validation split 冻结。
+- 人工树腐蚀只做压力测试，不能替代真实暴露缺口。
+
+## 6. 真值与标注
+
+v1 最小真值：
+
+- `popup_present_gt`；
+- `message_text_gt`；
+- `critical_facts_gt[]`；
+- `message_text_observability`；
+- 每条真值的 evidence URI。
+
+正样本消息按屏幕可观察内容和合理阅读顺序转录，不补写应用意图。正式 validation/test 由两名标注者盲法独立标注并裁决。`message_semantically_correct` 与 `critical_hallucination` 由独立裁决得到；字符串 Exact Match／Character F1 只作辅助。
+
+## 7. 指标
+
+### 7.1 主指标
 
 ```text
-CAPTCHA / 风控
-PIN / 生物识别 / 身份认证
-支付 / 安装 / 删除 / 设备管理
-隐私或权限的正向授权
-语义未知或没有安全退出路径的弹窗
+positive popup: VPMA = presence_correct
+                       AND message_semantically_correct
+                       AND NOT critical_hallucination
+
+no-popup:       VPMA = presence_correct
 ```
 
-## 3. 输入与输出
+Abstain 不能当作正确 no-popup。主结果同时给出 `VPMA` 与 coverage，防止通过大量弃答提高条件准确率。
 
-### 输入
+### 7.2 分项指标
 
-```yaml
-task_context:
-  goal:
-  blocked_step:
-  blocked_target:
-  allowed_action_policy:
-platform_context:
-  platform:
-  foreground_owner:
-  window_or_context:
-  assistive_technology:
-  screen_reader_focus_before:
-structured_observation:
-  protocol_event:
-  raw_tree:
-  normalized_candidates: []
-visual_observation:
-  screenshot:
-  popup_roi:
-```
+- Popup Presence precision／recall／Macro-F1；
+- Message Semantic Correctness；
+- Message Exact Match 与 Character F1；
+- Critical Information Recall；
+- Critical Hallucination Rate；
+- Coverage／Abstention；
+- Visual Fallback Rate；
+- p50/p95 latency 与模型成本。
 
-视觉输入默认不进入主路径，只有门控触发后才使用。
+所有指标按 platform、owner、popup kind、exposure gap、locale、UI framework 和 message complexity 分组，并报告置信区间。
 
-### 输出
+## 8. Baseline 与消融
 
-```yaml
-decision:
-  action_semantics:
-  target_candidate_id:
-  execution_channel:
-  confidence:
-  gap_reasons: []
-  visual_fallback_used:
-  abstain:
-  rationale_trace:
-verification:
-  dismissal:
-  accessible_context_recovery:
-  task_postcondition:
-  accessible_verified_task_recovery:
-```
+Baselines：structure-only、OCR-only、screenshot-only VLM、always-on structure+vision、MG-PU、human-readable-message oracle。
 
-## 4. 统一候选表示
+Ablations：no vision、always vision、empty-tree-only gate、no owner/context、no sync check、no contradiction check、no critical-fact constraint。
 
-每个协议、结构化或视觉候选都映射到 `UnifiedActionCandidate`：
+比较必须使用完全相同的冻结 observation、split 和预算。任何 baseline 也不得执行点击。
 
-```yaml
-candidate_id:
-source_channel: protocol | accessibility | uiautomator | xcui | dom | ocr | detector | vlm
-owner:
-window_or_context:
-role_or_class:
-name_or_text:
-value_or_hint:
-stable_id:
-supported_actions: []
-enabled:
-clickable:
-hittable:
-visible:
-focusable:
-bounds:
-hierarchy_path:
-field_presence_mask: {}
-field_provenance: {}
-raw_ref:
-```
+## 9. 错误分类
 
-平台原始字段必须保留；统一候选只是决策层投影，不替代 Android/iOS/DOM 原始结构。
+- presence false negative／false notification；
+- popup/host text contamination；
+- missing title/body；
+- wrong reading order；
+- dropped negation；
+- wrong amount/date/object/condition；
+- critical hallucination；
+- stale cross-channel fusion；
+- unnecessary visual call；
+- avoidable abstention。
 
-## 5. 系统模块
+## 10. 进阶 Recovery 层
 
-```text
-M1 Observation Collector
-        ↓
-M2 Platform Normalizer
-        ↓
-M3 Shared Actionability Scorer / Gate
-   ├─ sufficient → structured/protocol candidate
-   ├─ gap        → M4 Selective Visual Completer → rescore
-   └─ unsafe     → abstain
-        ↓
-M5 Low-risk Policy + Executor
-        ↓
-M6 Accessible Recovery Verifier
-        ↓
-M7 Screen-reader Feedback Adapter
-```
+后续可以在独立 `dismissal_recovery_advanced` profile 中研究动作执行和 `D ∧ C_tech/C_a11y ∧ T`。该 profile 需要新的权限、风险策略、动作后观察和回证，不得将 v1 item 回填后伪装为独立 episode，也不得用 `VPMA` 推导 Recovery 成功。
 
-只有 M3 是计划训练的新组件。M1、M2、M4、M5、M6、M7 复用平台接口、冻结模型或确定性契约，不分别包装成论文创新点。
+## 11. Kill criteria
 
-### M1 Observation Collector
-
-并行采集：
-
-- protocol/alert event；
-- foreground owner、window/context；
-- Android UIAutomator/Accessibility 或 iOS XCUI accessibility hierarchy；
-- TalkBack/VoiceOver 配置与可获得的焦点状态；
-- 时间同步的 screenshot。
-
-若 tree 与 screenshot 时间戳或 UI fingerprint 不一致，标 `stale_or_tool_failure`，不把它归为平台暴露缺陷。
-
-### M2 Platform Normalizer
-
-执行两层映射：
-
-```text
-platform raw fields
-    → common semantic fields
-    + presence mask
-    + provenance
-```
-
-它不能丢弃平台原始树，也不能把 Android `button/text` 与 iOS `label/type` 强行视为同一原始属性。
-
-### M3 Shared Actionability Scorer / Gate
-
-给任务上下文 (q) 和候选 (c_i)，评分：
-
-\[
-s_i=f_\phi(q,\ owner_i,\ semantics_i,\ actions_i,\ state_i,\ geometry_i,\ presence_i,\ provenance_i)
-\]
-
-结构化路径充分的必要条件：
-
-```text
-max(s_i) ≥ τ
-∧ top1 - top2 ≥ δ
-∧ owner/context known and consistent
-∧ action supported and executable
-∧ action belongs to low-risk policy
-∧ tree/screenshot not stale
-```
-
-任一条件失败即产生 `gap_reasons`，触发视觉或 abstain。
-
-门控必须识别：
-
-- `not_separately_exposed`；
-- `merged`；
-- `ambiguous`；
-- `non_actionable`；
-- `owner_mismatch`；
-- `stale_or_tool_failure`；
-- 多候选低 margin；
-- 与安全动作白名单冲突。
-
-若只实现“树为空则调用 VLM”，该方法不满足本规格。
-
-### M4 Selective Visual Completer
-
-仅在门控触发时：
-
-1. 确定 popup ROI；
-2. OCR 提取文本与 bbox；
-3. detector/VLM 生成候选控件、语义和坐标；
-4. 将视觉候选映射回 `UnifiedActionCandidate`；
-5. 与结构化候选一起重新评分。
-
-VLM 冻结使用；它只负责候选生成与语义补全，不直接决定敏感动作，也不单独宣告成功。
-
-### M5 Low-risk Policy + Executor
-
-执行通道优先级：
-
-```text
-protocol dismiss/cancel callback
-> structured element action
-> platform watcher action
-> grounded coordinate tap
-> verified Back/outside tap
-```
-
-本研究自动动作策略优先：`close/cancel/later/skip/acknowledge`。正向授权、同意条款、购买和破坏性动作不进入自主执行集合。
-
-### M6 Accessible Recovery Verifier
-
-#### D — Dismissal
-
-```text
-visual popup marker gone
-∧ semantic popup node/window gone
-```
-
-#### C_a11y — Accessible context recovery
-
-```text
-owner/context restored
-∧ blocked target visible and operable
-∧ screen-reader focus restored to the original target or a valid successor
-∧ next spoken context is consistent with the resumed task（若平台可观测）
-```
-
-#### T — Task postcondition
-
-```text
-original task business postcondition satisfied
-```
-
-主指标：
-
-\[
-\mathrm{A\text{-}VTR}=P(D \land C_{a11y} \land T)
-\]
-
-若平台暂时无法机器读取屏幕阅读器焦点，必须同时报告：
-
-- `VTR-tech = D ∧ owner/context restored ∧ target operable ∧ T`；
-- `A-VTR` 的可观测子集或真实用户验证结果；
-- 不得用 `VTR-tech` 冒充视障用户体验恢复。
-
-### M7 Screen-reader Feedback Adapter
-
-成功后向视障用户提供最小、非打扰式反馈，例如：
-
-```text
-“弹窗已关闭，已返回「搜索按钮」。”
-```
-
-失败或 abstain 时说明原因和可选人工动作。该模块是产品与实验契约，不是新的训练贡献。
-
-## 6. 训练设置
-
-### 标注
-
-- 正样本：任务条件下可接受的低风险退出动作集合；允许多答案。
-- hard negatives：宿主页面控件、广告素材中的伪关闭符号、正向授权按钮、错误 owner 候选、不可执行合并节点。
-- abstain：未知语义、高风险动作、owner 不确定或全部候选低置信。
-
-### 损失
-
-\[
-L=L_{rank}+\lambda_1L_{abstain}+\lambda_2L_{calibration}
-\]
-
-- `L_rank`：同一 episode 内正负候选 pairwise/listwise ranking；
-- `L_abstain`：是否应自动执行的二分类损失；
-- `L_calibration`：Brier loss 或训练后 temperature scaling，使阈值可解释。
-
-### 训练阶段
-
-1. **Stage 0**：确定性 rule scorer，建立可复现 tree-only baseline。
-2. **Stage 1**：只训练结构化候选 scorer，冻结阈值与 calibration protocol。
-3. **Stage 2**：加入 gap episode 的视觉候选，但保持 OCR/VLM backbone 冻结。
-4. **Stage 3**：在 App、模板、SDK 和 OS 隔离 split 上冻结 τ、δ 与 action policy。
-
-## 7. 推理伪代码
-
-```text
-observe task, owner/context, tree, screenshot, screen-reader state
-candidates = normalize(protocol + structured candidates)
-scores = scorer(task, candidates)
-
-if unsafe_context or no_low_risk_policy:
-    return abstain
-
-if structured_is_sufficient(scores, τ, δ, owner, actionability):
-    decision = top_structured_candidate
-else:
-    visual_candidates = visual_complete(popup_roi)
-    candidates = merge(candidates, visual_candidates)
-    decision = rescore_or_abstain(candidates)
-
-execute(decision)
-result = verify_D_Ca11y_T()
-
-if result fails and one preregistered alternative exists:
-    reobserve and try once
-else if result fails:
-    abstain_and_handoff()
-
-announce_result_to_screen_reader()
-```
-
-## 8. 核心基线与消融
-
-### 基线
-
-- no handler；
-- protocol/watcher；
-- tree-only rule/model；
-- screenshot-only VLM；
-- always-on tree+vision fusion；
-- 通用移动 GUI Agent；
-- oracle locator/action。
-
-### 必须消融
-
-- no vision；
-- always vision / no gate；
-- empty-tree-only gate；
-- no owner consistency；
-- no abstain；
-- D-only verification；
-- no screen-reader focus check；
-- visual-change-only verification。
-
-## 9. 首轮实现顺序
-
-1. 完成 PPT 14 篇论文的字段采集与 evidence matrix。
-2. 冻结 `UnifiedActionCandidate` 和 episode schema。
-3. 构建 Android/iOS capability probe，验证哪些字段真实可采。
-4. 做 rule-based tree-only 与 always-on vision 两个 baseline。
-5. 实现 shared scorer/gate。
-6. 先跑小规模 feasibility pilot，再决定 N、训练规模和用户研究。
-
-## 10. 停止条件
-
-- tree-only 与本方法 A-VTR/VTR-tech 置信区间重叠且成本更低；
-- always-on fusion 等预算下稳定优于门控；
-- App/模板隔离后增益消失；
-- iOS 无法获得合法的执行与 `C_a11y` 回证路径；
-- 屏幕阅读器焦点恢复无法测量且没有真实视障用户评估；
-- 出现敏感、破坏性或错误 owner 的自动动作。
-
-任一条件成立时，缩小论文主张或停止对应路线，不用扩大模型掩盖问题。
+- MG-PU 与 structure-only 的 VPMA 置信区间重叠且成本更高；
+- always-on 在等预算下稳定优于 gate；
+- 真实缺口子集太小，收益只来自人工腐蚀；
+- 分组隔离后增益消失；
+- VPMA 增益伴随更高 critical hallucination 或不可接受的 coverage 降低；
+- iOS 无真实设备观察却试图声称跨平台；
+- 无目标用户研究却试图声称体验改善。

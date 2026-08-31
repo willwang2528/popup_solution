@@ -1,5 +1,6 @@
 {
-  "schema_version": "1.0.0-provisional",
+  "schema_version": "1.1.0-provisional",
+  "profile_scope": "Union/advanced compatibility coverage; v1 message QA coverage is recorded separately in v1_message_qa_rules.json.",
   "qa_contract_version": "0.1.0-provisional",
   "status": "explicit_conservative_coverage_map",
   "classification_semantics": {

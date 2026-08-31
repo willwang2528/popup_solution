@@ -1,12 +1,13 @@
 {
-  "schema_version": "1.0.0-provisional",
-  "unit": "one_popup_episode",
-  "contract": "Each item uses schema/item.schema.json; source field paths are retained for audit while the canonical item groups them by scenario, environment, observations, candidates, decision, attempts, verification, feedback, observability, annotations and quality.",
+  "schema_version": "1.1.0-provisional",
+  "unit": "one_popup_observation_item",
+  "contract": "The frozen 90+165 source-field union remains auditable. Current items also require the separately counted popup_message_judgment_v1 protocol extension; action and recovery source fields are nullable advanced compatibility fields.",
   "counts": {
     "literature_atomic_fields": 90,
     "our_method_atomic_fields": 165,
     "source_records_total": 255
   },
+  "v1_profile_extension_fields": "separately_counted_not_source_attributed",
   "literature_contract": {
     "requiredness": {
       "required": "Every final dataset item should carry the field.",

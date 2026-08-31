@@ -1,76 +1,61 @@
-# Popup Episode Union Dataset v1
+# Popup Episode Union Dataset v1：弹窗消息判断 Profile
 
-> 状态：`union-contract-complete / schema-provisional / empirical-data-pending`。90 个论文原子字段与 165 个我方方法字段已全部建立 crosswalk；正式 schema 仍需 Android/iOS capability pilot 后冻结。当前唯一 item 是不进入实验统计的 synthetic schema fixture，没有把虚构值表述为真实设备观测。
+当前数据 contract 的主任务是 `popup_message_judgment_v1`：给定移动端动作前 observation，判断是否存在弹窗，并输出可读消息或弃答。v1 不执行点击或关闭。
 
-## 一句话定义
+## 并集与扩展
 
-一个 `item` 是一次完整的移动端弹窗恢复 episode：
+- 14 篇既有论文：90 个原子字段；
+- 我方既有方法：165 个原子字段；
+- `source_to_item_crosswalk.json`：255/255 条映射；
+- `message_judgment`：为当前 v1 新增、单独计数的 profile 协议字段。
+
+保留动作、D/C/T、VTR-tech、A-VTR 是为了文献兼容和后续 advanced profile；它们在 v1 中必须为 `null/not_applicable`，不是主指标。
+
+## v1 item
 
 ```text
-原任务状态 → 弹窗触发 → 结构化与视觉观察 → 候选与门控 → 动作执行 → D / C_a11y / T 回证
+identity + provenance + scenario + environment
+→ one or more action-free observations
+→ cross-platform structured/raw/visual evidence
+→ message_judgment labels/prediction/gate/evaluation/eligibility
+→ feedback notification
+→ no action
 ```
 
-每个 item 同时容纳：
+必须满足：
 
-1. PPT 14 篇既有论文实际使用过的结构化、视觉、上下文、动作和弱/强回证字段并集；
-2. 我们 `Actionability-Gap-Gated Recovery` 方法新增的 actionability gap、owner、安全策略、按需视觉、abstain 和无障碍恢复字段；
-3. Android、iOS、移动 Web 的平台原始字段，以及跨平台规范字段；
-4. `presence` 与 `provenance`，用于表达字段不存在、不可观测、不适用、采集失败或人工标注，避免用 `null` 混淆不同原因。
+- `action_attempts=[]`；
+- 决策为 `no_action` 或 `abstain`；
+- prediction 引用动作前 observation；
+- popup/message gold 与 evidence 一致；
+- v1 D/C/T/VTR 均为 null；
+- synthetic fixture 不进入训练、经验指标或体验结论。
+
+## 主指标
+
+`VPMA` 在正样本要求 presence 正确、消息语义正确、没有关键编造；在负样本只要求 presence 正确。Abstain 的 VPMA 为 null，并必须与 coverage 一起报告。
+
+配套指标：Popup Presence Macro-F1、message semantic correctness、Exact Match、Character F1、critical-information recall、critical-hallucination rate、abstention/coverage、visual-call rate 与 latency。
 
 ## 文件
 
-- `DATASET_MANIFEST.json`：字段、cohort、item 数、验证状态与 `N` 冻结条件。
-- `schema/item.schema.json`：一个 episode item 的 provisional 结构契约。
-- `schema/field_catalog.json`：字段来源、类型、阶段、证据等级及必填策略。
-- `schema/source_to_item_crosswalk.json`：`90 + 165 = 255` 个源字段到 canonical item JSON Pointer 的无遗漏映射。
-- `schema/qa_rules.json`：23 个 item 门、6 个 dataset 门与三值逻辑公式的完整契约。
-- `schema/qa_implementation_coverage.json`：逐门记录当前验证器的全自动、部分自动与人工/发布时覆盖范围。
-- `data/item.template.json`：采集时复制的全字段模板。
-- `data/items.schema-fixture.jsonl`：一个只用于测试 schema 的合成 fixture，不进入训练或评测。
-- `provenance/paper_method_coverage.json`：14 篇论文到字段/方法阶段的映射。
-- `DATASET_CARD.md`：范围、采样、切分、隐私与发布边界。
-- `ANNOTATION_GUIDE.md`：标注和裁决规则。
-- `scripts/validate_dataset.py`：零第三方依赖的结构与已实现关键逻辑验证器；其 `pass` 不等于 29 门全部自动通过。
-- `scripts/materialize_schema_fixture.py`：生成带完整 presence/provenance 的非实测 fixture。
-- `VALIDATION_REPORT.md`：本轮验证结果。
+- [`schema/item.schema.json`](./schema/item.schema.json)：v1 profile-aware 单 item schema；
+- [`schema/v1_message_qa_rules.json`](./schema/v1_message_qa_rules.json)：6 个 v1 QA gate；
+- [`schema/source_to_item_crosswalk.json`](./schema/source_to_item_crosswalk.json)：冻结的 255 条来源映射；
+- [`data/item.template.json`](./data/item.template.json)：positive v1 模板；
+- [`data/items.schema-fixture.jsonl`](./data/items.schema-fixture.jsonl)：positive、no-popup、abstain 三条 synthetic fixture；
+- [`scripts/materialize_schema_fixture.py`](./scripts/materialize_schema_fixture.py)：fixture 生成器；
+- [`scripts/validate_dataset.py`](./scripts/validate_dataset.py)：验证器；
+- [`ANNOTATION_GUIDE.md`](./ANNOTATION_GUIDE.md)：v1 标注协议；
+- [`VALIDATION_REPORT_V1_MESSAGE.md`](./VALIDATION_REPORT_V1_MESSAGE.md)：当前验证报告。
 
-## item 的强制层次
+## 运行
 
-```text
-identity
-provenance
-scenario
-environment
-assistive_technology
-capability_profile
-observations[]
-candidates[]
-decision
-action_attempts[]
-verification
-feedback
-observability
-annotations[]
-quality
+在项目根目录用 canonical Python：
+
+```bash
+.venv/bin/python3 popup-solution/dataset-v1/scripts/materialize_schema_fixture.py
+.venv/bin/python3 popup-solution/dataset-v1/scripts/validate_dataset.py
 ```
 
-所有层次必须出现。平台不适用或当前不可观测的字段也保留键，并在局部 `presence` 与 episode 级 `observability.field_status` 中说明原因。
-
-## 统计边界
-
-- `record_kind=synthetic_schema_fixture` 的 item 永远不得进入训练、验证、测试或论文指标。
-- 主评测只允许 `record_kind=real_app` 或预注册的 `controlled_fixture`。
-- 同一 scenario、App/package、弹窗模板族、CMP/SDK 和近重复视觉不得跨 split。
-- 一张截图或一个 frame 不是独立样本；episode 是最小统计单元。
-- `A-VTR` 只有在 `D ∧ C_a11y ∧ T` 均有可接受证据时成立；`VTR-tech` 不得替代视障用户恢复结论。
-
-## QA 覆盖边界
-
-当前 29 个契约门中，5 个已完整自动化、17 个部分自动化、7 个必须由独立人工或发布流程检查。验证器的 `pass` 只表示 schema 形状和已编码断言通过；不会证明 artifact 授权、双人标注/裁决、伦理同意、发布分层或 release disposition 已通过。
-
-## 当前不能声称
-
-- 当前 fixture 不是公开实测 benchmark；
-- iOS 字段是待 capability probe 验证的工程候选，不代表 VoiceOver 可实际读取全部字段；
-- 没有真实设备 episode 与目标用户研究时，不能声称方法改善了视障人士体验；
-- 不能把坐标命中、命令送达、截图变化或单独的弹窗消失写成完整任务恢复。
+当前 `pass` 只表示 synthetic fixtures 通过已实现断言；真实 Android/iOS 数据集和目标用户证据仍未产生。

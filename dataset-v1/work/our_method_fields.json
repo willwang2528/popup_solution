@@ -1,8 +1,10 @@
 {
   "schema_version": "0.1.0",
   "status": "provisional_method_field_catalog",
-  "unit": "one_popup_episode",
-  "method": "Actionability-Gap-Gated Recovery",
+  "unit": "one_source_field_union_record",
+  "method": "legacy Actionability-Gap-Gated Recovery field union retained for advanced compatibility",
+  "current_profile": "popup_message_judgment_v1",
+  "v1_profile_policy": "The 165 source fields remain frozen for provenance. Requiredness statements for action and recovery apply only to dismissal_recovery_advanced; v1 protocol fields are separately counted in item.schema.json/message_judgment.",
   "target_population": "blind_and_low_vision_screen_reader_users",
   "source_documents": [
     "popup-solution/method/METHOD_SPEC.md",
@@ -10,7 +12,7 @@
     "popup-solution/RESEARCH_BRIEF.md"
   ],
   "requiredness_legend": {
-    "required": "Every episode record must carry the field.",
+    "required": "Every advanced recovery episode must carry the field; v1 message items use explicit null/not_applicable where the union container remains required.",
     "required_if": "Required when the condition written after the colon is true.",
     "required_if_observable": "Required only after the target-device capability probe establishes observability.",
     "recommended": "Not needed to parse the record, but needed for the planned analysis or reproducibility."

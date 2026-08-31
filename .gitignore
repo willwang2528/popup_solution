@@ -6,4 +6,5 @@ RESEARCH_BRIEF_*.md
 DATASET_SCHEMA_*.md
 method/METHOD_SPEC_*.md
 refine-logs/FINAL_PROPOSAL_*.md
+refine-logs/REFINEMENT_REPORT_*.md
 refine-logs/REFINE_STATE_*.json

@@ -1,60 +1,70 @@
-# Refinement Report
+# Refinement Report：v1 弹窗消息判断
 
-**Problem**：无障碍辅助技术场景下，结构化可访问性表示不完整或不一致时的移动弹窗恢复
-**Initial approach**：结构化 UI＋视觉兜底；基于既有文献字段并集构建人工数据集并随机化 × N
+**Problem**：无障碍场景下，移动弹窗消息在结构化可访问性表示中缺失、合并、异构或矛盾
+**Current approach**：Message-Gap-Gated Popup Understanding（MG-PU）
 **Date**：2026-08-31
 **External review rounds**：0
-**Local provisional score**：7.1 / 10
 **Verdict**：REVISE / PROVISIONAL
+
+> 用户已将 v1 从完整 Recovery 明确降级为“判断并告知弹窗消息”。旧 `D ∧ C ∧ T` 主线只保留在 Git 历史、`round-0-initial-proposal.md` 和 advanced compatibility 字段中；不再是当前 v1 success。
 
 ## Problem Anchor
 
-> 移动端设备在无障碍模式下，读取可访问性树时，无法100%消除弹窗问题，导致体验受到极大影响。
+对依赖 TalkBack、VoiceOver 等屏幕阅读器的视障人士，当结构化 UI／可访问性树无法完整表达弹窗标题、正文或关键事实时，结构优先、视觉兜底的方法能否可靠判断弹窗存在性，生成语义正确且无关键编造的可读消息？
 
-操作化后，研究目标是：在普通低风险弹窗造成结构化可访问性信息缺失、合并、歧义或不可执行时，通过缺口门控按需调用视觉，提高 `D ∧ C ∧ T` 意义下的 Verified Task Recovery，同时控制误干预、错误动作与延迟。
+v1 只读观察，不执行点击。Dismissal、焦点、页面和原任务恢复是进阶层。
 
-## 主要收紧结果
+## 本轮收紧结果
 
-1. 将“无法 100%”改成可测的 tree-only residual failure rate。
-2. 将“结构化＋视觉”改成唯一主机制 **Actionability-Gap-Gated Recovery**。
-3. 将样本单位从截图改成完整 popup episode。
-4. 将宽表并集改成“平台原始层＋公共规范层＋presence mask＋provenance”。
-5. 将成功条件冻结为 `D ∧ C ∧ T`，不再以坐标命中、命令发送或画面变化替代任务恢复。
-6. 将三个“第一个”降级为待查新、待发布、待实验验证的候选主张。
-7. 明确严格 6 篇没有 iOS，跨平台已验证主张需过独立 iOS gate。
-8. 明确没有目标用户研究时，不能声称已改善盲人或低视力用户体验。
+1. 把任务从 Recovery 改为 `popup_message_judgment_v1`。
+2. 把方法从 Actionability Gate 改为 Message Sufficiency Gate；视觉只补消息。
+3. 一个 v1 item 止于 prediction／notification，强制 `action_attempts=[]`。
+4. 主指标改为 `VPMA`，配套 presence F1、critical-information recall、critical-hallucination rate 和 coverage。
+5. D、C_tech、C_a11y、T、VTR-tech、A-VTR 保留为 nullable advanced 字段，但不得进入 v1 success 或 eligibility。
+6. 来源并集保持 90 个论文字段＋165 个我方字段＝255 条 crosswalk；`message_judgment` 作为单独计数的 profile extension。
+7. synthetic fixture 扩展为 positive、no-popup、abstain 三条，并与经验数据隔离。
+8. “第一个”“公开数据集”“指标更好”“体验改善”继续作为待验证主张，不写成事实。
 
-## Output Files
+## Current outputs
 
-- 用户入口：[`../RESEARCH_BRIEF.md`](../RESEARCH_BRIEF.md)
-- 数据 schema：[`../DATASET_SCHEMA.md`](../DATASET_SCHEMA.md)
-- 初版完整 Proposal：[`round-0-initial-proposal.md`](./round-0-initial-proposal.md)
-- 当前最佳 Proposal：[`FINAL_PROPOSAL.md`](./FINAL_PROPOSAL.md)
-- 本地同家族预审：[`PROVISIONAL_LOCAL_REVIEW.md`](./PROVISIONAL_LOCAL_REVIEW.md)
-- 恢复状态：[`REFINE_STATE.json`](./REFINE_STATE.json)
+- 权威范围修订：[`../RESEARCH_RULES_AMENDMENT_V1.md`](../RESEARCH_RULES_AMENDMENT_V1.md)
+- 当前 Brief：[`../RESEARCH_BRIEF.md`](../RESEARCH_BRIEF.md)
+- 当前方法：[`../method/METHOD_SPEC.md`](../method/METHOD_SPEC.md)
+- 当前 Proposal：[`FINAL_PROPOSAL.md`](./FINAL_PROPOSAL.md)
+- 当前 schema：[`../dataset-v1/schema/item.schema.json`](../dataset-v1/schema/item.schema.json)
+- 当前验证：[`../dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md`](../dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md)
+- 历史 Recovery 初稿：[`round-0-initial-proposal.md`](./round-0-initial-proposal.md)
 
-## Review Status
+## Validation status
 
 ```yaml
+schema_version: 1.1.0-provisional
+profile: popup_message_judgment_v1
+source_field_union: 90 + 165 = 255
+synthetic_fixtures: 3
+canonical_validation: pass
+negative_mutations_rejected: 7
 review_independence: same-family
 acceptance_status: provisional
 external_disclosure: not_sent
 ```
 
-`research-refine` 的正式 cross-family acceptance 需要真实 Claude MCP 调用和完整 trace。项目当前的自动外部披露授权只覆盖 ProbeBeforeReuse，不覆盖弹窗研究，因此本轮没有外发材料，也没有把 Codex 预审包装成跨模型验收。
+`research-refine` 的正式 cross-family acceptance 需要真实 Claude MCP 调用和完整 trace。项目现有自动外部披露授权不覆盖本弹窗课题，因此没有外发材料，也没有把 Codex agent 审计包装成跨模型验收。
 
-## Remaining Weaknesses
+## Remaining weaknesses
 
-- iOS 的结构读取、动作执行和任务后置条件回证尚未在目标场景跑通。
-- 目标用户的真实恢复时间、错误率和任务放弃没有直接证据。
-- 还未验证门控是否能稳定识别非空结构缺口并优于 always-on vision。
-- 公共数据集仍需完成截图/UI 树版权、隐私、脱敏和许可证检查。
-- 精确新颖性主张仍需在当前边界下做系统查新。
+- real-app Android/iOS item 均为 0；
+- iOS 结构化表示与 VoiceOver 相关能力尚未在目标设备实测；
+- message semantics 与 critical hallucination 的双标／裁决协议尚未 pilot；
+- 还未证明真实 message gap 足够普遍，也未证明 MG-PU 优于 baselines；
+- screenshot/UI tree 的版权、隐私、脱敏和公开许可仍待审核；
+- 新颖性与“首次”主张尚未通过系统查新；
+- 无目标用户研究，不能声称真实体验改善。
 
-## Next Steps
+## Next steps
 
-1. 先做小规模 Android+iOS feasibility pilot，冻结采集能力与 VTR oracle。
-2. 从真实 episode 估计 tree-only residual failure 和缺口分布。
-3. 比较 tree-only、vision-only、always-on fusion 与 gated recovery。
-4. pilot 通过后再做功效分析、正式 N 与公开发布计划。
-5. 如用户授权向外部 Claude 披露本次弹窗研究材料，再继续同一 `research-refine` 状态完成 cross-family review。
+1. 运行小规模 Android/TalkBack 与 iOS/VoiceOver 只读 capability pilot；
+2. 冻结 screenshot/tree 同步窗口、message gold 规范、模型／prompt 与 gate threshold；
+3. 配对比较 structure-only、vision-only、always-on 与 MG-PU；
+4. 从 pilot 估计 paired effect、coverage、cluster size，再做功效分析并冻结 N；
+5. 通过权限、隐私、标注和 split gate 后才进入公开发布。

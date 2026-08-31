@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Materialize the non-empirical schema fixture as one JSONL dataset item."""
+"""Materialize positive, no-popup, and abstain v1 schema fixtures as JSONL."""
 
 from __future__ import annotations
 
@@ -51,8 +51,23 @@ def status_for(path: str, value: Any) -> str:
         return "observed"
     if any(token in path for token in ("/ios_raw", "/dom_raw", "/braille_display")):
         return "not_applicable"
-    if any(token in path for token in ("target_user_validation", "relaunch", "business_choice", "iabtcf")):
-        return "not_available"
+    if any(token in path for token in (
+        "/verification/weak_proxies/",
+        "/verification/dismissal/",
+        "/verification/technical_context_recovery/",
+        "/verification/accessible_context_recovery/",
+        "/verification/task/",
+        "/verification/persistence/",
+        "/verification/metrics/VTR_tech",
+        "/verification/metrics/A_VTR",
+        "/verification/metrics/recovery_time_ms",
+        "/verification/metrics/extra_navigation_steps_after_dismissal",
+        "target_user_validation",
+        "relaunch",
+        "business_choice",
+        "iabtcf"
+    )):
+        return "not_applicable"
     return "not_available"
 
 
@@ -88,14 +103,138 @@ def make_evidence() -> dict[str, Any]:
     }
 
 
-def main() -> None:
-    item = json.loads(TEMPLATE.read_text(encoding="utf-8"))
-    evidence = make_evidence()
+def make_variants(base: dict[str, Any]) -> list[dict[str, Any]]:
+    positive = deepcopy(base)
 
+    negative = deepcopy(base)
+    negative["identity"]["item_id"] = "fixture.android.popup-message.negative.0001"
+    negative["identity"]["near_duplicate_group_id"] = "fixture.popup-message-negative-a"
+    negative["scenario"]["popup_expected_gt"] = False
+    negative["scenario"]["popup_kind_gt"] = None
+    negative["scenario"]["popup_owner_gt"] = None
+    negative["scenario"]["exposure_status_gt"] = "unknown_cause"
+    negative["scenario"]["exposure_cause_gt"] = None
+    observation = negative["observations"][0]
+    observation["popup"].update({
+        "present_gt": False,
+        "present_pred": False,
+        "kind_gt": None,
+        "bbox_gt": None,
+        "owner_gt": None,
+        "modal_gt": False,
+        "blocking_gt": None,
+        "overlay_ratio": 0.0,
+        "dimming_ratio": 0.0
+    })
+    observation["visual_representation"].update({
+        "popup_prediction_stage1": 0.02,
+        "popup_prediction_stage2": 0.01,
+        "popup_detector_class": "content",
+        "popup_detector_confidence": 0.98,
+        "popup_bbox_pred": None,
+        "popup_roi": None,
+        "ocr_items": [],
+        "vlm_output": None
+    })
+    negative["candidates"] = []
+    negative["decision"]["candidate_input_ids"] = []
+    negative["decision"]["gate"].update({
+        "top1_candidate_id": None,
+        "top1_score": None,
+        "gap_reasons": [],
+        "owner_consistent": None,
+        "action_executable": None
+    })
+    negative["message_judgment"]["labels"].update({
+        "popup_present_gt": False,
+        "blocking_gt": None,
+        "message_text_gt": None,
+        "critical_facts_gt": [],
+        "message_text_observability": "not_applicable"
+    })
+    negative["message_judgment"]["prediction"].update({
+        "popup_present_pred": False,
+        "message_text_pred": None,
+        "critical_facts_pred": [],
+        "confidence": 0.96
+    })
+    negative["message_judgment"]["gate"].update({
+        "structured_message_complete": True,
+        "gap_reasons": [],
+        "visual_fallback_used": False,
+        "visual_call_count": 0
+    })
+    negative["decision"]["gate"]["visual_fallback_triggered"] = False
+    negative["decision"]["visual_fallback"].update({
+        "required": False,
+        "used": False,
+        "trigger_reasons": [],
+        "call_count": 0,
+        "latency_ms": 0
+    })
+    negative["verification"]["metrics"]["visual_call_count"] = 0
+    negative["message_judgment"]["evaluation"].update({
+        "presence_correct": True,
+        "message_semantically_correct": None,
+        "critical_information_recall": None,
+        "critical_hallucination": None,
+        "VPMA": True
+    })
+    negative["feedback"]["message"] = "No popup detected."
+    negative["annotations"][0].update({
+        "annotation_id": "ann.fixture.no-popup",
+        "target_json_pointer": "/message_judgment/labels/popup_present_gt",
+        "label_name": "popup_present_gt",
+        "label_value": False
+    })
+    negative["provenance"]["annotation_record_ids"] = ["ann.fixture.no-popup"]
+
+    abstain = deepcopy(base)
+    abstain["identity"]["item_id"] = "fixture.android.popup-message.abstain.0001"
+    abstain["identity"]["near_duplicate_group_id"] = "fixture.popup-message-abstain-a"
+    abstain["message_judgment"]["prediction"].update({
+        "status": "abstain",
+        "popup_present_pred": None,
+        "message_text_pred": None,
+        "critical_facts_pred": [],
+        "confidence": None
+    })
+    abstain["message_judgment"]["gate"].update({
+        "structured_message_complete": False,
+        "gap_reasons": ["contradictory"],
+        "visual_fallback_used": True,
+        "visual_call_count": 1
+    })
+    abstain["message_judgment"]["evaluation"].update({
+        "presence_correct": None,
+        "message_semantically_correct": None,
+        "critical_information_recall": None,
+        "critical_hallucination": None,
+        "VPMA": None
+    })
+    abstain["decision"]["policy"]["decision"] = "abstain"
+    abstain["decision"]["gate"]["final_state"] = "abstained"
+    abstain["decision"]["abstention"].update({
+        "abstained": True,
+        "handoff_required": False,
+        "reason": "critical_message_conflict",
+        "user_message": "Unable to determine the popup message reliably."
+    })
+    abstain["feedback"].update({
+        "status": "abstained",
+        "message": "Unable to determine the popup message reliably.",
+        "delivered": True
+    })
+    return [positive, negative, abstain]
+
+
+def materialize(item: dict[str, Any], evidence: dict[str, Any]) -> dict[str, Any]:
     item["provenance"]["source_artifacts"] = [deepcopy(evidence)]
     item["provenance"]["raw_capture_hashes"] = {"fixture_oracle": evidence["sha256"]}
     item["provenance"]["episode_evidence_uris"] = [deepcopy(evidence)]
     item["capability_profile"]["evidence_refs"] = [deepcopy(evidence)]
+    item["message_judgment"]["labels"]["evidence_uris"] = [deepcopy(evidence)]
+    item["message_judgment"]["prediction"]["evidence_uris"] = [deepcopy(evidence)]
 
     for observation in item["observations"]:
         populate_local_maps(observation)
@@ -103,15 +242,6 @@ def main() -> None:
         populate_local_maps(candidate)
     populate_local_maps(item["assistive_technology"])
 
-    verification = item["verification"]
-    for section_name in (
-        "dismissal",
-        "technical_context_recovery",
-        "accessible_context_recovery",
-        "task",
-        "persistence"
-    ):
-        verification[section_name]["evidence_uris"] = [deepcopy(evidence)]
     for annotation in item["annotations"]:
         annotation["evidence_uris"] = [deepcopy(evidence)]
 
@@ -126,8 +256,16 @@ def main() -> None:
         "measurement_channel": measurement_channel
     }
 
-    OUTPUT.write_text(json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(f"Wrote non-empirical schema fixture to {OUTPUT}")
+    return item
+
+
+def main() -> None:
+    base = json.loads(TEMPLATE.read_text(encoding="utf-8"))
+    evidence = make_evidence()
+    items = [materialize(item, evidence) for item in make_variants(base)]
+    payload = "".join(json.dumps(item, ensure_ascii=False, separators=(",", ":")) + "\n" for item in items)
+    OUTPUT.write_text(payload, encoding="utf-8")
+    print(f"Wrote {len(items)} non-empirical v1 schema fixtures to {OUTPUT}")
 
 
 if __name__ == "__main__":

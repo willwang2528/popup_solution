@@ -3,7 +3,9 @@
 本目录对已验收 PPT 中的 14 篇论文做结构化采集，服务于两件事：
 
 1. 从已有工作中提取结构化 UI、视觉、动作与回证字段的可追溯并集；
-2. 为面向视障人士的 Actionability-Gap-Gated Recovery 方法冻结输入、标签、基线与证据边界。
+2. 为当前 Message-Gap-Gated Popup Understanding v1 与后续 advanced Recovery 层冻结输入、标签、基线与证据边界。
+
+> v1 范围修订：当前主实验只做弹窗存在性与消息判断，不执行解除动作。本文献目录继续保留动作和回证字段，是为了忠实记录已有方法并兼容后续进阶研究，不代表它们仍是 v1 必需字段。
 
 来源 PPT 为 ARIS 工作区中的 `mobile弹窗问题调研-v1-formatted-v2.pptx`：论文总览位于第 2 页，方法与回证位于第 3–18 页。独立仓库不复制该 PPT；本目录保留其派生记录、来源定位与证据等级。
 
@@ -62,9 +64,16 @@ ppt_only             当前只由 PPT 支撑，必须保留这一限制
 
 ## 面向视障人士新增的采集字段
 
-通用 GUI 自动化论文往往没有记录以下内容，但本研究必须补采：
+v1 必须补采：
 
 - `assistive_technology`：TalkBack / VoiceOver 及版本；
+- `popup_present_gt/pred`；
+- `message_text_gt/pred`、`critical_facts_gt/pred`；
+- message observability、structure sufficiency、visual fallback、confidence、abstain 与 evidence；
+- `message_semantically_correct`、`critical_hallucination` 与 `VPMA`。
+
+以下字段保留为 advanced Recovery 层，不是 v1 纳入门槛：
+
 - `screen_reader_focus_before`、`screen_reader_focus_after`；
 - `utterance_before`、`utterance_after` 或可验证的朗读摘要；
 - `focus_restored_to_blocked_target`；
@@ -72,4 +81,4 @@ ppt_only             当前只由 PPT 支撑，必须保留这一限制
 - `user_handoff_required`；
 - 真实用户实验中的恢复时间、错误动作和任务放弃。
 
-其中真实用户体验字段只能通过合规的目标用户研究获得，不能由自动化日志替代。
+其中真实用户体验字段只能通过合规的目标用户研究获得，不能由自动化日志或 v1 消息准确率替代。

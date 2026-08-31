@@ -1,14 +1,14 @@
 {
-  "phase": "data_collection_and_method_spec",
-  "round": 0,
+  "phase": "v1_message_contract_and_pilot_design",
+  "round": 1,
   "threadId": null,
-  "last_score": 7.1,
+  "last_score": null,
   "last_verdict": "REVISE_PROVISIONAL",
   "status": "in_progress",
   "acceptance_status": "provisional",
   "review_independence": "same-family",
   "external_disclosure": "not_sent",
-  "blocker": "Automatic Claude disclosure authorization does not cover popup research.",
+  "blocker": "External cross-family review remains unauthorized for popup research; local validation is provisional.",
   "target_population": "blind_and_low_vision_screen_reader_users",
   "data_collection": {
     "source": "existing_ppt_and_authorized_local_paper_evidence",
@@ -23,13 +23,21 @@
     "summary_file": "popup-solution/data-collection/COLLECTION_SUMMARY.json"
   },
   "method": {
-    "name": "Actionability-Gap-Gated Recovery",
+    "name": "Message-Gap-Gated Popup Understanding",
     "spec_file": "popup-solution/method/METHOD_SPEC.md",
-    "new_trainable_component": "shared_actionability_scorer_and_gate",
-    "primary_metric": "A-VTR",
-    "secondary_metric": "VTR-tech"
+    "task_profile": "popup_message_judgment_v1",
+    "new_trainable_component": "message_sufficiency_gate",
+    "primary_metric": "VPMA",
+    "secondary_metrics": [
+      "Popup Presence Macro-F1",
+      "critical-information recall",
+      "critical-hallucination rate",
+      "coverage/abstention"
+    ],
+    "action_policy": "no_action",
+    "advanced_only_metrics": ["D", "C_tech", "C_a11y", "T", "VTR-tech", "A-VTR"]
   },
-  "next_gate": "Run Android/iOS capability probe and bounded feasibility pilot before freezing N or making empirical claims.",
-  "timestamp": "2026-08-31T10:56:45+08:00",
+  "next_gate": "Collect a bounded Android/iOS action-free capability pilot, estimate message-gap prevalence and paired VPMA variance, then freeze N.",
+  "timestamp": "2026-08-31T23:45:00+08:00",
   "scope_root": "popup-solution"
 }

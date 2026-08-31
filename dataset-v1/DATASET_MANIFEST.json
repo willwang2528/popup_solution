@@ -1,8 +1,9 @@
 {
-  "dataset_name": "Popup Episode Union Dataset",
-  "schema_version": "1.0.0-provisional",
-  "unit": "one_method_specific_popup_episode",
-  "status": "union_contract_complete_empirical_collection_pending",
+  "dataset_name": "Popup Message Union Dataset",
+  "schema_version": "1.1.0-provisional",
+  "active_profile": "popup_message_judgment_v1",
+  "unit": "one_action_free_popup_message_observation",
+  "status": "v1_message_contract_complete_empirical_collection_pending",
   "target_population": "blind_and_low_vision_screen_reader_users",
   "source_field_union": {
     "ppt_papers": 14,
@@ -11,19 +12,24 @@
     "literature_atomic_fields": 90,
     "our_method_atomic_fields": 165,
     "crosswalk_entries": 255,
-    "unmapped_source_fields": 0
+    "unmapped_source_fields": 0,
+    "v1_profile_extension": "separately_counted_protocol_fields"
   },
+  "v1_action_policy": "no_action",
+  "advanced_only": ["dismissal", "C_tech", "C_a11y", "T", "VTR-tech", "A-VTR"],
   "cohorts": {
     "real_app_items": 0,
     "controlled_fixture_items": 0,
-    "synthetic_schema_fixture_items": 1,
-    "paper_reconstruction_items": 0
+    "synthetic_schema_fixture_items": 3,
+    "paper_reconstruction_items": 0,
+    "ios_items": 0
   },
   "data_files": [
     {
       "path": "data/items.schema-fixture.jsonl",
       "record_kind": "synthetic_schema_fixture",
-      "item_count": 1,
+      "variants": ["positive", "no_popup", "abstain"],
+      "item_count": 3,
       "empirical": false,
       "eligible_for_training": false,
       "eligible_for_metrics": false
@@ -33,20 +39,21 @@
     "item_schema": "schema/item.schema.json",
     "field_catalog": "schema/field_catalog.json",
     "source_to_item_crosswalk": "schema/source_to_item_crosswalk.json",
-    "qa_rules": "schema/qa_rules.json",
-    "qa_implementation_coverage": "schema/qa_implementation_coverage.json",
+    "union_qa_rules": "schema/qa_rules.json",
+    "union_qa_implementation_coverage": "schema/qa_implementation_coverage.json",
+    "v1_message_qa_rules": "schema/v1_message_qa_rules.json",
     "annotation_guide": "ANNOTATION_GUIDE.md"
   },
   "validation": {
     "status": "pass_implemented_checks",
-    "scope": "schema_shape_and_documented_automated_assertions_only",
+    "scope": "v1_message_profile_schema_and_documented_automated_assertions_only",
     "result": "validation-result.json",
-    "contract_item_gates": 23,
-    "contract_dataset_gates": 6,
-    "implementation_coverage": {
-      "automated_full": 5,
-      "automated_partial": 17,
-      "manual_release": 7
+    "union_contract_item_gates": 23,
+    "union_contract_dataset_gates": 6,
+    "v1_message_gates": {
+      "automated_full": 4,
+      "automated_partial": 2,
+      "total": 6
     },
     "errors": 0,
     "warnings": [
@@ -54,8 +61,16 @@
       "no iOS capability or episode record yet"
     ]
   },
+  "artifact_sha256": {
+    "data/items.schema-fixture.jsonl": "1898d32683ae5d093957047263abf1cf48e1a9d26679394938ee488a451bf1e4",
+    "schema/source_to_item_crosswalk.json": "912c2b77e91e65a612bed51e776e93763457d73c246c716b9532bf872caa71ff",
+    "schema/item.schema.json": "35490b44b640b2a45f08c5fb00b1f0b5bdf2ebb14d6420dd221cba573f80d4b0",
+    "schema/field_catalog.json": "10f8b5801d69765055ed3a935d88d532a722a86b9163ac3bbd0029a846a9f8b9",
+    "schema/v1_message_qa_rules.json": "908ec1a13f50d60b8fa1b16a72730fce8603548c45a007f2014947dd97a8f623",
+    "scripts/validate_dataset.py": "9a998e59ec3650d5100dd260cecfc1dfe2008e42f6ff66e5e5a0c9fabd163136"
+  },
   "N": {
     "value": null,
-    "status": "freeze_after_capability_pilot_and_power_analysis"
+    "status": "freeze_after_action_free_capability_pilot_and_power_analysis"
   }
 }

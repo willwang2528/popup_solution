@@ -1,7 +1,8 @@
 {
   "contract_version": "0.1.0-provisional",
-  "applies_to_schema_version": "1.0.0-provisional",
+  "applies_to_schema_version": "1.1.0-provisional",
   "artifact_kind": "popup_episode_item_and_dataset_qa_rules",
+  "profile_scope": "Union and advanced-recovery compatibility gates. For popup_message_judgment_v1, recovery gates are not_applicable and schema/v1_message_qa_rules.json is authoritative.",
   "status": "review_contract_only_no_empirical_samples_created",
   "expression_language": "JSONPath-like declarative assertions. Each gate has an explicit implementation-coverage status; the dependency-free validator evaluates its documented automated subset and never treats item.quality self-assertions as proof.",
   "result_enum": [

@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.1.0-provisional",
+  "profile": "popup_message_judgment_v1",
+  "rules": [
+    {
+      "id": "V1-MSG-001",
+      "name": "gold_label_consistency",
+      "implementation": "automated_full",
+      "requirement": "Popup presence, blocking, message text, observability, scenario and source-observation labels satisfy the v1 conditional contract."
+    },
+    {
+      "id": "V1-MSG-002",
+      "name": "no_action_and_pre_action_source",
+      "implementation": "automated_full",
+      "requirement": "action_attempts is empty, decision is no_action or abstain, and prediction uses only an action-free observation."
+    },
+    {
+      "id": "V1-MSG-003",
+      "name": "evidence_and_adjudication",
+      "implementation": "automated_partial",
+      "requirement": "Gold and prediction evidence are resolvable; formal validation/test labels receive independent annotation and adjudication before release."
+    },
+    {
+      "id": "V1-MSG-004",
+      "name": "metric_recomputation",
+      "implementation": "automated_full",
+      "requirement": "presence_correct, critical-information recall and VPMA are recomputed from atomic labels, predictions and adjudicated semantic values."
+    },
+    {
+      "id": "V1-MSG-005",
+      "name": "task_specific_eligibility",
+      "implementation": "automated_full",
+      "requirement": "Synthetic and paper-reconstruction items cannot enter v1 empirical metrics; v1 cannot enter advanced recovery or user-experience claims."
+    },
+    {
+      "id": "V1-MSG-006",
+      "name": "release_and_leakage_controls",
+      "implementation": "automated_partial",
+      "requirement": "Group leakage, permissions, privacy, artifact disposition and release checks reuse the union dataset gates and must pass before publication."
+    }
+  ],
+  "counts": {
+    "automated_full": 4,
+    "automated_partial": 2,
+    "total": 6
+  }
+}

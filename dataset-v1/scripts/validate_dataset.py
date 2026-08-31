@@ -23,6 +23,7 @@ CROSSWALK_PATH = ROOT / "schema" / "source_to_item_crosswalk.json"
 FIELD_CATALOG_PATH = ROOT / "schema" / "field_catalog.json"
 QA_RULES_PATH = ROOT / "schema" / "qa_rules.json"
 QA_COVERAGE_PATH = ROOT / "schema" / "qa_implementation_coverage.json"
+V1_MESSAGE_QA_PATH = ROOT / "schema" / "v1_message_qa_rules.json"
 RESULT_PATH = ROOT / "validation-result.json"
 
 EXPECTED_PAPERS = {
@@ -287,10 +288,135 @@ def check_global_observability(item: dict[str, Any]) -> list[str]:
     return errors
 
 
+def check_message_judgment(item: dict[str, Any], index: int) -> list[str]:
+    """Validate the v1 no-action profile and its deterministic item metrics."""
+    errors: list[str] = []
+    prefix = f"item[{index}].message_judgment"
+    judgment = item["message_judgment"]
+    labels = judgment["labels"]
+    prediction = judgment["prediction"]
+    gate = judgment["gate"]
+    evaluation = judgment["evaluation"]
+    eligibility = judgment["eligibility"]
+
+    if item["action_attempts"]:
+        errors.append(f"{prefix}: v1 must not contain action attempts")
+    if item["decision"]["policy"]["decision"] not in {"no_action", "abstain"}:
+        errors.append(f"{prefix}: v1 decision must be no_action or abstain")
+    forbidden_phases = {"post_action", "task_check"}
+    if any(observation["phase"] in forbidden_phases for observation in item["observations"]):
+        errors.append(f"{prefix}: v1 contains a post-action/task-check observation")
+
+    observations = {observation["observation_id"]: observation for observation in item["observations"]}
+    source = observations.get(prediction["source_observation_id"])
+    if source is None:
+        errors.append(f"{prefix}: prediction references a missing source observation")
+    elif source["phase"] in forbidden_phases:
+        errors.append(f"{prefix}: prediction source is not an action-free observation")
+    else:
+        if labels["popup_present_gt"] is not source["popup"]["present_gt"]:
+            errors.append(f"{prefix}: popup gold conflicts with the source observation")
+        if labels["blocking_gt"] is not source["popup"]["blocking_gt"]:
+            errors.append(f"{prefix}: blocking gold conflicts with the source observation")
+
+    if labels["popup_present_gt"] is not item["scenario"]["popup_expected_gt"]:
+        errors.append(f"{prefix}: popup gold conflicts with scenario.popup_expected_gt")
+    if not labels["evidence_uris"]:
+        errors.append(f"{prefix}: popup/message gold has no evidence URI")
+
+    if not labels["popup_present_gt"]:
+        if labels["blocking_gt"] is not None:
+            errors.append(f"{prefix}: no-popup label must have blocking_gt=null")
+        if labels["message_text_gt"] is not None or labels["critical_facts_gt"]:
+            errors.append(f"{prefix}: no-popup label must not carry popup message content")
+        if labels["message_text_observability"] != "not_applicable":
+            errors.append(f"{prefix}: no-popup message observability must be not_applicable")
+    else:
+        if labels["blocking_gt"] is None:
+            errors.append(f"{prefix}: popup label lacks blocking_gt")
+        observable = labels["message_text_observability"] in {"complete", "partial"}
+        if observable != bool(labels["message_text_gt"]):
+            errors.append(f"{prefix}: message text and observability are inconsistent")
+
+    if prediction["status"] == "abstain":
+        if any(value is not None for value in (
+            prediction["popup_present_pred"],
+            prediction["message_text_pred"],
+            prediction["confidence"]
+        )) or prediction["critical_facts_pred"]:
+            errors.append(f"{prefix}: abstain prediction carries a judgment")
+        if any(value is not None for value in evaluation.values()):
+            errors.append(f"{prefix}: abstain item must not receive item-level success values")
+    else:
+        if prediction["popup_present_pred"] is None or prediction["confidence"] is None:
+            errors.append(f"{prefix}: judged prediction lacks presence or confidence")
+        if prediction["popup_present_pred"] is False:
+            if prediction["message_text_pred"] is not None or prediction["critical_facts_pred"]:
+                errors.append(f"{prefix}: no-popup prediction carries popup message content")
+        elif prediction["popup_present_pred"] is True and not prediction["message_text_pred"]:
+            errors.append(f"{prefix}: positive popup prediction lacks message text")
+
+    if gate["visual_fallback_used"] != (gate["visual_call_count"] > 0):
+        errors.append(f"{prefix}: visual fallback flag/count mismatch")
+    if gate["visual_fallback_used"] and not gate["gap_reasons"]:
+        errors.append(f"{prefix}: visual fallback has no message-gap reason")
+    decision_visual = item["decision"]["visual_fallback"]
+    if gate["visual_fallback_used"] is not decision_visual["used"]:
+        errors.append(f"{prefix}: message and decision visual-fallback flags disagree")
+    if gate["visual_call_count"] != decision_visual["call_count"]:
+        errors.append(f"{prefix}: message and decision visual-call counts disagree")
+    if gate["visual_call_count"] != item["verification"]["metrics"]["visual_call_count"]:
+        errors.append(f"{prefix}: message and summary visual-call counts disagree")
+
+    expected_presence = None
+    if prediction["status"] == "judged":
+        expected_presence = prediction["popup_present_pred"] is labels["popup_present_gt"]
+    if evaluation["presence_correct"] is not expected_presence:
+        errors.append(f"{prefix}: presence_correct does not match gold/prediction")
+
+    expected_recall: float | None = None
+    if labels["popup_present_gt"] and prediction["status"] == "judged" and labels["critical_facts_gt"]:
+        gold = {fact.casefold().strip() for fact in labels["critical_facts_gt"]}
+        predicted = {fact.casefold().strip() for fact in prediction["critical_facts_pred"]}
+        expected_recall = len(gold & predicted) / len(gold)
+    if evaluation["critical_information_recall"] != expected_recall:
+        errors.append(f"{prefix}: critical_information_recall is not reproducible from canonical facts")
+
+    if prediction["status"] == "abstain":
+        expected_vpma = None
+    elif not labels["popup_present_gt"]:
+        expected_vpma = expected_presence
+    else:
+        no_hallucination = None if evaluation["critical_hallucination"] is None else not evaluation["critical_hallucination"]
+        expected_vpma = tri_and(expected_presence, evaluation["message_semantically_correct"], no_hallucination)
+    if evaluation["VPMA"] is not expected_vpma:
+        errors.append(f"{prefix}: VPMA does not match its three-valued derivation")
+
+    advanced_truths = (
+        item["verification"]["dismissal"]["D"],
+        item["verification"]["technical_context_recovery"]["C_tech"],
+        item["verification"]["accessible_context_recovery"]["C_a11y"],
+        item["verification"]["task"]["T"],
+        item["verification"]["metrics"]["VTR_tech"],
+        item["verification"]["metrics"]["A_VTR"]
+    )
+    if any(value is not None for value in advanced_truths):
+        errors.append(f"{prefix}: v1 carries advanced recovery success values")
+    if eligibility["eligible_for_advanced_recovery_metric"]:
+        errors.append(f"{prefix}: v1 cannot be eligible for advanced recovery metrics")
+    if eligibility["eligible_for_user_experience_claim"]:
+        errors.append(f"{prefix}: technical message judgment cannot imply user-experience eligibility")
+    if item["identity"]["record_kind"] in {"synthetic_schema_fixture", "paper_reconstruction"}:
+        if eligibility["eligible_for_v1_presence_metric"] or eligibility["eligible_for_v1_message_metric"]:
+            errors.append(f"{prefix}: non-empirical item is eligible for v1 empirical metrics")
+    return errors
+
+
 def check_item(item: dict[str, Any], index: int) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     prefix = f"item[{index}]"
+    errors.extend(check_message_judgment(item, index))
 
     observations = item["observations"]
     candidates = item["candidates"]
@@ -379,12 +505,13 @@ def check_item(item: dict[str, Any], index: int) -> tuple[list[str], list[str]]:
         if decision["visual_fallback"]["used"]:
             if not decision["visual_fallback"]["trigger_reasons"]:
                 errors.append(f"{prefix}: visual fallback used without a trigger reason")
-            selected_id = decision["selection"]["target_candidate_id_pred"]
-            selected = next((candidate for candidate in candidates if candidate["candidate_id"] == selected_id), None)
-            if selected is None or selected["visual_raw"] is None:
-                errors.append(f"{prefix}: visual fallback did not select a visual candidate")
-            elif not selected["ground_truth"]["is_safe_to_execute_gt"]:
-                errors.append(f"{prefix}: visual fallback selected an unsafe candidate")
+            if item["message_judgment"]["profile"] != "popup_message_judgment_v1":
+                selected_id = decision["selection"]["target_candidate_id_pred"]
+                selected = next((candidate for candidate in candidates if candidate["candidate_id"] == selected_id), None)
+                if selected is None or selected["visual_raw"] is None:
+                    errors.append(f"{prefix}: visual fallback did not select a visual candidate")
+                elif not selected["ground_truth"]["is_safe_to_execute_gt"]:
+                    errors.append(f"{prefix}: visual fallback selected an unsafe candidate")
 
     indexes = [attempt["attempt_index"] for attempt in attempts]
     if indexes != list(range(len(indexes))):
@@ -516,6 +643,7 @@ def main() -> int:
     field_catalog = load_json(FIELD_CATALOG_PATH)
     qa_rules = load_json(QA_RULES_PATH)
     qa_coverage = load_json(QA_COVERAGE_PATH)
+    v1_message_qa = load_json(V1_MESSAGE_QA_PATH)
     items = load_jsonl(args.data)
 
     errors: list[str] = []
@@ -539,6 +667,16 @@ def main() -> int:
         errors.append("field catalog counts are not 90 + 165 = 255")
     if len(qa_rules["item_gates"]) != 23 or len(qa_rules["dataset_gates"]) != 6:
         errors.append("QA contract does not contain the expected 23 item and 6 dataset gates")
+    v1_gate_ids = [rule["id"] for rule in v1_message_qa["rules"]]
+    if len(v1_gate_ids) != 6 or len(v1_gate_ids) != len(set(v1_gate_ids)):
+        errors.append("v1 message QA contract does not contain six unique gates")
+    calculated_v1_counts = {
+        "automated_full": sum(rule["implementation"] == "automated_full" for rule in v1_message_qa["rules"]),
+        "automated_partial": sum(rule["implementation"] == "automated_partial" for rule in v1_message_qa["rules"]),
+        "total": len(v1_message_qa["rules"])
+    }
+    if calculated_v1_counts != v1_message_qa["counts"]:
+        errors.append("v1 message QA counts do not match its gate classifications")
     contract_gate_ids = {
         gate["id"] for gate in qa_rules["item_gates"] + qa_rules["dataset_gates"]
     }
@@ -577,11 +715,12 @@ def main() -> int:
         "status": "pass" if not errors else "fail",
         "data_file": reported_data_path,
         "item_count": len(items),
-        "schema_version": "1.0.0-provisional",
+        "schema_version": "1.1.0-provisional",
         "source_field_counts": {"literature": 90, "our_method": 165, "crosswalk_total": 255},
         "qa_contract_counts": {"item_gates": 23, "dataset_gates": 6},
+        "v1_message_qa_counts": v1_message_qa["counts"],
         "qa_implementation_coverage": qa_coverage["counts"]["all"],
-        "validation_scope": "schema_shape_and_documented_automated_assertions_only",
+        "validation_scope": "v1_message_profile_schema_and_documented_automated_assertions_only",
         "manual_release_gate_ids": qa_coverage["manual_release"],
         "errors": errors,
         "warnings": warnings,

@@ -1,8 +1,8 @@
 {
   "status": "pass",
   "data_file": "data/items.schema-fixture.jsonl",
-  "item_count": 1,
-  "schema_version": "1.0.0-provisional",
+  "item_count": 3,
+  "schema_version": "1.1.0-provisional",
   "source_field_counts": {
     "literature": 90,
     "our_method": 165,
@@ -12,13 +12,18 @@
     "item_gates": 23,
     "dataset_gates": 6
   },
+  "v1_message_qa_counts": {
+    "automated_full": 4,
+    "automated_partial": 2,
+    "total": 6
+  },
   "qa_implementation_coverage": {
     "automated_full": 5,
     "automated_partial": 17,
     "manual_release": 7,
     "total": 29
   },
-  "validation_scope": "schema_shape_and_documented_automated_assertions_only",
+  "validation_scope": "v1_message_profile_schema_and_documented_automated_assertions_only",
   "manual_release_gate_ids": [
     "ITEM-005",
     "ITEM-008",

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://local.aris/popup-solution/dataset-v1/item.schema.json",
-  "title": "Popup Episode Union Dataset item",
-  "description": "One complete popup-recovery episode containing the union of literature-derived signals and Actionability-Gap-Gated Recovery fields.",
+  "title": "Popup Episode Union Dataset item with v1 message profile",
+  "description": "One popup observation item containing the 90+165 source-field union, a required v1 popup-message judgment profile, and nullable advanced recovery compatibility fields.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,6 +12,7 @@
     "environment",
     "assistive_technology",
     "capability_profile",
+    "message_judgment",
     "observations",
     "candidates",
     "decision",
@@ -29,6 +30,7 @@
     "environment": {"$ref": "#/$defs/environment"},
     "assistive_technology": {"$ref": "#/$defs/assistiveTechnology"},
     "capability_profile": {"$ref": "#/$defs/capabilityProfile"},
+    "message_judgment": {"$ref": "#/$defs/messageJudgment"},
     "observations": {
       "type": "array",
       "minItems": 1,
@@ -41,6 +43,8 @@
     "decision": {"$ref": "#/$defs/decision"},
     "action_attempts": {
       "type": "array",
+      "maxItems": 0,
+      "description": "v1 is strictly action-free; the actionAttempt definition remains only as an advanced compatibility vocabulary for a future profile.",
       "items": {"$ref": "#/$defs/actionAttempt"}
     },
     "verification": {"$ref": "#/$defs/verification"},
@@ -167,7 +171,7 @@
         "ended_at"
       ],
       "properties": {
-        "schema_version": {"const": "1.0.0-provisional"},
+        "schema_version": {"const": "1.1.0-provisional"},
         "item_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
         "record_kind": {
           "enum": ["real_app", "controlled_fixture", "synthetic_schema_fixture", "paper_reconstruction"]
@@ -209,7 +213,7 @@
       ],
       "properties": {
         "dataset_name": {"const": "Popup Episode Union Dataset"},
-        "field_catalog_version": {"const": "1.0.0-provisional"},
+        "field_catalog_version": {"const": "1.1.0-provisional"},
         "paper_method_ids": {
           "type": "array",
           "uniqueItems": true,
@@ -436,6 +440,80 @@
         "accessible_closed_loop_status": {"enum": ["verified", "partial", "failed", "pending_capability_probe", "not_applicable"]},
         "ios_field_status": {"enum": ["verified_on_target", "pending_capability_probe", "not_applicable"]},
         "evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+      }
+    },
+    "messageJudgment": {
+      "type": "object",
+      "description": "Required v1 no-action popup-message judgment profile. These protocol fields are counted separately from the frozen 90+165 source-field union.",
+      "additionalProperties": false,
+      "required": ["profile", "labels", "prediction", "gate", "evaluation", "eligibility"],
+      "properties": {
+        "profile": {"const": "popup_message_judgment_v1"},
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["popup_present_gt", "blocking_gt", "message_text_gt", "critical_facts_gt", "message_text_observability", "evidence_uris"],
+          "properties": {
+            "popup_present_gt": {"type": "boolean"},
+            "blocking_gt": {"$ref": "#/$defs/boolOrNull"},
+            "message_text_gt": {"$ref": "#/$defs/stringOrNull"},
+            "critical_facts_gt": {"type": "array", "items": {"type": "string"}},
+            "message_text_observability": {"enum": ["complete", "partial", "not_observable", "not_applicable"]},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "prediction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "popup_present_pred", "message_text_pred", "critical_facts_pred", "confidence", "source_observation_id", "evidence_uris", "model_or_rule_version", "latency_ms"],
+          "properties": {
+            "status": {"enum": ["judged", "abstain"]},
+            "popup_present_pred": {"$ref": "#/$defs/boolOrNull"},
+            "message_text_pred": {"$ref": "#/$defs/stringOrNull"},
+            "critical_facts_pred": {"type": "array", "items": {"type": "string"}},
+            "confidence": {"$ref": "#/$defs/scoreOrNull"},
+            "source_observation_id": {"type": "string"},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}},
+            "model_or_rule_version": {"type": "string"},
+            "latency_ms": {"$ref": "#/$defs/integerOrNull"}
+          }
+        },
+        "gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["structured_message_complete", "gap_reasons", "visual_fallback_used", "visual_call_count", "tree_screenshot_synchronized"],
+          "properties": {
+            "structured_message_complete": {"$ref": "#/$defs/boolOrNull"},
+            "gap_reasons": {"type": "array", "items": {"enum": ["missing", "merged", "ambiguous", "contradictory", "stale", "owner_mismatch", "visual_only_text", "unknown"]}},
+            "visual_fallback_used": {"type": "boolean"},
+            "visual_call_count": {"type": "integer", "minimum": 0},
+            "tree_screenshot_synchronized": {"$ref": "#/$defs/boolOrNull"}
+          }
+        },
+        "evaluation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["presence_correct", "message_semantically_correct", "critical_information_recall", "critical_hallucination", "VPMA"],
+          "properties": {
+            "presence_correct": {"$ref": "#/$defs/boolOrNull"},
+            "message_semantically_correct": {"$ref": "#/$defs/boolOrNull"},
+            "critical_information_recall": {"$ref": "#/$defs/scoreOrNull"},
+            "critical_hallucination": {"$ref": "#/$defs/boolOrNull"},
+            "VPMA": {"$ref": "#/$defs/boolOrNull"}
+          }
+        },
+        "eligibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["eligible_for_v1_presence_metric", "eligible_for_v1_message_metric", "eligible_for_advanced_recovery_metric", "eligible_for_user_experience_claim", "exclusion_reasons"],
+          "properties": {
+            "eligible_for_v1_presence_metric": {"type": "boolean"},
+            "eligible_for_v1_message_metric": {"type": "boolean"},
+            "eligible_for_advanced_recovery_metric": {"type": "boolean"},
+            "eligible_for_user_experience_claim": {"type": "boolean"},
+            "exclusion_reasons": {"type": "array", "items": {"type": "string"}}
+          }
+        }
       }
     },
     "ownerContext": {
@@ -1061,7 +1139,7 @@
             "allowed_semantics": {"type": "array", "items": {"type": "string"}},
             "blocked_semantics": {"type": "array", "items": {"type": "string"}},
             "risk_class": {"type": "string"},
-            "decision": {"enum": ["execute", "abstain", "handoff", "no_action"]}
+            "decision": {"enum": ["abstain", "no_action"]}
           }
         },
         "selection": {

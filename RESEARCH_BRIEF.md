@@ -1,177 +1,157 @@
-# 面向视障人士的移动弹窗恢复：Research Brief
+# 面向视障人士的移动弹窗消息判断：Research Brief
 
-> 当前结论：论文应研究“可操作性暴露缺口下的可验证任务恢复”，而不是泛化地研究“结构化 UI＋视觉关弹窗”。
-> 状态：`provisional`；尚未做外部跨模型审阅、系统查新、真实 iOS 闭环或目标用户实验。
+> 当前结论：v1 研究“可访问性消息暴露缺口下的弹窗消息判断”，不执行关闭动作，也不把 Recovery 作为主任务。
+> 状态：`provisional`；尚未完成系统查新、真实跨平台数据采集或目标用户研究。
 
 ## 一句话问题
 
-对依赖 TalkBack、VoiceOver 等屏幕阅读器的视障人士，普通且可合法退出的弹窗可能阻断原任务；当关键退出入口在结构化可访问性表示中缺失、合并、歧义或不可操作时，如何按需使用视觉恢复正确动作，并证明用户的原任务已经真正恢复？
+对依赖 TalkBack、VoiceOver 等屏幕阅读器的视障人士，当移动端弹窗的标题、正文或关键信息在结构化可访问性表示中缺失、合并、异构呈现或相互矛盾时，能否通过结构优先、视觉兜底的方法，可靠判断弹窗是否存在并生成正确、完整且不编造关键信息的可读消息？
 
-## 背景表述
+## 背景与边界
 
-建议写：
+任务阻断弹窗及其不完整的可访问性暴露可能增加视障用户理解当前界面的困难。该影响是研究动机；在没有目标用户研究或真实遥测前，不写成本文已经证明的用户体验改善。
 
-> 对依赖 TalkBack、VoiceOver 等屏幕阅读器的视障人士（以盲人和低视力用户为主体），任务阻断弹窗及其不完整的可访问性暴露可能增加恢复时间、错误操作和任务放弃风险。现有自动化对可访问性树、平台协议或视觉方法各有依赖，但树中“存在节点”不等于存在语义明确且可执行的退出路径，视觉定位成功也不等于任务恢复。
+v1：
 
-在没有目标用户研究或真实遥测前，不写“长时间无法消除、极大影响体验”已经被本文证明。
+- 平台以 Android 与 iOS 为主，移动 Web／WebView 单独分组；
+- 只处理普通、获授权观察、非安全绕过的弹窗；
+- 只判断存在性并生成消息；
+- 不点击、关闭、确认、拒绝或修改应用状态；
+- 对不确定、敏感、图像不可读或证据矛盾的样本允许弃答。
 
-## 研究边界
+CAPTCHA、风控、身份认证、权限安全控制、支付确认、人工审核等不进入 v1。Dismissal、焦点恢复、原页面恢复和原任务恢复为进阶层。
 
-- 平台：首期 Android 与 iOS；移动 Web 可作为扩展层单独报告。
-- 目标人群：使用 TalkBack、VoiceOver 等屏幕阅读器操作移动设备的视障人士；技术实验与真实用户体验评估分开报告。
-- 对象：阻断正常任务、低风险且可合法关闭的普通弹窗。
-- 完整闭环：**识别弹窗 → 选择并执行解除动作 → 回证原任务恢复**。
-- 排除：CAPTCHA、风控、PIN、生物识别、支付、安装、删除、设备管理及其他需要人工意图或安全确认的流程。
-- 未知、敏感或没有安全退出动作的样本必须 `abstain/handoff`。
+## 问题锚点：Accessibility Message Gap
 
-## 问题锚点
+结构化表示可能非空，却仍不能形成可靠的弹窗消息：
 
-当前方法的残余失败不是“树为空”这么简单，而是结构化表示可能出现：
+1. 标题、正文或操作后果没有暴露；
+2. 多个子节点被合并，阅读顺序或语义边界丢失；
+3. Android 与 iOS 的 role、name、label、text、value、hint 表达不一致；
+4. 屏幕中的关键金额、时间、对象、警告或取消条件只存在于像素中；
+5. 宿主页面文本与弹窗文本混在一起；
+6. 树与截图不同步，或不同通道互相矛盾。
 
-1. 关键动作入口没有独立节点；
-2. 子节点被框架合并到父节点；
-3. role、name、text 或 action 语义不完整／不一致；
-4. 节点存在但不可点击、不可命中或不支持目标动作；
-5. 弹窗候选与宿主页面候选混在一起；
-6. owner/package/bundle/window/context 不匹配；
-7. 树与截图不同步或采集工具失败。
+黑盒条件下只标注可观察到的 `missing/merged/ambiguous/contradictory/stale`；“系统过滤”或“开发者缺陷”等因果标签需要受控 fixture、参考树或源码证据。
 
-黑盒条件下只能标注“未单独暴露”；若要断言系统合并、平台过滤或开发者缺陷，必须有可控 fixture、参考树或源码证据。
-
-## 方法主线
-
-工作名：**Actionability-Gap-Gated Recovery**。
+## 方法：Message-Gap-Gated Popup Understanding（MG-PU）
 
 ```text
-协议事件 / owner-context / 可访问性树
-                ↓
-平台原始字段 + 跨平台规范字段 + presence mask
-                ↓
-判断是否存在语义明确、可执行且 owner 正确的退出路径
-        ├─ 有：使用结构化动作
-        └─ 无/歧义：仅对弹窗区域调用 OCR/VLM grounding
-                ↓
-候选重排 + 低风险策略或 abstain
-                ↓
-协议动作 > 元素动作 > 坐标动作
-                ↓
-D ∧ C_a11y ∧ T 回证
+owner/context + 可访问性树／UI hierarchy
+                 ↓
+弹窗检测 + 结构化消息重建
+                 ↓
+Message Sufficiency Gate
+       ├─ 完整且一致：直接输出
+       ├─ 缺失/合并/矛盾：弹窗 ROI OCR／视觉补全
+       └─ 仍不可靠：abstain
+                 ↓
+结构与视觉证据对齐、去重、排序
+                 ↓
+输出存在性、可读消息、关键事实、置信度与证据
 ```
 
-- **D — Dismissal**：弹窗视觉标识与语义节点／窗口均消失。
-- **C_tech — Technical context recovery**：正确 owner/context 恢复，原被阻断目标重新可操作。
-- **C_a11y — Accessible context recovery**：满足 C_tech，且屏幕阅读器焦点回到原目标或合法后继目标；若朗读状态可观测，下一段朗读与恢复后的任务一致。
-- **T — Task postcondition**：原任务的业务后置条件成立。
+门控不只检查“树是否为空”，而要判断：是否找到弹窗证据，标题／正文是否覆盖，关键事实是否缺失，阅读顺序是否合理，owner/context 是否一致，树与截图是否新鲜同步，以及通道间是否矛盾。
 
-主指标：
+视觉兜底只补全消息，不生成点击坐标，不触发动作。输出应可直接交给屏幕阅读器或上层产品，但 v1 实验只验证消息本身。
+
+## 数据与 item
+
+一个 v1 item 是一次只读消息判断记录：
+
+```text
+scenario + 同步观察
+→ 结构化原始字段／规范字段 + screenshot
+→ popup/message 人工真值
+→ 方法预测、门控与证据
+→ VPMA 与分项指标
+```
+
+每个 item 继续保存已有论文方法与我方方法字段的并集：公共规范层、`android_raw`、`ios_raw`、`dom_raw`、`visual_raw`、provenance、presence mask、人工标注和预测。动作与恢复字段作为 advanced compatibility layer 保留，但 v1 样本不要求其有值。
+
+关键真值包括：`popup_present_gt`、`message_text_gt`、`critical_facts_gt`；关键预测包括：`popup_present_pred`、`message_text_pred`、`critical_facts_pred`、confidence、abstained、structured sufficiency、visual fallback 和 evidence URI。
+
+## 指标
+
+对 popup 正样本：
 
 \[
-\mathrm{VTR\text{-}tech}=P(D \land C_{tech} \land T)
-\qquad
-\mathrm{A\text{-}VTR}=P(D \land C_{a11y} \land T)
+\mathrm{VPMA}=P\land M\land\neg H
 \]
 
-如果只做到树为空才调用视觉，方法新颖性不足；门控必须覆盖非空但 merged、ambiguous、non-actionable 和 owner-mismatch 的情况。
+- `P`：弹窗存在性判断正确；
+- `M`：人工双标／裁决确认消息语义正确；
+- `H`：是否出现会改变用户理解或决策的关键编造。
 
-## 数据集设计
+对无弹窗负样本，`VPMA=P`。主报告 `VPMA`，并报告：
 
-评测单元是完整 `episode`，不是一张截图：
+- popup detection precision／recall／F1；
+- message semantic correctness rate；
+- critical-information recall；
+- critical-hallucination rate；
+- coverage／abstention；
+- visual fallback rate、latency 与成本；
+- Android／iOS、owner、popup kind、exposure tier、语言和 UI framework 分组结果。
 
-```text
-原任务与触发动作
-→ 弹窗前/中/后观察
-→ 结构化树与截图候选
-→ 动作尝试
-→ D/C_tech/C_a11y/T 回证与副作用
-```
+自动字符串指标只能作为辅助；消息语义正确性和关键编造必须有盲法人工裁决协议。
 
-数据实体包括：`scenario`、`episode`、`observation`、`element_item`、`action_attempt`、`outcome`、`annotation`。
+## v1 核心实验
 
-不要将 Android 与 iOS 原始字段硬展平。保存：
+### E1：消息暴露缺口刻画
 
-- 公共层：owner/context、role/class、name/text/value、stable id、action capability、state、geometry、task context；
-- 原始层：`android_raw`、`ios_raw`、`dom_raw`、`visual_raw`；
-- provenance、presence mask、人工真值和预测值。
+比较可见弹窗内容与结构化表示，测量标题、正文、关键事实和阅读顺序的覆盖率，并按平台与缺口类型分组。
 
-严格纳入的 6 篇文献只覆盖 Android 与移动 Web，没有 iOS 闭环，因此 iOS 字段当前只是待实测工程候选。详细字段见 [`DATASET_SCHEMA.md`](./DATASET_SCHEMA.md)。
+### E2：主实验
+
+在相同 item 和模型预算下比较：
+
+- structure-only；
+- screenshot-only OCR／VLM；
+- always-on structure+vision；
+- MG-PU gated structure+vision；
+- human-readable-message oracle 上界。
+
+主看 `VPMA`。任何方法均不得点击弹窗。
+
+### E3：消融
+
+- 去掉视觉；
+- 始终调用视觉；
+- 门控只判断空树；
+- 去掉 owner/context；
+- 去掉树—图同步检查；
+- 去掉跨通道矛盾检测；
+- 去掉关键事实约束。
 
 ## 随机化 × N
 
-使用分层、配对的 episode 设计：
+采用分层、配对设计：
 
 ```text
-platform × owner × popup kind × exposure tier × action topology
+platform × owner × popup kind × exposure tier × language × message complexity
 ```
 
-- 随机化方法执行顺序、异步延迟、locale、主题、方向、字体缩放；
-- 受控 fixture 可改变按钮顺序和视觉样式；
-- 每种方法从同一设备快照和 App 状态开始；
-- 按 App、UI framework、CMP/SDK、模板族和 OS 版本分组切分；
-- 加入“无弹窗但看起来像弹窗”的负样本；
-- `N` 由 pilot 方差和功效分析决定，不提前拍脑袋；
-- 真实缺口为主，人工树腐蚀只做压力测试。
-
-## 三组核心实验
-
-### E1：缺口刻画
-
-测量 tree-only 在不同缺口类型下的 valid-close-item recall、残余失败率和平台差异。
-
-### E2：端到端主实验
-
-在等 episode、等动作预算和等模型预算下比较：
-
-- 无弹窗处理器；
-- 平台协议／watcher；
-- tree-only；
-- screenshot-only VLM；
-- naive always-on fusion；
-- 本方法；
-- oracle locator/action 上界。
-
-主看 A-VTR，并将 VTR-tech 单独报告；同时报告 detection、valid-action、False Intervention、Harmful Action、abstention/coverage、焦点恢复、额外导航步数和延迟。
-
-### E3：必要性与回证消融
-
-- 去掉视觉；
-- 去掉门控，始终调用视觉；
-- 门控只判断空树；
-- 去掉 owner/context 检查；
-- 去掉屏幕阅读器焦点检查；
-- 只看截图变化；
-- 只验证弹窗消失 D。
+同一 item 对所有方法复用完全相同的冻结观察；方法顺序随机化。按 App、模板族、SDK/CMP、UI framework 和 OS family 分组切分，加入相似非弹窗负样本。`N` 由 pilot 方差、目标置信区间宽度和功效分析决定，不预先拍脑袋。
 
 ## 否证条件
 
-- tree-only 与本方法置信区间重叠且成本更低：视觉机制没有成立。
-- always-on fusion 在等预算下稳定优于门控：门控不构成贡献。
-- App/模板隔离后增益消失：存在泄漏或模板记忆。
-- iOS 没有真实 D/C_tech/T 技术闭环：不能声称跨 Android/iOS 技术验证；没有 D/C_a11y/T 或真实用户实验时，不能声称跨平台视障用户恢复。
-- 出现敏感或破坏性误确认：不能声称可自主部署。
-- 没有目标用户研究：不能声称显著改善真实用户体验。
+- structure-only 与 MG-PU 的 `VPMA` 置信区间重叠且前者成本更低：视觉兜底没有成立。
+- always-on 在等预算下稳定优于门控：门控不构成贡献。
+- App／模板分组隔离后增益消失：可能是泄漏或模板记忆。
+- 增益来自更高 hallucination 或更低 coverage：不能声称更可靠。
+- iOS 没有真实设备观察：不能声称完成跨 Android／iOS 验证。
+- 没有目标用户研究：不能声称真实用户体验已经改善。
 
-## 论文贡献的安全写法
+## 贡献口径
 
-当前可以写：
+当前可作为待检验目标：
 
-1. 形式化移动弹窗的 **accessibility actionability gap**，把成功定义为原任务可验证恢复。
-2. 计划构建并公开一个成对记录结构化表示、像素、合法动作集合、VTR-tech 与 A-VTR 回证的 Android/iOS benchmark。
-3. 检验缺口门控是否在等预算下优于 tree-only、vision-only 和 naive fusion。
+1. 形式化移动弹窗的 accessibility message gap；
+2. 构建并计划公开一个 Android／iOS 弹窗消息判断数据集，保留结构、视觉、原始平台字段与证据；
+3. 检验 message-gap gating 是否在等预算下优于 structure-only、vision-only 和 always-on fusion。
 
-当前不能写：
+当前不能写成既定事实：第一个提出问题、第一个公开数据集、指标已经优于其他方法、已改善视障人士体验。
 
-- 第一个提出弹窗问题；
-- 第一个公开弹窗数据集；
-- 第一个结构化＋视觉方法；
-- 指标已经优于其他方法；
-- 已显著改善残障人士体验。
+## 进阶研究
 
-论文最好只有一个主贡献：**缺口感知的可验证恢复策略**。数据集是支撑贡献，“首次提出背景”不作为独立贡献。
-
-## 当前三个硬门
-
-1. **iOS gate**：真实结构读取、动作执行、VTR-tech 与可观测 A-VTR 回证是否在目标场景可行。
-2. **pilot gate**：真实 tree-only residual failure 是否足够大，门控是否优于 always-on fusion。
-3. **evidence gate**：若以盲人和低视力用户体验为核心动机，需要目标用户参与和可访问的研究流程。
-
-完整初版 Proposal 见 [`refine-logs/round-0-initial-proposal.md`](./refine-logs/round-0-initial-proposal.md)，本地预审见 [`refine-logs/PROVISIONAL_LOCAL_REVIEW.md`](./refine-logs/PROVISIONAL_LOCAL_REVIEW.md)。
+在 v1 之后可逐级研究：安全动作建议、授权后的弹窗消除、`D`、`C_tech`、`C_a11y`、`T`、`VTR-tech`、`A-VTR`。每一级都需独立权限、安全策略和回证；不得用 v1 消息准确率替代 Recovery 证据。
