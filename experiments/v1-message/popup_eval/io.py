@@ -355,8 +355,21 @@ def prepare_finalized_pilot_items(
     """Finalize a complete pilot gold batch, then join it to private feature items."""
     finalized_rows, summary = finalize_adjudication_batch(items, annotation_rows)
     prepared, semantic_annotations = prepare_items(items, finalized_rows)
+    row_by_pilot = {row["pilot_item_id"]: row for row in finalized_rows}
     for item in prepared:
-        provenance = item.get("adjudication_provenance")
-        if provenance is not None:
-            provenance["adjudication_batch_sha256"] = summary["batch_sha256"]
+        pilot_id = _pilot_item_id(item)
+        row = row_by_pilot[pilot_id]
+        provenance = item.setdefault("adjudication_provenance", {})
+        provenance.update(
+            {
+                "protocol_version": row["protocol_version"],
+                "batch_id": row["batch_id"],
+                "pilot_item_id": pilot_id,
+                "adjudication_status": row["adjudication_status"],
+                "evidence_rechecked_via_adapter": row[
+                    "evidence_rechecked_via_adapter"
+                ],
+                "adjudication_batch_sha256": summary["batch_sha256"],
+            }
+        )
     return prepared, semantic_annotations, summary

@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .comparison import compare_frozen_methods
+from .comparison import DEFAULT_BOOTSTRAP_SEED, compare_frozen_methods
 from .io import (
     prepare_finalized_pilot_items,
     read_jsonl,
@@ -27,7 +27,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--proposed-method-id", required=True)
     parser.add_argument("--strongest-baseline-method-id", required=True)
     parser.add_argument("--bootstrap-replicates", type=int, default=10_000)
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=DEFAULT_BOOTSTRAP_SEED)
     parser.add_argument("--output", required=True, type=Path)
     return parser
 

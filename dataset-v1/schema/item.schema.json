@@ -88,6 +88,28 @@
         }
       ]
     },
+    "pixelBboxOrNull": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {"type": "number", "minimum": 0}
+        }
+      ]
+    },
+    "pixelPointOrNull": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "number", "minimum": 0}
+        }
+      ]
+    },
     "presence": {
       "type": "object",
       "description": "Map from a local field name or JSON Pointer to why its value is or is not present.",
@@ -453,7 +475,7 @@
       "type": "object",
       "description": "Required v1 no-action popup-message judgment profile. These protocol fields are counted separately from the frozen 90+165 source-field union.",
       "additionalProperties": false,
-      "required": ["profile", "labels", "prediction", "gate", "evaluation", "eligibility"],
+      "required": ["profile", "labels", "gap_ground_truth", "prediction", "gate", "evaluation", "eligibility"],
       "properties": {
         "profile": {"const": "popup_message_judgment_v1"},
         "labels": {
@@ -466,6 +488,45 @@
             "message_text_gt": {"$ref": "#/$defs/stringOrNull"},
             "critical_facts_gt": {"type": "array", "items": {"type": "string"}},
             "message_text_observability": {"enum": ["complete", "partial", "not_observable", "not_applicable", "pending_annotation"]},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "gap_ground_truth": {
+          "type": "object",
+          "description": "Independent post-message-gold audit of what the frozen structured representation exposes. It is never method input and does not alter the screenshot-only A/B message labels.",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "structured_evidence_available",
+            "structured_message_text_gt",
+            "structured_message_complete_gt",
+            "gap_reasons_gt",
+            "critical_facts_missing_from_structure_gt",
+            "host_text_contamination_gt",
+            "tree_screenshot_synchronized_gt",
+            "auditor_blind_to_method_outputs",
+            "message_gold_batch_sha256",
+            "structured_bundle_sha256",
+            "gap_audit_batch_sha256",
+            "evidence_uris"
+          ],
+          "properties": {
+            "status": {"enum": ["pending_audit", "adjudicated", "cannot_resolve", "not_applicable"]},
+            "structured_evidence_available": {"$ref": "#/$defs/boolOrNull"},
+            "structured_message_text_gt": {"$ref": "#/$defs/stringOrNull"},
+            "structured_message_complete_gt": {"$ref": "#/$defs/boolOrNull"},
+            "gap_reasons_gt": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"enum": ["missing", "merged", "ambiguous", "contradictory", "stale", "owner_mismatch", "visual_only_text", "host_text_contamination", "unknown"]}
+            },
+            "critical_facts_missing_from_structure_gt": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+            "host_text_contamination_gt": {"$ref": "#/$defs/boolOrNull"},
+            "tree_screenshot_synchronized_gt": {"$ref": "#/$defs/boolOrNull"},
+            "auditor_blind_to_method_outputs": {"$ref": "#/$defs/boolOrNull"},
+            "message_gold_batch_sha256": {"$ref": "#/$defs/stringOrNull"},
+            "structured_bundle_sha256": {"$ref": "#/$defs/stringOrNull"},
+            "gap_audit_batch_sha256": {"$ref": "#/$defs/stringOrNull"},
             "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
           }
         },
@@ -929,9 +990,9 @@
         "placeholder": {"$ref": "#/$defs/stringOrNull"},
         "class_name": {"$ref": "#/$defs/stringOrNull"},
         "role": {"$ref": "#/$defs/stringOrNull"},
-        "bounds": {"$ref": "#/$defs/bboxOrNull"},
+        "bounds": {"$ref": "#/$defs/pixelBboxOrNull"},
         "size": {"type": ["array", "null"], "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
-        "position": {"$ref": "#/$defs/pointOrNull"},
+        "position": {"$ref": "#/$defs/pixelPointOrNull"},
         "z": {"$ref": "#/$defs/numberOrNull"},
         "parent_id": {"$ref": "#/$defs/stringOrNull"},
         "children_ids": {"type": "array", "items": {"type": "string"}},

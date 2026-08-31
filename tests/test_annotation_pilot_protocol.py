@@ -116,6 +116,8 @@ class AnnotationPilotProtocolArtifactTests(unittest.TestCase):
             PILOT_ROOT / "schemas" / "annotation_record.schema.json",
             PILOT_ROOT / "schemas" / "adjudication_input.schema.json",
             PILOT_ROOT / "schemas" / "adjudication_output.schema.json",
+            PILOT_ROOT / "schemas" / "gap_independent_audit_record.schema.json",
+            PILOT_ROOT / "schemas" / "gap_adjudication_output.schema.json",
             PILOT_ROOT / "templates" / "adjudication_input.template.json",
             PILOT_ROOT / "templates" / "adjudication_output.template.json",
         ]

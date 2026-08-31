@@ -1,3 +1,4 @@
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -260,6 +261,51 @@ class AnnotationTests(unittest.TestCase):
 
 
 class RunnerTests(unittest.TestCase):
+    def test_frozen_run_binds_one_gold_batch_and_exact_metric_item_set(self):
+        # Break caught: a scored snapshot can be detached from the exact gold batch/items.
+        sources = [
+            frozen_item(item_id="pmj.pending.007"),
+            frozen_item(item_id="pmj.pending.008"),
+        ]
+        sources[0]["identity"].update(
+            {"record_kind": "real_app", "pilot_item_id": "PMJ-PILOT-007"}
+        )
+        sources[1]["identity"].update(
+            {"record_kind": "real_app", "pilot_item_id": "PMJ-PILOT-008"}
+        )
+        prepared, _, adjudication_summary = popup_io.prepare_finalized_pilot_items(
+            sources,
+            [
+                adjudication_row(pilot_item_id="PMJ-PILOT-007"),
+                adjudication_row(pilot_item_id="PMJ-PILOT-008"),
+            ],
+        )
+
+        result = popup_runner.run_frozen_prediction_experiment(
+            prepared,
+            [
+                frozen_prediction_row(pilot_item_id="PMJ-PILOT-007"),
+                frozen_prediction_row(pilot_item_id="PMJ-PILOT-008"),
+            ],
+            "structured-only-v1",
+        )
+
+        self.assertEqual(
+            result["run"]["adjudication_batch_sha256"],
+            adjudication_summary["batch_sha256"],
+        )
+        self.assertEqual(len(result["run"]["metric_item_set_sha256"]), 64)
+        self.assertEqual(
+            result["run"]["metric_item_set_sha256"],
+            hashlib.sha256(
+                json.dumps(
+                    ["PMJ-PILOT-007", "PMJ-PILOT-008"],
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ).hexdigest(),
+        )
+        self.assertNotIn("metric_item_pilot_ids", result["run"])
+
     def test_gold_mutation_cannot_change_frozen_prediction_hash_or_output(self):
         # Break caught: after gold unlock, a method is rerun or its frozen output mutates.
         source = frozen_item(item_id="pmj.pending.007", message="Archived message")

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/popup-message/gap-adjudication-output.schema.json",
+  "title": "Final structure-versus-visual message-gap adjudication row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "batch_id",
+    "pilot_item_id",
+    "record_status",
+    "adjudicator_id_pseudonymous",
+    "independent_audit_record_sha256",
+    "audit_status",
+    "structured_evidence_available",
+    "structured_message_text_final",
+    "structured_message_complete_final",
+    "gap_reasons_final",
+    "critical_facts_missing_from_structure_final",
+    "host_text_contamination_final",
+    "tree_screenshot_synchronized_final",
+    "decision_rationale",
+    "evidence_uris",
+    "auditor_blind_to_method_outputs",
+    "message_gold_batch_sha256",
+    "structured_bundle_sha256",
+    "adjudicated_at"
+  ],
+  "properties": {
+    "contract_version": {"const": "popup-structure-visual-gap-adjudication-v1.0"},
+    "batch_id": {"const": "popsweeper-message-pilot-30-gap-v1"},
+    "pilot_item_id": {"type": "string", "pattern": "^PMJ-PILOT-[0-9]{3}$"},
+    "record_status": {"const": "completed"},
+    "adjudicator_id_pseudonymous": {"type": "string", "minLength": 1},
+    "independent_audit_record_sha256": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "audit_status": {"enum": ["adjudicated", "cannot_resolve", "not_applicable"]},
+    "structured_evidence_available": {"type": ["boolean", "null"]},
+    "structured_message_text_final": {"type": ["string", "null"]},
+    "structured_message_complete_final": {"type": ["boolean", "null"]},
+    "gap_reasons_final": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["missing", "merged", "ambiguous", "contradictory", "stale", "owner_mismatch", "visual_only_text", "host_text_contamination", "unknown"]}
+    },
+    "critical_facts_missing_from_structure_final": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "host_text_contamination_final": {"type": ["boolean", "null"]},
+    "tree_screenshot_synchronized_final": {"type": ["boolean", "null"]},
+    "decision_rationale": {"type": "string", "minLength": 1},
+    "evidence_uris": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "auditor_blind_to_method_outputs": {"const": true},
+    "message_gold_batch_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "structured_bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "adjudicated_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"audit_status": {"enum": ["cannot_resolve", "not_applicable"]}}},
+      "then": {
+        "properties": {
+          "structured_evidence_available": {"const": null},
+          "structured_message_text_final": {"const": null},
+          "structured_message_complete_final": {"const": null},
+          "gap_reasons_final": {"maxItems": 0},
+          "critical_facts_missing_from_structure_final": {"maxItems": 0},
+          "host_text_contamination_final": {"const": null},
+          "tree_screenshot_synchronized_final": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"audit_status": {"const": "adjudicated"}}},
+      "then": {
+        "properties": {
+          "structured_evidence_available": {"type": "boolean"},
+          "structured_message_complete_final": {"type": "boolean"},
+          "host_text_contamination_final": {"type": "boolean"},
+          "tree_screenshot_synchronized_final": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "audit_status": {"const": "adjudicated"},
+          "structured_message_complete_final": {"const": true}
+        }
+      },
+      "then": {
+        "properties": {
+          "structured_evidence_available": {"const": true},
+          "structured_message_text_final": {"type": "string", "minLength": 1},
+          "gap_reasons_final": {"maxItems": 0},
+          "critical_facts_missing_from_structure_final": {"maxItems": 0},
+          "host_text_contamination_final": {"const": false}
+        }
+      }
+    }
+  ]
+}

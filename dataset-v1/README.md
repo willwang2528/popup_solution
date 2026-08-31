@@ -17,7 +17,7 @@
 identity + provenance + scenario + environment
 → one or more action-free observations
 → cross-platform structured/raw/visual evidence
-→ message_judgment labels/prediction/gate/evaluation/eligibility
+→ message_judgment labels/gap_ground_truth/prediction/gate/evaluation/eligibility
 → feedback notification
 → no action
 ```
@@ -28,6 +28,7 @@ identity + provenance + scenario + environment
 - 决策为 `no_action` 或 `abstain`；
 - prediction 引用动作前 observation；
 - popup/message gold 与 evidence 一致；
+- screenshot-message gold 与 structure–visual gap audit 分开；gap audit 只能在 message gold 后运行，且审计者看不到方法输出；A/B audit record 必须绑定冻结结构 candidate、完整 message-gold batch 和公开的 structured-bundle commitment；
 - v1 D/C/T/VTR 均为 null；
 - synthetic fixture 不进入训练、经验指标或体验结论。
 
@@ -53,6 +54,7 @@ identity + provenance + scenario + environment
 - [`scripts/export_annotation_media.py`](./scripts/export_annotation_media.py)：校验两份归档 SHA-256、全部 ZIP 成员路径和冻结 pilot→候选 member 精确映射后，向 gitignored 本地目录导出标注媒体；
 - [`scripts/validate_dataset.py`](./scripts/validate_dataset.py)：验证器；
 - [`ANNOTATION_GUIDE.md`](./ANNOTATION_GUIDE.md)：v1 标注协议；
+- [`annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md`](./annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：message gold 后的结构暴露缺口 sidecar；
 - [`VALIDATION_REPORT_V1_MESSAGE.md`](./VALIDATION_REPORT_V1_MESSAGE.md)：当前验证报告。
 
 ## 运行

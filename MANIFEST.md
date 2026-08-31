@@ -46,12 +46,15 @@
 | `dataset-v1/annotation-pilot/schemas/annotation_record.schema.json` | A/B 盲标记录 schema | current / tested |
 | `dataset-v1/annotation-pilot/schemas/adjudication_input.schema.json` | 分歧裁决输入 schema | current / tested |
 | `dataset-v1/annotation-pilot/schemas/adjudication_output.schema.json` | 最终金标输出 schema | current / blank template only |
+| `dataset-v1/annotation-pilot/schemas/gap_independent_audit_record.schema.json` | A/B 独立 structure–visual gap 记录、真人声明与结构 candidate 绑定 schema | current / no human values |
+| `dataset-v1/annotation-pilot/schemas/gap_adjudication_output.schema.json` | message gold 后、method-blind 的结构—视觉 gap 最终裁决 schema | current / no human values |
+| `dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md` | 两人独立 gap audit、第三人仲裁与输入隔离协议 | current / audit pending |
 | `dataset-v1/annotation-pilot/PILOT_PROTOCOL_FREEZE.json` | 人工会话前阈值、全量第三人复核、媒体与协议哈希冻结 | frozen / no human outputs yet |
 | `dataset-v1/annotation-pilot/HUMAN_ANNOTATION_READINESS.json` | 路径脱敏的人工开标 readiness 结果 | ready for real human annotation only |
 | `dataset-v1/annotation-pilot/scripts/check_human_annotation_readiness.py` | 协议、ID、blank、权限、Git ignore、媒体哈希 fail-closed 门 | tested / 21 readiness tests |
 | `dataset-v1/annotation-pilot/scripts/build_pilot_bundle.py` | 再现固定 pilot 与 A/B 盲标模板 | tested generator |
 | `dataset-v1/annotation-pilot/scripts/calculate_agreement.py` | κ、消息一致性、semantic-slot Jaccard 与分歧导出 | tested / no human values yet |
-| `dataset-v1/empirical-pilot/materialize_pending_union.py` | 30 条 pending item 物化为完整 union，并保留稳定 pilot join key | tested / private text-bearing output |
+| `dataset-v1/empirical-pilot/materialize_pending_union.py` | 30 条 pending item 物化为完整 union，保留稳定 pilot join key、186 个 raw pixel bounds 与 pending gap container | tested / private text-bearing output |
 | `dataset-v1/empirical-pilot/PUBLIC_PENDING_UNION_SUMMARY.json` | 30/22/8/186 聚合、hash 与负向声明 | current / unscored |
 | `dataset-v1/scripts/build_crosswalk.py` | 生成 255 条 source-field crosswalk | tested generator |
 | `dataset-v1/scripts/materialize_schema_fixture.py` | 生成 3 条非经验 fixture | tested generator |
@@ -82,13 +85,17 @@
 | `dataset-v1/work/popsweeper_source_audit.json` | 266,010,362-byte 归档的 MD5、安全与成员清点 | pass |
 | `dataset-v1/work/rico_semantic_source_audit.json` | 66,261 JSON/PNG 对的 RICO 归档安全清点 | pass |
 | `experiments/v1-message/README.md` | v1 输入、方法、指标、命令与证据边界 | current |
-| `experiments/v1-message/popup_eval/` | majority、A1/A2、MG-PU、整批 gold finalizer、冻结预测评分、语义复核与 paired comparison | implemented / action-free / no human result |
+| `experiments/v1-message/popup_eval/` | majority、A1/A2、MG-PU、整批 gold finalizer、冻结预测评分、语义复核、gap audit、visual-bank freeze 与 paired comparison | implemented / action-free / no human result |
 | `experiments/v1-message/run_eval.py` | 可复现 v1 evaluation CLI | tested / empirical gold required |
-| `experiments/v1-message/tests/` | 路由、A1/A2、gold batch、冻结预测、语义 hash、group-map 与 paired bootstrap 测试 | 53 tests passing |
+| `experiments/v1-message/tests/` | 路由、A1/A2、gold batch、冻结预测、语义/gap hash、visual freeze、group-map 与 paired bootstrap 测试 | 65 tests passing |
 | `experiments/v1-message/schemas/semantic_output_adjudication.schema.json` | 绑定逐项 prediction SHA-256 的盲式消息语义复核 | implemented / human values pending |
 | `experiments/v1-message/statistics/README.md` | post-gold paired scorer、隐私 group-map 与统计边界 | current / exploratory only |
 | `experiments/v1-message/statistics/PUBLIC_GROUP_MAP_SUMMARY.json` | 30 singleton cluster 的无标识聚合与哈希 | current / formal leakage control false |
 | `experiments/v1-message/popup_eval/comparison_cli.py` | 同 gold/item 集、预声明 reference、确定性 cluster bootstrap CLI | tested / no empirical run |
+| `experiments/v1-message/visual/VISUAL_EVIDENCE_PROTOCOL_V1.json` | B1/C1/MG-PU 共用的 presence/ROI/model/budget freeze 状态 | blocked / no formal visual bank |
+| `experiments/v1-message/visual/README.md` | 全屏/close-button box 非 popup ROI、C1-AO/C1-BM 命名与公私边界 | current |
+| `experiments/v1-message/popup_eval/visual_freeze.py` | 私有 visual bank ready-state、截图 commitment、exact-bijection、gold-blind、ROI/config/request/response 验证器 | tested / no formal bank rows |
+| `experiments/v1-message/popup_eval/gap_adjudication.py` | 绑定真实 message gold、结构 bundle、两份独立 audit record 与最终裁决的 gap finalizer | tested / no human audit rows |
 | `experiments/v1-message/results/synthetic-smoke/` | 八种方法的管线 smoke | pass / synthetic / not paper eligible |
 | `experiments/v1-message/resources/the-ok/` | 官方 `b618948` 指示词快照、来源与 MIT notice | fixed upstream evidence |
 | `experiments/v1-message/B2_POPSWEEPER_REPRODUCIBILITY_GATE.md` | exact B2 的 fail-closed 资产门禁与允许的 reconstruction/adaptation | NO-GO / current artifacts |
@@ -146,6 +153,7 @@
 
 - 具有双人消息金标、可进入 VPMA 的 empirical popup-message pilot items；
 - 真实双人独立标注与 adjudication；
+- 两人独立且第三人仲裁的 structure–visual gap audit；
 - Android controlled capture 与 iOS capability records；
 - structure-only、OCR/VLM、always-on fusion 和 MG-PU 的 empirical 冻结 split 结果；
 - 目标用户研究；
@@ -153,3 +161,5 @@
 - 带稳定版本号或 DOI 的公开 benchmark release。
 
 在这些证据形成前，不得宣称已有公开 empirical dataset、跨平台验证、方法显著优于基线或真实用户体验已改善。
+
+另一个公开复核缺口是：`papers.jsonl` 的 29 个 `source_evidence.path`（16 个唯一路径，覆盖 14 篇记录）目前都指向未随仓库再分发的授权本地材料。字段并集与现有 provenance 可审计，但公开 clone 尚不能独立重开这些逐字段证据；后续需为每篇补 DOI 或官方可访问来源链接，且不得借此重新分发受版权约束的全文。

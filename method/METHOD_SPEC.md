@@ -164,6 +164,13 @@ v1 最小真值：
 
 正样本消息按屏幕可观察内容和合理阅读顺序转录，不补写应用意图。正式 validation/test 由两名标注者盲法独立标注并裁决。`message_semantically_correct` 与 `critical_hallucination` 由独立裁决得到；字符串 Exact Match／Character F1 只作辅助。
 
+结构暴露缺口不由截图 A/B 盲标直接推断。截图消息 gold 完成后，另以冻结
+structure bundle 对照最终 message gold，做 method-blind structure–visual gap
+audit；两名独立审计者和第三位仲裁者记录 `structured_message_complete_gt`、
+`gap_reasons_gt`、结构中缺失的 critical facts 与 host-text contamination。该
+sidecar 只用于数据属性、分层分析与 gate 诊断，不回流 pre-gold prediction，也
+不替代 VPMA。
+
 ## 7. 指标
 
 ### 7.1 主指标

@@ -32,6 +32,20 @@ CLI 的 `--method` 支持：
 
 本地 macOS Vision OCR adapter 见 [`ocr/README.md`](./ocr/README.md)。其正式 30 图运行只证明 OCR 管线可执行：全屏 OCR 不能判断 popup presence，因此所有条目均安全弃答；逐图派生文本因隐私风险保持私有，公开仓库只保留无文本聚合摘要。
 
+[`visual/`](./visual/) 定义 B1、C1 与 MG-PU 可共用的 pre-gold visual bank
+契约。当前没有可复现 presence detector、合法 popup ROI 和完整视觉模型身份，
+所以协议状态为 blocked。finalizer 还要求 ready/formal-ready 状态、预冻结
+item→截图 hash commitment、逐项图片 hash、policy ID、模型配置以及 judged
+request/response hash 全部一致；缺任一项即整批拒绝。现有 Model-B 预标注不能冒充
+该 bank。C1-AO 与 C1-BM 分别表示 always-on accuracy-cost control 和总调用预算匹配
+control。
+
+post-gold structure–visual gap sidecar 也不接收孤立占位 hash：finalizer 会重算
+完整 message-gold batch、私有 structured-feature bundle、每项 A/B 独立 audit
+record 和最终 adjudication row 的 hash，并验证 candidate 引用、A/B 身份分离和
+no-popup/complete/missing 等逻辑。当前没有任何真人 gap audit 行，所有 item 仍为
+`pending_audit`。
+
 ## 人工金标解锁前的冻结
 
 真实 pilot 的结构化输入由 [`features/`](./features/) 生成。原始本地 manifest 中的来源目录标签、source ID 和 archive path 均可能泄漏 `ads/no_ads`，因此 feature adapter 只投影 `pilot_item_id`，按固定本地目录读取 RICO 结构。逐节点文本、resource ID 和 bounds 写入 Git 忽略的私有 JSONL；公开文件只保留 30 items、22 available、8 missing、186 nodes 及 bundle hash。
@@ -118,12 +132,18 @@ hash 或 prediction 内容。
 - 私有 group-map 与模型输入隔离，使用 `group_key + content_key` 连通分量；
 - 默认 10,000 次、固定 seed、整 cluster 有放回抽样；
 - 主统计量是 VPMA overall success 的配对差，`null/abstain` 按失败计；
+- 同一 cluster draw 同时重算 coverage、Presence Macro-F1、critical-information recall、critical-hallucination rate 与 visual-call rate；零分母保持 `null`；
 - 公开输出不含 item、消息或 source metadata，并永久保持
   `analysis_tier=exploratory_pilot`、`paper_result_eligible=false`。
 
 当前 group-map 为 30 个 singleton cluster，尚不足以证明正式 leakage control；
-B1 popup-ROI、B2 exact PopSweeper 和可复现视觉模型也仍未解锁。因此仓库尚无
+B1 popup-ROI、B2 exact PopSweeper、C1 共享视觉融合和可复现视觉模型也仍未解锁。因此仓库尚无
 正式方法比较数字。
+
+截图消息 gold 本身不能证明结构暴露缺口。独立 sidecar 见
+[`STRUCTURE_VISUAL_GAP_AUDIT.md`](../../dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：
+它只在 message gold 后比较冻结 structure 与截图消息，绑定两个独立审计记录和
+第三人仲裁 hash，且严格禁止读取方法输出。
 
 ## 输出与口径
 

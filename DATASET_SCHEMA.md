@@ -11,7 +11,7 @@
 ```text
 scenario + frozen observation
 → structured/raw/visual evidence
-→ message gold + prediction + gate
+→ screenshot message gold + independent structure-gap gold + prediction + gate
 → VPMA / component metrics
 → stop, with action_attempts=[]
 ```
@@ -42,6 +42,10 @@ v1 message profile：单独计数的协议扩展，不冒充新的论文来源�
 
 不要用跨平台规范化值覆盖平台原始字段，也不要把 Appium／XCUI 能读到的内容直接标成 TalkBack／VoiceOver 可达。
 
+原始 Android `bounds/position` 使用非负 pixel coordinates；
+`normalized.bounds_normalized` 只在可信 screen/viewport size 可得时填写。不得用
+候选最大坐标猜测屏幕大小。
+
 ## 3. `message_judgment` 契约
 
 ### Labels
@@ -60,6 +64,16 @@ v1 message profile：单独计数的协议扩展，不冒充新的论文来源�
 - 无弹窗：`blocking_gt=null`、`message_text_gt=null`、`critical_facts_gt=[]`、observability=`not_applicable`。
 - 有弹窗且消息可观察：按阅读顺序忠实转录，不翻译、不补写不可见意图。
 - `partial/not_observable` 单独报告 coverage，不进入 complete-message 分母。
+
+### Gap ground truth
+
+`gap_ground_truth` 是 message gold 完成后的独立 sidecar：对照冻结 structure 与
+screenshot-message gold，记录 `structured_message_complete_gt`、gap reasons、
+结构中缺失的 critical facts、host-text contamination 和树—图同步性。两名审计者
+及第三位仲裁者必须看不到方法输出；该字段不得回流 pre-gold prediction。pending
+item 统一写 `status=pending_audit`，不能由视觉 route 或模型预标注自动填值。
+正式 sidecar 必须同时绑定完整 message-gold rows、预冻结 structured bundle、
+两个不同 A/B audit record 及其真实 candidate 引用，不能只提交格式合法的占位 hash。
 
 ### Prediction
 

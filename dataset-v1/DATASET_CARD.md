@@ -32,6 +32,7 @@
 
 - 动作前 observation 先冻结并持久化 prediction，再解锁 gold；
 - validation/test 语义真值由两名标注者独立完成并裁决；
+- screenshot-message gold 完成后，另由看不到方法输出的两名审计者和第三位仲裁者生成 structure–visual gap sidecar；A/B 记录和最终行必须与真实 message-gold rows、冻结 structure bundle 及同 item candidate 严格绑定；
 - message text 不翻译，不删除否定、金额、日期、对象、条件或后果；
 - evidence 保存 URI、hash、media type、capture channel、redaction status；
 - 六类 group 防止 App／模板／SDK 等泄漏。
@@ -48,6 +49,7 @@
 - real-app item：0；controlled fixture item：0；iOS item：0；
 - 255 条来源 crosswalk 保持完整；
 - v1 QA 4 个 full-automated、2 个 partial-automated；发布前仍需人工证据、隐私、权限和标注门。
+- schema 已加入 `message_judgment.gap_ground_truth`，但当前 30-item pilot 全部仍为 `pending_audit`；它不是现有模型预标注的重命名。
 
 因此当前产物是 **collection-ready contract + frozen source-candidate manifest**，不是公开实测 benchmark，也不是方法效果证据。
 

@@ -90,6 +90,162 @@ def write_jsonl(path: Path, rows: list[dict]) -> None:
 
 
 class PairedComparisonTests(unittest.TestCase):
+    def test_bootstrap_default_seed_is_frozen_to_protocol(self):
+        # Break caught: omitted seed silently changes the published bootstrap draws.
+        comparison = importlib.import_module("popup_eval.comparison")
+        self.assertEqual(comparison.DEFAULT_BOOTSTRAP_SEED, 20260901)
+        items = [
+            item(1, popup=False, message=None, group="g1"),
+            item(2, popup=False, message=None, group="g2"),
+        ]
+        rows = [
+            prediction(index, method, present=False, message=None)
+            for method in ("structured-only-v1", "mg-pu-gated-union-v1")
+            for index in (1, 2)
+        ]
+        group_rows = [
+            {
+                "pilot_item_id": f"PMJ-PILOT-{index:03d}",
+                "cluster_id": f"cluster:g{index}",
+            }
+            for index in (1, 2)
+        ]
+
+        report = comparison.compare_frozen_methods(
+            items,
+            rows,
+            group_rows,
+            method_ids=["structured-only-v1", "mg-pu-gated-union-v1"],
+            proposed_method_id="mg-pu-gated-union-v1",
+            strongest_baseline_method_id="structured-only-v1",
+            bootstrap_replicates=5,
+        )
+
+        self.assertEqual(report["bootstrap"]["seed"], 20260901)
+
+    def test_zero_secondary_denominator_remains_explicitly_undefined(self):
+        # Break caught: a zero critical-fact/hallucination denominator is reported as 0.
+        comparison = importlib.import_module("popup_eval.comparison")
+        items = [
+            item(1, popup=False, message=None, group="g1"),
+            item(2, popup=False, message=None, group="g2"),
+        ]
+        rows = [
+            prediction(index, method, present=False, message=None)
+            for method in ("structured-only-v1", "mg-pu-gated-union-v1")
+            for index in (1, 2)
+        ]
+        group_rows = [
+            {
+                "pilot_item_id": f"PMJ-PILOT-{index:03d}",
+                "cluster_id": f"cluster:g{index}",
+                "cluster_source": "frozen_test_group_map",
+            }
+            for index in (1, 2)
+        ]
+
+        report = comparison.compare_frozen_methods(
+            items,
+            rows,
+            group_rows,
+            method_ids=["structured-only-v1", "mg-pu-gated-union-v1"],
+            proposed_method_id="mg-pu-gated-union-v1",
+            strongest_baseline_method_id="structured-only-v1",
+            bootstrap_replicates=25,
+            seed=9,
+        )
+
+        metrics = report["paired_effects"]["metrics"]
+        for name in (
+            "critical_information_recall",
+            "critical_hallucination_rate",
+        ):
+            self.assertIsNone(metrics[name]["point_estimate_difference"])
+            self.assertEqual(metrics[name]["valid_replicates"], 0)
+            self.assertIsNone(metrics[name]["confidence_interval_95"])
+            self.assertEqual(metrics[name]["ci_status"], "undefined_point_estimate")
+
+    def test_comparison_bootstraps_predeclared_secondary_effects(self):
+        # Break caught: the report exposes only VPMA and silently drops required trade-offs.
+        comparison = importlib.import_module("popup_eval.comparison")
+        items = [
+            item(1, popup=True, message="A", group="g1"),
+            item(2, popup=True, message="B", group="g2"),
+            item(3, popup=False, message=None, group="g3"),
+            item(4, popup=False, message=None, group="g4"),
+        ]
+        items[0]["message_judgment"]["labels"]["critical_facts_gt"] = ["fact-a"]
+        rows = [
+            prediction(1, "structured-only-v1", present=False, message=None),
+            prediction(2, "structured-only-v1", present=True, message="B"),
+            prediction(3, "structured-only-v1", present=False, message=None),
+            prediction(4, "structured-only-v1", present=True, message="False alert"),
+            prediction(1, "mg-pu-gated-union-v1", present=True, message="A"),
+            prediction(2, "mg-pu-gated-union-v1", present=True, message="B"),
+            prediction(3, "mg-pu-gated-union-v1", present=False, message=None),
+            prediction(4, "mg-pu-gated-union-v1", present=False, message=None),
+        ]
+        rows[0]["critical_facts_pred"] = []
+        rows[4]["critical_facts_pred"] = ["fact-a"]
+        rows[5].update(
+            {
+                "status": "abstain",
+                "popup_present_pred": None,
+                "message_text_pred": None,
+                "critical_facts_pred": [],
+                "confidence": None,
+            }
+        )
+        group_rows = [
+            {
+                "pilot_item_id": f"PMJ-PILOT-{index:03d}",
+                "cluster_id": f"cluster:g{index}",
+                "cluster_source": "frozen_test_group_map",
+            }
+            for index in range(1, 5)
+        ]
+
+        report = comparison.compare_frozen_methods(
+            items,
+            rows,
+            group_rows,
+            method_ids=["structured-only-v1", "mg-pu-gated-union-v1"],
+            proposed_method_id="mg-pu-gated-union-v1",
+            strongest_baseline_method_id="structured-only-v1",
+            bootstrap_replicates=200,
+            seed=31,
+        )
+
+        effects = report["paired_effects"]
+        self.assertEqual(effects["direction"], "proposed_minus_reference")
+        self.assertEqual(effects["bootstrap_unit"], "group")
+        metrics = effects["metrics"]
+        self.assertAlmostEqual(
+            metrics["vpma_overall_success_rate"]["point_estimate_difference"],
+            0.25,
+        )
+        self.assertAlmostEqual(
+            metrics["coverage"]["point_estimate_difference"], -0.25
+        )
+        self.assertAlmostEqual(
+            metrics["presence_macro_f1"]["point_estimate_difference"], 1 / 3
+        )
+        self.assertAlmostEqual(
+            metrics["critical_information_recall"]["point_estimate_difference"],
+            1.0,
+        )
+        self.assertAlmostEqual(
+            metrics["critical_hallucination_rate"]["point_estimate_difference"],
+            0.0,
+        )
+        self.assertAlmostEqual(
+            metrics["visual_call_rate"]["point_estimate_difference"], 1.0
+        )
+        for metric in metrics.values():
+            self.assertEqual(metric["bootstrap_replicates"], 200)
+            self.assertIn("valid_replicates", metric)
+            self.assertIn("confidence_interval_95", metric)
+
     def test_comparison_cli_writes_only_aggregate_hashed_evidence(self):
         # Break caught: the paired runner is not reproducible from frozen private inputs.
         self.assertIsNotNone(importlib.util.find_spec("popup_eval.comparison_cli"))

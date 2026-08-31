@@ -367,6 +367,18 @@ def run_frozen_prediction_experiment(
     if not metric_items:
         raise ContractError("no items have resolved, metric-eligible presence gold")
 
+    adjudication_hashes = {
+        item.get("adjudication_provenance", {}).get("adjudication_batch_sha256")
+        for item in items
+    }
+    if len(adjudication_hashes) != 1:
+        raise ContractError("frozen scoring requires one adjudication batch hash")
+    adjudication_batch_sha256 = next(iter(adjudication_hashes))
+    if not isinstance(adjudication_batch_sha256, str) or len(
+        adjudication_batch_sha256
+    ) != 64:
+        raise ContractError("frozen scoring requires one adjudication batch hash")
+
     all_items_by_pilot: dict[str, dict[str, Any]] = {}
     for item in items:
         pilot_id = item.get("identity", {}).get("pilot_item_id")
@@ -398,6 +410,13 @@ def run_frozen_prediction_experiment(
         for row in sorted_rows
     ).encode("utf-8")
     prediction_sha256 = hashlib.sha256(canonical_payload).hexdigest()
+
+    metric_item_pilot_ids = sorted(
+        item["identity"]["pilot_item_id"] for item in metric_items
+    )
+    metric_item_set_sha256 = hashlib.sha256(
+        json.dumps(metric_item_pilot_ids, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
     predictions: list[dict[str, Any]] = []
     for item in metric_items:
@@ -436,6 +455,8 @@ def run_frozen_prediction_experiment(
         "method": method_id,
         "prediction_source": "pregold_frozen_snapshot",
         "frozen_prediction_sha256": prediction_sha256,
+        "adjudication_batch_sha256": adjudication_batch_sha256,
+        "metric_item_set_sha256": metric_item_set_sha256,
         "action_policy": "no_action",
         "input_item_count": len(items),
         "evaluated_item_count": len(metric_items),

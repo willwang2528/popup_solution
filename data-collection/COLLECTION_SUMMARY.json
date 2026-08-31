@@ -39,7 +39,8 @@
   "quality_warnings": [
     "PPT slide 5 misattributes DiOS hierarchy and a modern XCUITest example to An Approach for iOS Applications' Testing; those images are excluded from that paper's evidence.",
     "Strict three-stage inclusion is weaker than the proposed A-VTR criterion and must not be described as full task recovery.",
-    "Abandon All Hope is currently ppt_only because its full text is not present in the authorized local source set."
+    "Abandon All Hope is currently ppt_only because its full text is not present in the authorized local source set.",
+    "The 29 source_evidence path entries (16 unique paths across all 14 records) point to authorized local provenance artifacts that are not redistributed in this public repository; until DOI or official source URLs are added, a public clone cannot independently reopen the field-level evidence from papers.jsonl."
   ],
   "validation": {
     "jsonl_parse": "passed",

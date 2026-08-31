@@ -445,6 +445,19 @@ def _candidate_from_feature(
     ancestors = values.get("ancestors")
     hierarchy = [value for value in ancestors if isinstance(value, str)] if isinstance(ancestors, list) else []
     clickable = values.get("clickable") if isinstance(values.get("clickable"), bool) else None
+    raw_bounds = values.get("bounds")
+    bounds = (
+        list(raw_bounds)
+        if isinstance(raw_bounds, list)
+        and len(raw_bounds) == 4
+        and all(
+            isinstance(value, (int, float)) and not isinstance(value, bool)
+            for value in raw_bounds
+        )
+        and raw_bounds[2] > raw_bounds[0]
+        and raw_bounds[3] > raw_bounds[1]
+        else None
+    )
     candidate.update(
         {
             "candidate_id": str(feature_candidate["candidate_id"]),
@@ -491,6 +504,11 @@ def _candidate_from_feature(
             "text": values.get("text") if isinstance(values.get("text"), str) else None,
             "class_name": values.get("class") if isinstance(values.get("class"), str) else None,
             "role": values.get("component_label") if isinstance(values.get("component_label"), str) else None,
+            "bounds": bounds,
+            "size": [bounds[2] - bounds[0], bounds[3] - bounds[1]]
+            if bounds is not None
+            else None,
+            "position": bounds[:2] if bounds is not None else None,
             "path": hierarchy,
             "clickable": clickable,
             "actions": ["click"] if clickable else [],
@@ -730,6 +748,23 @@ def _build_item(
             "message_text_gt": None,
             "critical_facts_gt": [],
             "message_text_observability": "pending_annotation",
+            "evidence_uris": [],
+        }
+    )
+    item["message_judgment"]["gap_ground_truth"].update(
+        {
+            "status": "pending_audit",
+            "structured_evidence_available": None,
+            "structured_message_text_gt": None,
+            "structured_message_complete_gt": None,
+            "gap_reasons_gt": [],
+            "critical_facts_missing_from_structure_gt": [],
+            "host_text_contamination_gt": None,
+            "tree_screenshot_synchronized_gt": None,
+            "auditor_blind_to_method_outputs": None,
+            "message_gold_batch_sha256": None,
+            "structured_bundle_sha256": None,
+            "gap_audit_batch_sha256": None,
             "evidence_uris": [],
         }
     )

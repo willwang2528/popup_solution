@@ -184,6 +184,13 @@ class PendingUnionMaterializerCliTest(unittest.TestCase):
             )
             self.assertEqual(stat.S_IMODE(private_output.parent.stat().st_mode), 0o700)
             self.assertEqual(stat.S_IMODE(private_output.stat().st_mode), 0o600)
+            first_candidate = rows[0]["candidates"][0]
+            self.assertEqual(
+                first_candidate["android_raw"]["bounds"], [10, 20, 100, 80]
+            )
+            self.assertEqual(first_candidate["android_raw"]["size"], [90, 60])
+            self.assertEqual(first_candidate["android_raw"]["position"], [10, 20])
+            self.assertIsNone(first_candidate["normalized"]["bounds_normalized"])
             for row in rows:
                 identity = row["identity"]
                 self.assertEqual(identity["record_kind"], "real_app")
@@ -199,6 +206,15 @@ class PendingUnionMaterializerCliTest(unittest.TestCase):
                     labels["message_text_observability"], "pending_annotation"
                 )
                 self.assertEqual(labels["evidence_uris"], [])
+                gap_gold = row["message_judgment"]["gap_ground_truth"]
+                self.assertEqual(gap_gold["status"], "pending_audit")
+                self.assertIsNone(gap_gold["structured_evidence_available"])
+                self.assertIsNone(gap_gold["structured_message_complete_gt"])
+                self.assertEqual(gap_gold["gap_reasons_gt"], [])
+                self.assertEqual(
+                    gap_gold["critical_facts_missing_from_structure_gt"], []
+                )
+                self.assertEqual(gap_gold["evidence_uris"], [])
                 self.assertEqual(row["annotations"], [])
                 self.assertEqual(row["action_attempts"], [])
                 self.assertEqual(row["decision"]["policy"]["decision"], "no_action")

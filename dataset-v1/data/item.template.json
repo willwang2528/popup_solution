@@ -148,6 +148,21 @@
       "message_text_observability": "complete",
       "evidence_uris": []
     },
+    "gap_ground_truth": {
+      "status": "adjudicated",
+      "structured_evidence_available": true,
+      "structured_message_text_gt": "Special offer.",
+      "structured_message_complete_gt": false,
+      "gap_reasons_gt": ["merged", "visual_only_text"],
+      "critical_facts_missing_from_structure_gt": ["ends today"],
+      "host_text_contamination_gt": false,
+      "tree_screenshot_synchronized_gt": true,
+      "auditor_blind_to_method_outputs": true,
+      "message_gold_batch_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "structured_bundle_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "gap_audit_batch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "evidence_uris": []
+    },
     "prediction": {
       "status": "judged",
       "popup_present_pred": true,

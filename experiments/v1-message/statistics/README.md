@@ -61,7 +61,11 @@ The reference baseline must be explicitly declared; the test set never selects
 it automatically. Bootstrap draws are deterministic
 `sha256-counter-mod-v1`, sample whole clusters with replacement, and report a
 type-7 percentile 95% interval for the paired difference in VPMA overall
-success, where abstention/null counts as failure.
+success, where abstention/null counts as failure. The same shared cluster draws
+also report paired differences for coverage, Presence Macro-F1,
+critical-information recall, critical-hallucination rate, and visual-call rate.
+Undefined secondary denominators remain `null`; a CI is emitted only when at
+least 95% of bootstrap replicates have a defined paired value.
 
 Every pilot report remains `analysis_tier=exploratory_pilot` and
 `paper_result_eligible=false`. B2 exact PopSweeper remains NO-GO, B1 is not yet a

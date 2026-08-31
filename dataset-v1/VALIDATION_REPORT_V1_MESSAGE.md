@@ -48,6 +48,8 @@ warnings: 2
 - abstain 不携带伪 prediction，也不获得 VPMA；
 - visual fallback 标志与调用次数一致；
 - presence correctness、critical-information recall 与 VPMA 可从原子字段重算；
+- `gap_ground_truth` 在 schema/fixture 中有独立容器，pending empirical item 不会从截图 gold 或方法 route 自动填入；
+- Android raw pixel bounds 使用非归一化 bbox contract；没有可信 screen size 时规范化 bounds 保持 null；
 - v1 不允许 D/C/T/VTR 成功值；
 - synthetic/paper-reconstruction item 不具备 v1 经验指标资格；
 - 255 条来源字段全部映射到仍存在的 canonical pointer。
@@ -73,12 +75,12 @@ eligible_for_user_experience_claim = false
 
 | Artifact | SHA-256 |
 |---|---|
-| `data/items.schema-fixture.jsonl` | `1898d32683ae5d093957047263abf1cf48e1a9d26679394938ee488a451bf1e4` |
+| `data/items.schema-fixture.jsonl` | `611cb9d46a23f10d1505c9e8e9962d4b1bc7e018a7538122b606ceb656d75d21` |
 | `schema/source_to_item_crosswalk.json` | `912c2b77e91e65a612bed51e776e93763457d73c246c716b9532bf872caa71ff` |
-| `schema/item.schema.json` | `35490b44b640b2a45f08c5fb00b1f0b5bdf2ebb14d6420dd221cba573f80d4b0` |
+| `schema/item.schema.json` | `2a384f315542c4f5443e63aefff4350e9e9711be54983ed7116f9d9b4fb6c23a` |
 | `schema/field_catalog.json` | `10f8b5801d69765055ed3a935d88d532a722a86b9163ac3bbd0029a846a9f8b9` |
 | `schema/v1_message_qa_rules.json` | `908ec1a13f50d60b8fa1b16a72730fce8603548c45a007f2014947dd97a8f623` |
-| `scripts/validate_dataset.py` | `9a998e59ec3650d5100dd260cecfc1dfe2008e42f6ff66e5e5a0c9fabd163136` |
+| `scripts/validate_dataset.py` | `eb55e5d0a8fcf71b741e4d532b4bfa64540441001acf280ec5001a51691ae74f` |
 
 ## 6. 未完成门
 
@@ -86,8 +88,9 @@ eligible_for_user_experience_claim = false
 
 1. Android/TalkBack 与 iOS/VoiceOver 只读 capability pilot；
 2. 两名标注者的 message semantics／critical hallucination 协议试标；
-3. screenshot/tree 权限、隐私、脱敏与发布检查；
-4. 根据 pilot 的 paired effect、cluster size 与 coverage 冻结 `N`；
-5. App/template/SDK/UI framework/OS family/near-duplicate group split 回证。
+3. message gold 后独立完成两人 structure–visual gap audit 与第三人仲裁；
+4. screenshot/tree 权限、隐私、脱敏与发布检查；
+5. 根据 pilot 的 paired effect、cluster size 与 coverage 冻结 `N`；
+6. App/template/SDK/UI framework/OS family/near-duplicate group split 回证。
 
 因此正确交付名称是 **collection-ready v1 message contract + synthetic fixtures**，不是公开实测 benchmark。

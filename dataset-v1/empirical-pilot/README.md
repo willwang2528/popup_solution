@@ -46,6 +46,14 @@ adapter reads that field as the union-schema equivalent of its pre-gold raw
 element text, so materialization does not silently turn available A2 input into
 abstention.
 
+Existing RICO pixel geometry is preserved in `candidate.android_raw.bounds`,
+`size`, and `position`. `normalized.bounds_normalized` remains null because the
+archived feature bundle does not establish a trustworthy screen size; the
+materializer does not normalize by the maximum candidate coordinate. Every
+pending item also contains `message_judgment.gap_ground_truth.status=pending_audit`.
+That field is populated only by the separate, post-message-gold, method-blind
+structure–visual gap audit.
+
 The materializer calls the project validator as an imported module. It validates
 the schema, item invariants, and dataset invariants in memory and does not invoke
 the validator CLI or overwrite `dataset-v1/validation-result.json`.

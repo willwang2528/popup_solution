@@ -34,13 +34,13 @@
 | B1 OCR-only | `runnable`；30/30 abstain | 当前是全屏 OCR，不是正式 popup-ROI baseline |
 | C3 MG-PU candidate | `runnable`；2 项 structure、28 项 visual workflow candidate | visual candidate 精确模型身份不可复现；不是正式方法结果 |
 
-A0、A3、B2、B3、C1、C2、C4 仍只有接口、计划或 synthetic smoke。A2 是 paper-constrained v1 adaptation，不是原论文完整系统复现。`always-visual` 只是路由消融，不等于 C1 always-on structure+vision fusion。
+A0、A3、B2、B3、C1、C2、C4 仍只有接口、计划或 synthetic smoke。A2 是 paper-constrained v1 adaptation，不是原论文完整系统复现。`always-visual` 只是路由消融，不等于 C1 always-on structure+vision fusion。统一视觉冻结协议已经定义，但当前状态仍为 `blocked_missing_reproducible_presence_roi_visual_bank`。
 
 ## 正式比较的解锁顺序
 
 1. 完成真实 A/B 盲标，并由第三位真实 adjudicator 对全部 30 项输出 final；冻结 group-disjoint split。
 2. 正式运行 A1、A2、B1；B1 使用无泄漏 popup scope。B2 只有在取得 PopSweeper 代码、权重、revision、frame gate、分类器阈值、时序帧与 close-button 标注后才能解锁 exact；自建 popup ROI 必须作为单独 adaptation。
-3. 实现 C1；C1/C3 使用同一 visual backbone、分辨率和预算。
+3. 实现 C1；C1/C3 使用同一冻结 visual bank、backbone、分辨率和单次调用配置。真正 always-on 的 `C1-AO` 只用于 accuracy-cost frontier；与 MG-PU 匹配总调用数的控制必须命名为 `C1-BM`，不能称为 always-on。
 4. 只有在同一 gold、同一输入资格和同一 evaluator 下，才运行 C3 对 dev-selected strongest deployable baseline 的主比较。
 
 在以上条件完成前，本仓库只报告工程就绪度、abstention、visual-call routing 和可复现性缺口，不报告 accuracy、VPMA 或“优于已有方法”。
@@ -56,8 +56,9 @@ gold，因此没有运行结果：
 3. A1、A2、MG-PU 直接评分 gold 前冻结的 prediction snapshot，不在 gold 解锁后
    重跑方法；
 4. 可选消息语义复核绑定逐条 prediction SHA-256，并要求比较方法完整覆盖；
-5. paired scorer 使用显式私有 group-map、预声明 reference baseline 和确定性
-   10,000 次 cluster bootstrap。
+5. 独立、method-blind 的 structure–visual gap audit 绑定两个审计记录、message-gold batch 和 structured bundle hash，只用于分层分析；
+6. paired scorer 使用显式私有 group-map、预声明 reference baseline 和确定性
+   10,000 次 cluster bootstrap，并同时报告 VPMA、coverage、Presence Macro-F1、critical-information recall、critical-hallucination rate 与 visual-call rate 的配对差。
 
 当前 pilot group-map 是 30 个 singleton cluster，仅能支撑 exploratory pipeline
 检查，不能声称正式 near-duplicate/app/template leakage control。B1 popup-ROI、

@@ -152,6 +152,21 @@ def make_variants(base: dict[str, Any]) -> list[dict[str, Any]]:
         "critical_facts_gt": [],
         "message_text_observability": "not_applicable"
     })
+    negative["message_judgment"]["gap_ground_truth"].update({
+        "status": "not_applicable",
+        "structured_evidence_available": None,
+        "structured_message_text_gt": None,
+        "structured_message_complete_gt": None,
+        "gap_reasons_gt": [],
+        "critical_facts_missing_from_structure_gt": [],
+        "host_text_contamination_gt": None,
+        "tree_screenshot_synchronized_gt": None,
+        "auditor_blind_to_method_outputs": True,
+        "message_gold_batch_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "structured_bundle_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "gap_audit_batch_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "evidence_uris": []
+    })
     negative["message_judgment"]["prediction"].update({
         "popup_present_pred": False,
         "message_text_pred": None,
