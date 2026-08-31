@@ -26,7 +26,9 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 18. [`experiments/v1-message/README.md`](./experiments/v1-message/README.md)：零动作 baseline／MG-PU 路由与 v1 指标评测骨架。
 19. [`dataset-v1/work/MODEL_PREANNOTATION_STATUS.md`](./dataset-v1/work/MODEL_PREANNOTATION_STATUS.md)：双模型预标注的非金标状态与唯一分歧项。
 20. [`experiments/v1-message/ocr/README.md`](./experiments/v1-message/ocr/README.md)：本地 Vision OCR、隐私 withholding 和公开聚合证据。
-21. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
+21. [`experiments/v1-message/features/README.md`](./experiments/v1-message/features/README.md)：人工金标解锁前的结构化特征冻结与泄漏隔离。
+22. [`experiments/v1-message/pregold/README.md`](./experiments/v1-message/pregold/README.md)：零动作、未评分的方法预测冻结。
+23. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 
 ## v1 闭环
 
@@ -72,4 +74,6 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 七种零动作 baseline／MG-PU 路由已通过 synthetic smoke，但所有 smoke 输出都标明 `paper_result_eligible=false`。本地 macOS Vision OCR 也已在正式 30 图上运行；因为全屏 OCR 不能证明 popup presence，30 条全部安全弃答。原图和可能含第三方信息的 OCR 派生文本均不公开，仅发布不含文本的聚合摘要、配置与哈希。
 
-当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比结果或 iOS 数据。仓库中的 3 条 fixture 和 synthetic smoke 只验证数据／评测管线，不构成论文实验结果或用户体验证据。
+人工金标解锁前的输入与预测现已冻结：30 项中 22 项有 RICO 结构、8 项结构缺失，共 186 个结构节点；structure-only 产生 15 个判断和 15 个弃答。按预注册的显式 popup-scope gate，MG-PU 候选对 2 项使用结构、28 项调用冻结的 Model-B 视觉候选。该视觉候选的精确模型身份和运行可复现性不完整，因此不是正式论文 baseline；整轮输出均为 `human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
+
+当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比指标或 iOS 数据。上述冻结只证明输入隔离、路由和预测持久化已经发生；仓库中的 3 条 fixture 和 synthetic smoke 也只验证数据／评测管线，均不构成论文效果或用户体验证据。

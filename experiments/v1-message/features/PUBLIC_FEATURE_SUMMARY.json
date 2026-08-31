@@ -1,0 +1,63 @@
+{
+  "action_mode": "no_action",
+  "contract": {
+    "manifest_field_allowlist": [
+      "pilot_item_id"
+    ],
+    "name": "gold-blind pilot structured feature bundle",
+    "private_output_contains_ui_text": true,
+    "private_record_top_level_keys": [
+      "identity",
+      "observations",
+      "candidates",
+      "action_attempts",
+      "decision",
+      "metadata"
+    ],
+    "public_output_contains_ui_text": false,
+    "structured_source": "rico-semantic-json",
+    "version": "pmj-pilot-structured-features-v1.0"
+  },
+  "counts": {
+    "items": 30,
+    "structured_available": 22,
+    "structured_missing": 8,
+    "structured_nodes": 186
+  },
+  "forbidden_fields_not_consumed": [
+    "adapter_item_handle",
+    "archive_member",
+    "archive_member_path",
+    "artifacts",
+    "batch_id",
+    "content",
+    "content_group",
+    "content_label",
+    "coordinator_display_order",
+    "eligible_for_v1_message_metrics",
+    "group",
+    "group_label",
+    "message_annotation_status",
+    "official_split",
+    "official_split_label",
+    "official_split_name",
+    "pilot_index",
+    "popup_present_gt",
+    "protocol_version",
+    "sampling_stratum",
+    "selection_seed",
+    "source_kind",
+    "source_label",
+    "source_record",
+    "source_record_id",
+    "source_sampling_label"
+  ],
+  "gold_blind": true,
+  "gold_used": false,
+  "hashes": {
+    "contract_sha256": "23ad0ed8ec288d84ecf2ef630835e8dbe0a40b66b2e4d896158186b9b258a4fe",
+    "private_bundle_sha256": "4bd7d62994414482e24012ff0ea21f9b5ededda64036873ea76c4c3c93cc8131"
+  },
+  "paper_result_eligible": false,
+  "scored": false
+}

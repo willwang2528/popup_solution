@@ -31,6 +31,18 @@ CLI 的 `--method` 支持：
 
 本地 macOS Vision OCR adapter 见 [`ocr/README.md`](./ocr/README.md)。其正式 30 图运行只证明 OCR 管线可执行：全屏 OCR 不能判断 popup presence，因此所有条目均安全弃答；逐图派生文本因隐私风险保持私有，公开仓库只保留无文本聚合摘要。
 
+## 人工金标解锁前的冻结
+
+真实 pilot 的结构化输入由 [`features/`](./features/) 生成。原始本地 manifest 中的来源目录标签、source ID 和 archive path 均可能泄漏 `ads/no_ads`，因此 feature adapter 只投影 `pilot_item_id`，按固定本地目录读取 RICO 结构。逐节点文本、resource ID 和 bounds 写入 Git 忽略的私有 JSONL；公开文件只保留 30 items、22 available、8 missing、186 nodes 及 bundle hash。
+
+[`pregold/`](./pregold/) 在人工 A/B 标注和 adjudication 之前冻结 structure-only 与 MG-PU 的逐项输出。正式运行只接收私有结构特征和经隔离 adapter 转换的模型视觉候选，不读取 raw pilot manifest，不生成 metrics。当前聚合结果为：
+
+- structure-only：15 judged、15 abstain、0 visual call；
+- MG-PU candidate：30 judged，其中 2 条使用显式 popup scope 内结构，28 条调用冻结视觉候选；
+- 所有结果均为 `no_action`、`human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
+
+这里的 Model-B 输出只用于证明预金标工作流可冻结；因为精确模型身份与执行复现信息不完整，它明确不是正式论文 baseline，也不能支持性能比较。
+
 ## 输入
 
 `--items` 支持两种冻结 JSONL：

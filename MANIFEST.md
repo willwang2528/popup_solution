@@ -87,6 +87,13 @@
 | `experiments/v1-message/ocr/tests/test_ocr_adapter.py` | 泄漏、路径、哈希、engine、privacy 与真实 Vision gate | 7 tests passing in authorized run |
 | `experiments/v1-message/ocr/PUBLIC_RUN_SUMMARY.json` | 30 图私有 OCR run 的无文本聚合摘要 | pass / unscored / privacy-withheld |
 | `experiments/v1-message/ocr/compute/` | 可公开、无本机绝对路径的环境 spec 与 ledger | tier-3 reproduced |
+| `experiments/v1-message/features/build_pilot_features.py` | 只消费 pilot ID、冻结 RICO 结构特征并隔离来源标签 | tested / gold-blind |
+| `experiments/v1-message/features/tests/` | 标签翻转不变性、private ignore/permission、路径逃逸与文本语义测试 | 3 tests passing |
+| `experiments/v1-message/features/PUBLIC_FEATURE_SUMMARY.json` | 30-item 私有结构包的无文本计数、契约与哈希 | pass / unscored |
+| `experiments/v1-message/pregold/adapt_model_preannotation.py` | 将 AI-only、非金标记录隔离转换为私有视觉候选 | tested / not formal baseline |
+| `experiments/v1-message/pregold/freeze_predictions.py` | 在人工 gold 前冻结 structure-only 与 MG-PU 逐项预测；不评分 | tested / gold-blind / no-action |
+| `experiments/v1-message/pregold/tests/` | gold/provenance/盲法拒绝、显式 popup scope、零动作、私有输出与公开摘要测试 | 9 tests passing |
+| `experiments/v1-message/pregold/PUBLIC_PREGOLD_SUMMARY.json` | 私有逐项预测的无文本聚合、实现/输入/输出哈希 | pass / unscored / not paper eligible |
 | `refine-logs/FINAL_PROPOSAL.md` | 当前问题锚、benchmark 与 MG-PU proposal | provisional |
 | `refine-logs/NOVELTY_CHECK.md` | 查新与 contribution claim 边界 | proceed with caution |
 | `refine-logs/EXPERIMENT_PLAN.md` | 实验矩阵、统计与 kill criteria | planned |
