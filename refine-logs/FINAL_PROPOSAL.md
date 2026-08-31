@@ -77,7 +77,7 @@ PPT 第 14 页把验证分为五层：
 
 这意味着：
 
-- V1 的 `VPMA` 只证明 message-level accessibility recovery；
+- V1 的 `VPMA` 只证明 popup presence + message judgment 的技术表现；
 - 它不证明 popup 已消失、焦点已恢复、业务选择已保存或原任务已完成；
 - 未来 `dismissal_recovery_advanced` 必须分别报告 `D`、`C_tech`、`C_a11y`、`B`、`T`，不能压成一个 success bit；
 - 任何论文结果都不得把 PopSweeper／WhisperTest 的截图变化或坐标命中改写为完整任务恢复。
@@ -105,7 +105,7 @@ PPT 第 14 页把验证分为五层：
 
 > 在冻结的 popup observation 上，先以平台结构化表示重建消息；只有当 popup scope、主体消息、关键事实、reading order、owner/context、同步或通道一致性不满足可审计 sufficiency contract 时，才调用 popup ROI 的视觉补全；关键冲突仍无法解决时弃答。相较始终视觉或只看结构，这种选择性证据分配应在同预算下提高正确消息覆盖并降低关键编造与视觉成本。
 
-MG-PU 是更广义 **Actionability-Gap-Gated Recovery** 研究路线的 V1 perception/message 子层；V1 不包含 action 或 Recovery 执行。
+MG-PU 是后续可扩展到动作与恢复研究的 V1 perception/message 子层；V1 不包含 action，也不得使用 Recovery 命名其结果。
 
 ## 5. Contribution Focus
 
@@ -283,7 +283,7 @@ VPMA = presence_correct
    - ScreenAudit-style transcript analysis（有 transcript 的子集）。
 2. **Vision-first family**
    - OCR-only；
-   - PopSweeper-style popup detector + popup ROI OCR；
+   - PopSweeper paper reconstruction popup classifier + full-screen OCR；若增加 popup ROI，单独标为本研究 B2A adaptation；
    - screenshot-only VLM。
 3. **Fusion family**
    - always-on structure + vision；

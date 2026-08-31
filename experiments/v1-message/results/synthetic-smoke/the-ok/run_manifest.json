@@ -23,16 +23,17 @@
   "inputs": {
     "items": {
       "sha256": "1898d32683ae5d093957047263abf1cf48e1a9d26679394938ee488a451bf1e4"
-    },
-    "predictions": {
-      "sha256": "1898d32683ae5d093957047263abf1cf48e1a9d26679394938ee488a451bf1e4"
     }
   },
-  "method": "visual-adapter",
-  "method_config": {},
+  "method": "the-ok",
+  "method_config": {
+    "adaptation": "matched_appium_element_text_projection",
+    "upstream_revision": "b618948c0d24b917b3a46a88f5c1cf6ff84571cd",
+    "vendored_indicators_sha256": "8b376a5391e76abef6b73b2889129ed36c64b4fd096fa4e1c51d781493bf34c9"
+  },
   "paper_result_eligible": false,
   "route_counts": {
-    "frozen_ocr_vlm_prediction": 3
+    "the_ok_raw_element_text_missing": 3
   },
   "seed": 17
 }

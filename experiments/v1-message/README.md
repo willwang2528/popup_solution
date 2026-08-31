@@ -20,7 +20,8 @@ CLI 的 `--method` 支持：
 | 方法 | 行为 |
 |---|---|
 | `majority` | 仅从显式、互斥的 `--fit-items` 学习 popup prior 和多数消息；预测时不读取评测 item 内容。 |
-| `structured` | 只拼接 popup scope 内的 accessibility/UIAutomator/XCUI/DOM 等结构化文本；不读取 gold 或视觉候选。 |
+| `structured` | A1：按遍历顺序拼接整棵 accessibility/UIAutomator/XCUI/DOM 树的可见文本；空结构弃答，不使用 popup ROI/owner oracle，因此保留宿主页面污染弱点。 |
+| `the-ok` | A2：固定 The OK Is Not Enough 官方 `b618948` revision 的 Appium 文本规则；只读取 Appium-like 结构通道的 raw element text，显式排除 DOM/protocol 与语义回退。规则未命中时判断 no-popup，缺少 raw text 时弃答。匹配元素的稳定拼接是本研究的 v1 message adaptation。 |
 | `visual-adapter` | 读取冻结的 OCR/VLM prediction JSONL；本代码不调用在线模型。 |
 | `mg-pu` | Message/Actionability-Gap-Gated perception-uplift router；非空树若出现 `merged/non_actionable/ambiguous/contradictory/stale/...` 仍可调用视觉。 |
 | `always-visual` | 每个 item 都调用冻结 visual adapter。 |
@@ -35,9 +36,10 @@ CLI 的 `--method` 支持：
 
 真实 pilot 的结构化输入由 [`features/`](./features/) 生成。原始本地 manifest 中的来源目录标签、source ID 和 archive path 均可能泄漏 `ads/no_ads`，因此 feature adapter 只投影 `pilot_item_id`，按固定本地目录读取 RICO 结构。逐节点文本、resource ID 和 bounds 写入 Git 忽略的私有 JSONL；公开文件只保留 30 items、22 available、8 missing、186 nodes 及 bundle hash。
 
-[`pregold/`](./pregold/) 在人工 A/B 标注和 adjudication 之前冻结 structure-only 与 MG-PU 的逐项输出。正式运行只接收私有结构特征和经隔离 adapter 转换的模型视觉候选，不读取 raw pilot manifest，不生成 metrics。当前聚合结果为：
+[`pregold/`](./pregold/) 在人工 A/B 标注和 adjudication 之前冻结 A1 structure-only、A2 The OK 与 MG-PU 的逐项输出。正式运行只接收私有结构特征和经隔离 adapter 转换的模型视觉候选，不读取 raw pilot manifest，不生成 metrics。当前聚合结果为：
 
 - structure-only：15 judged、15 abstain、0 visual call；
+- The OK text rule：10 judged（均为 rule no-match）、20 raw-text-missing abstain、0 visual call；
 - MG-PU candidate：30 judged，其中 2 条使用显式 popup scope 内结构，28 条调用冻结视觉候选；
 - 所有结果均为 `no_action`、`human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
 
@@ -50,7 +52,7 @@ CLI 的 `--method` 支持：
 1. `dataset-v1/schema/item.schema.json` 的 v1 union item；
 2. `dataset-v1/annotation-pilot/manifests/pilot_batch_30.jsonl` 的 pilot manifest。
 
-非 synthetic 的完整 union item 只有在 `eligible_for_v1_*_metric=true`、无 exclusion reason、标签至少含一个非空证据 URI，且相应 presence/message/critical-facts 标签都有 human-role、`adjudicated`、带裁决者与非空证据 URI 的 annotation 时才进入指标；model/source label 即使伪装成 `real_app` 也会被排除。
+非 synthetic 的完整 union item 只有在 presence gold 已通过 `eligible_for_v1_presence_metric=true`、无 exclusion reason、至少一个非空证据 URI，并且 presence 标签有 human-role、`adjudicated`、带裁决者与非空证据 URI 的 annotation 时才进入 presence 指标。message 是独立条件分母：只有 `message_text_observability=complete` 且 `eligible_for_v1_message_metric=true` 的正样本还需 message/critical-facts 人工裁决并进入 message 指标。`partial`、`not_observable` 不会删除同一 item 的 presence 证据。model/source label 即使伪装成 `real_app` 也会被排除。
 
 若输入 pilot manifest，必须同时通过 `--annotations` 提供已完成、已 resolved 的 `adjudication_output.schema.json` JSONL。连接键固定为 `pilot_item_id`；不会用显示顺序、文件名或 `source_sampling_label` 冒充人工 gold。待裁决、`uncertain`、`unusable` item 保留 exclusion reason，不进入指标。
 
@@ -86,10 +88,10 @@ CLI 的 `--method` 支持：
 口径：
 
 - positive item 的 abstain 计为正类 FN，但不冒充 predicted no-popup；negative item 的 abstain 只作为负类 miss；
-- message 指标以 popup-positive gold 为分母，弃答不会被 complete-case filtering 隐藏；
+- message 指标只以 `popup_present_gt=true` 且 `message_text_observability=complete` 的 gold 为分母；`partial`、`not_observable` 和其他不合格项分别计数，仍保留在 presence 指标中；
 - 有完整、方法特异的人工语义裁决时 VPMA 可用 `adjudicated`；否则明确写为 `normalized_exact_proxy`；
 - `critical_fact_set_proxy` 只检查预测关键事实是否超出 gold 集合，不冒充完整人工 hallucination 审核；
-- 同时报告 `vpma.rate_on_covered` 与 `vpma.overall_success_rate`，避免靠大量弃答抬高条件结果。
+- message 为 `partial` 或 `not_observable` 的正样本其 VPMA 为 `null`，分别报告 `null_message_partial_count` 与 `null_message_unobservable_count`；`null_abstention_count` 只统计实际弃答。同时报告 `vpma.rate_on_covered` 与 `vpma.overall_success_rate`，避免靠大量弃答抬高条件结果。
 
 ## 测试
 

@@ -46,6 +46,23 @@ def _proxy_hallucination(labels: dict[str, Any], prediction: dict[str, Any]) -> 
     return bool(predicted - gold)
 
 
+def _message_metric_eligible(item: dict[str, Any]) -> bool:
+    labels = _labels(item)
+    if not labels.get("popup_present_gt"):
+        return False
+    if labels.get("message_text_observability") != "complete":
+        return False
+    record_kind = item.get("identity", {}).get("record_kind")
+    if record_kind in {"synthetic_schema_fixture", "annotation_pilot_candidate"}:
+        return True
+    return (
+        item.get("message_judgment", {})
+        .get("eligibility", {})
+        .get("eligible_for_v1_message_metric")
+        is True
+    )
+
+
 def _has_complete_adjudication(
     items: list[dict[str, Any]],
     predictions_by_id: dict[str, dict[str, Any]],
@@ -57,6 +74,7 @@ def _has_complete_adjudication(
         prediction = predictions_by_id[item_id]
         if (
             _labels(item)["popup_present_gt"]
+            and _message_metric_eligible(item)
             and prediction["status"] == "judged"
             and prediction["popup_present_pred"] is True
         ):
@@ -89,7 +107,8 @@ def evaluate_predictions(
     tp = tn = fp = fn = abstain_count = 0
     predicted_negative_on_positive = negative_abstain_count = 0
     exact_sum = normalized_sum = token_f1_sum = 0.0
-    popup_positive_count = 0
+    popup_positive_complete_count = 0
+    excluded_partial = excluded_not_observable = excluded_other_observability = 0
     critical_recall_sum = 0.0
     critical_recall_denominator = 0
     hallucination_count = hallucination_denominator = 0
@@ -124,8 +143,9 @@ def evaluate_predictions(
         else:
             tn += 1
 
-        if gt_present:
-            popup_positive_count += 1
+        message_metric_eligible = _message_metric_eligible(item)
+        if gt_present and message_metric_eligible:
+            popup_positive_complete_count += 1
             predicted_message = (
                 prediction.get("message_text_pred")
                 if status == "judged" and pred_present is True
@@ -144,10 +164,22 @@ def evaluate_predictions(
                 predicted_facts = _fact_set(prediction.get("critical_facts_pred", []))
                 critical_recall_sum += len(gold_facts & predicted_facts) / len(gold_facts)
                 critical_recall_denominator += 1
+        elif gt_present:
+            observability = labels.get("message_text_observability")
+            excluded_partial += int(observability == "partial")
+            excluded_not_observable += int(observability == "not_observable")
+            excluded_other_observability += int(
+                observability not in {"partial", "not_observable"}
+            )
 
         semantic_correct = False
         hallucinated = False
-        if status == "judged" and gt_present and pred_present is True:
+        if (
+            status == "judged"
+            and gt_present
+            and pred_present is True
+            and message_metric_eligible
+        ):
             key = (item_id, prediction["method_id"])
             if adjudicated:
                 semantic_correct = annotations[key]["message_semantically_correct"]
@@ -164,6 +196,8 @@ def evaluate_predictions(
             vpma_values[item_id] = None
         elif not gt_present:
             vpma_values[item_id] = pred_present is False
+        elif not message_metric_eligible:
+            vpma_values[item_id] = None
         else:
             vpma_values[item_id] = pred_present is True and semantic_correct and not hallucinated
 
@@ -178,7 +212,7 @@ def evaluate_predictions(
     vpma_successes = sum(value is True for value in vpma_covered)
 
     return {
-        "metric_contract_version": "popup-message-v1.0",
+        "metric_contract_version": "popup-message-v1.1",
         "n_items": len(items),
         "n_judged": judged_count,
         "coverage": judged_count / len(items),
@@ -198,10 +232,14 @@ def evaluate_predictions(
             "macro_f1_with_abstain_as_miss": (presence_f1 + negative_f1) / 2,
         },
         "message": {
-            "denominator_popup_positive": popup_positive_count,
-            "exact_match": _safe_div(exact_sum, popup_positive_count),
-            "normalized_exact_match": _safe_div(normalized_sum, popup_positive_count),
-            "token_f1": _safe_div(token_f1_sum, popup_positive_count),
+            "denominator_popup_positive": popup_positive_complete_count,
+            "denominator_popup_positive_complete": popup_positive_complete_count,
+            "excluded_partial": excluded_partial,
+            "excluded_not_observable": excluded_not_observable,
+            "excluded_other_observability_or_ineligible": excluded_other_observability,
+            "exact_match": _safe_div(exact_sum, popup_positive_complete_count),
+            "normalized_exact_match": _safe_div(normalized_sum, popup_positive_complete_count),
+            "token_f1": _safe_div(token_f1_sum, popup_positive_complete_count),
         },
         "critical_information_recall": {
             "mean": _safe_div(critical_recall_sum, critical_recall_denominator),
@@ -221,7 +259,20 @@ def evaluate_predictions(
             "item_values": vpma_values,
             "success_count": vpma_successes,
             "covered_denominator": len(vpma_covered),
-            "null_abstention_count": len(items) - len(vpma_covered),
+            "null_abstention_count": abstain_count,
+            "null_message_unobservable_count": sum(
+                _labels(item)["popup_present_gt"]
+                and _labels(item).get("message_text_observability")
+                == "not_observable"
+                and predictions_by_id[item["identity"]["item_id"]]["status"] != "abstain"
+                for item in items
+            ),
+            "null_message_partial_count": sum(
+                _labels(item)["popup_present_gt"]
+                and _labels(item).get("message_text_observability") == "partial"
+                and predictions_by_id[item["identity"]["item_id"]]["status"] != "abstain"
+                for item in items
+            ),
             "rate_on_covered": _safe_div(vpma_successes, len(vpma_covered)),
             "overall_success_rate": vpma_successes / len(items),
         },

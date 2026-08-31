@@ -10,14 +10,14 @@
 |---|---|---|---|---|
 | WhisperTest | iOS A11Y + screenshot/OCR/OmniParser/VLM → Voice Control command、弱截图变化 | A11Y-first 感知级联，禁用动作 | C2；组件 B1/B3 | `interface-only`, `model-missing`, `out-of-v1` |
 | Abandon All Hope | native View/WebView、checkbox、consent text → Accept/Reject、重启持久性 | native/WebView 消息与 checkbox 状态规则 | A2 variant | `source-missing`, `interface-only`, `out-of-v1` |
-| The OK Is Not Enough | Appium text + privacy regex → notice/dialog 分类与按钮候选 | Appium text/regex message baseline | A2 | `interface-only`；论文实现未落地 |
+| The OK Is Not Enough | Appium text + privacy regex → notice/dialog 分类与按钮候选 | Appium text/regex message baseline | A2 | `runnable-paper-constrained-adaptation`；官方 `b618948` 规则已冻结；不复现动作/隐私合规研究 |
 | Freely Given Consent | screenshot → OCR、privacy lexicon、TF-IDF/cluster → consent notice | OCR + 固定文本规则，禁用点击 | B1 + A2 variant | OCR 引擎 `runnable`；完整管线 `interface-only` |
 | VLM-Fuzz | XML/Activity diff、几何、可选 VLM → transient popup、ADB event、host return | tree diff/owner/scope 特征 | A1 proxy | `interface-only`, `out-of-v1`；不能称为 MG-PU baseline |
 | TCF A(A)ID | Appium tree + IABTCF + MiniLM → CMP 操作与持久选择 | MiniLM 文本候选匹配，禁用操作 | A2 semantic variant | `interface-only`, `model-missing`, `out-of-v1` |
 | Cookieverse/BannerClick | DOM/iframe/z-index/多语词表 → banner/button、点击后截图 | DOM text/geometry banner detector | A2 DOM variant | `interface-only`, `source-missing`, `out-of-v1` |
 | SSLDetecter | Activity/tree/geometry/text → overlay 类型与 Cancel/Close 规则 | 结构化 overlay/message 规则 | A1/A2 proxy | `source-missing`, `out-of-v1` |
 | POKER | screenshot + YOLO box + shadow ratio + XML → popup/action box、dismiss 交互数 | popup detector + ROI OCR，禁用点击 | B2-family | `model-missing`, `interface-only`, `out-of-v1`；不等同 PopSweeper |
-| PopSweeper | frame gate + ResNet50/MobileNetV2 + YOLO-World → popup score、close bbox/coordinate | detector 生成 popup ROI，再接相同 OCR | B2 exact target | 数据源已具备；`model-missing`, `human-gold-missing`, `out-of-v1-action` |
+| PopSweeper | frame gate + ResNet50/MobileNetV2 → popup score；YOLO-World → close-button bbox/coordinate | popup classifier + full-screen OCR；若另造 popup ROI 必须标为本研究 adaptation | B2 exact target | **exact NO-GO**：仅数据源具备；代码、权重、阈值、时序帧、close-bbox 标注缺失，且论文不输出 popup ROI |
 | Dynamic iOS Privacy | XCUI Alert/button label → OK/Allow tap | iOS Alert text-rule perception | A2 iOS variant | `source-missing`, `interface-only`, `out-of-v1` |
 | HotMobile Ad Policy | View tree/state graph/geometry → ad state、Back destination | advertisement scope/结构消息特征 | A1 structured-state proxy | `interface-only`, `out-of-v1` |
 | iOS Applications' Testing | UIAElement/frame → center-coordinate tap | raw element/frame | A1 raw-element proxy | `source-missing`, `out-of-v1` |
@@ -29,16 +29,17 @@
 
 | System | 30-item pre-gold 状态 | 不能宣称什么 |
 |---|---|---|
-| A1 structure-only | `runnable`；15 judged / 15 abstain | 无人工 gold；还需统一 popup-scope 与 full-tree flatten 定义 |
+| A1 structure-only | `runnable`；15 judged / 15 abstain | full-tree flatten 已与 pre-gold 对齐；无人工 gold、未评分 |
+| A2 The OK text rule | `runnable`；10 judged rule-no-match / 20 raw-text-missing abstain | 官方文本规则已固定；matched-text message 是 v1 adaptation；无人工 gold、未评分 |
 | B1 OCR-only | `runnable`；30/30 abstain | 当前是全屏 OCR，不是正式 popup-ROI baseline |
 | C3 MG-PU candidate | `runnable`；2 项 structure、28 项 visual workflow candidate | visual candidate 精确模型身份不可复现；不是正式方法结果 |
 
-A0、A2、A3、B2、B3、C1、C2、C4 仍只有接口、计划或 synthetic smoke。`always-visual` 只是路由消融，不等于 C1 always-on structure+vision fusion。
+A0、A3、B2、B3、C1、C2、C4 仍只有接口、计划或 synthetic smoke。A2 是 paper-constrained v1 adaptation，不是原论文完整系统复现。`always-visual` 只是路由消融，不等于 C1 always-on structure+vision fusion。
 
 ## 正式比较的解锁顺序
 
 1. 完成真实 A/B 盲标，并由第三位真实 adjudicator 对全部 30 项输出 final；冻结 group-disjoint split。
-2. 正式运行 A1、A2、B1、B2。A2 至少忠实冻结一套论文规则；B1 使用无泄漏 popup scope；B2 固定 PopSweeper 模型、权重、revision、frame gate、分类器、YOLO-World 与官方 split。
+2. 正式运行 A1、A2、B1；B1 使用无泄漏 popup scope。B2 只有在取得 PopSweeper 代码、权重、revision、frame gate、分类器阈值、时序帧与 close-button 标注后才能解锁 exact；自建 popup ROI 必须作为单独 adaptation。
 3. 实现 C1；C1/C3 使用同一 visual backbone、分辨率和预算。
 4. 只有在同一 gold、同一输入资格和同一 evaluator 下，才运行 C3 对 dev-selected strongest deployable baseline 的主比较。
 

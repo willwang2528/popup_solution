@@ -43,6 +43,7 @@ def frozen_item(item_id="e1", popup=True, message="System notice"):
                 "popup_present_gt": popup,
                 "message_text_gt": message if popup else None,
                 "critical_facts_gt": [],
+                "message_text_observability": "complete" if popup else "not_applicable",
             },
         },
         "observations": [
@@ -200,6 +201,40 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(result["run"]["evidence_level"], "technical_dataset_evaluation")
         self.assertFalse(result["run"]["paper_result_eligible"])
 
+    def test_presence_eligible_real_popup_is_not_dropped_when_message_is_unobservable(self):
+        # Break caught: full-union representation loses presence evidence because only the
+        # conditional message metric is ineligible.
+        item = frozen_item(message=None)
+        item["identity"]["record_kind"] = "real_app"
+        labels = item["message_judgment"]["labels"]
+        labels["message_text_observability"] = "not_observable"
+        labels["evidence_uris"] = [{"uri": "evidence://human/real-hidden"}]
+        item["message_judgment"]["eligibility"] = {
+            "eligible_for_v1_presence_metric": True,
+            "eligible_for_v1_message_metric": False,
+            "exclusion_reasons": [],
+        }
+        item["annotations"] = [
+            {
+                "target_json_pointer": "/message_judgment/labels/popup_present_gt",
+                "annotator_role": "accessibility_expert",
+                "label_name": "popup_present_gt",
+                "label_value": True,
+                "evidence_uris": [{"uri": "evidence://human/real-hidden"}],
+                "adjudication_status": "adjudicated",
+                "adjudicator_id_pseudonymous": "adj-1",
+            }
+        ]
+
+        result = run_experiment([item], method="structured")
+
+        self.assertEqual(result["run"]["evaluated_item_count"], 1)
+        self.assertEqual(result["metrics"]["presence"]["fn"], 1)
+        self.assertEqual(
+            result["metrics"]["message"]["denominator_popup_positive_complete"],
+            0,
+        )
+
     def test_empty_evidence_uri_cannot_make_union_gold_eligible(self):
         # Break caught: truthy evidence containers with empty URI objects bypass provenance.
         item = frozen_item()
@@ -249,6 +284,19 @@ class RunnerTests(unittest.TestCase):
             & set(result["predictions"][0])
         )
 
+    def test_the_ok_method_is_available_through_the_same_evaluator(self):
+        # Break caught: A2 is a standalone demo and cannot enter the common comparison.
+        example = frozen_item(message="We use cookies for analytics")
+        example["candidates"][0]["source_channel"] = "structured"
+        example["candidates"][0]["features"]["text"] = "We use cookies for analytics"
+        example["candidates"][0]["features"]["node_index"] = 1
+
+        result = run_experiment([example], method="the-ok")
+
+        self.assertEqual(result["run"]["method"], "the-ok")
+        self.assertEqual(result["predictions"][0]["method_id"], "the-ok-text-rule")
+        self.assertEqual(result["metrics"]["presence"]["tp"], 1)
+
 
 class CliTests(unittest.TestCase):
     def test_cli_is_reproducible_and_labels_synthetic_output_non_empirical(self):
@@ -282,7 +330,15 @@ class CliTests(unittest.TestCase):
             self.assertFalse(manifest["claims"]["user_experience_improvement"])
             self.assertEqual(
                 set(manifest["implementation_sha256"]),
-                {"baselines.py", "cli.py", "io.py", "metrics.py", "runner.py"},
+                {
+                    "baselines.py",
+                    "cli.py",
+                    "io.py",
+                    "metrics.py",
+                    "resources/the-ok/indicators.json",
+                    "runner.py",
+                    "the_ok_baseline.py",
+                },
             )
             self.assertTrue(all(len(value) == 64 for value in manifest["implementation_sha256"].values()))
             metrics = json.loads((first / "metrics.json").read_text(encoding="utf-8"))

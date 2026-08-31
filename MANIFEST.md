@@ -77,10 +77,12 @@
 | `dataset-v1/work/popsweeper_source_audit.json` | 266,010,362-byte 归档的 MD5、安全与成员清点 | pass |
 | `dataset-v1/work/rico_semantic_source_audit.json` | 66,261 JSON/PNG 对的 RICO 归档安全清点 | pass |
 | `experiments/v1-message/README.md` | v1 输入、方法、指标、命令与证据边界 | current |
-| `experiments/v1-message/popup_eval/` | majority、structured、frozen visual adapter、MG-PU 与三种消融 | implemented / action-free |
+| `experiments/v1-message/popup_eval/` | majority、A1 full-tree、A2 The OK、frozen visual adapter、MG-PU 与三种消融 | implemented / action-free |
 | `experiments/v1-message/run_eval.py` | 可复现 v1 evaluation CLI | tested / empirical gold required |
-| `experiments/v1-message/tests/` | 路由、指标、输入契约、gold provenance 与 fail-closed 测试 | 26 tests passing |
-| `experiments/v1-message/results/synthetic-smoke/` | 七种方法的管线 smoke | pass / synthetic / not paper eligible |
+| `experiments/v1-message/tests/` | 路由、A1/A2、条件 message 分母、输入契约、gold provenance 与 fail-closed 测试 | 38 tests passing |
+| `experiments/v1-message/results/synthetic-smoke/` | 八种方法的管线 smoke | pass / synthetic / not paper eligible |
+| `experiments/v1-message/resources/the-ok/` | 官方 `b618948` 指示词快照、来源与 MIT notice | fixed upstream evidence |
+| `experiments/v1-message/B2_POPSWEEPER_REPRODUCIBILITY_GATE.md` | exact B2 的 fail-closed 资产门禁与允许的 reconstruction/adaptation | NO-GO / current artifacts |
 | `experiments/v1-message/ocr/README.md` | 本地 macOS Vision OCR 输入、隐私、复现和 claim 边界 | current |
 | `experiments/v1-message/ocr/run_ocr.py` | fail-closed manifest/image-hash/OCR adapter | tested |
 | `experiments/v1-message/ocr/vision_ocr.swift` | 本地 `VNRecognizeTextRequest` 引擎 | tested on authorized local host |
@@ -91,7 +93,7 @@
 | `experiments/v1-message/features/tests/` | 标签翻转不变性、private ignore/permission、路径逃逸与文本语义测试 | 3 tests passing |
 | `experiments/v1-message/features/PUBLIC_FEATURE_SUMMARY.json` | 30-item 私有结构包的无文本计数、契约与哈希 | pass / unscored |
 | `experiments/v1-message/pregold/adapt_model_preannotation.py` | 将 AI-only、非金标记录隔离转换为私有视觉候选 | tested / not formal baseline |
-| `experiments/v1-message/pregold/freeze_predictions.py` | 在人工 gold 前冻结 structure-only 与 MG-PU 逐项预测；不评分 | tested / gold-blind / no-action |
+| `experiments/v1-message/pregold/freeze_predictions.py` | 在人工 gold 前冻结 A1、A2 与 MG-PU 逐项预测；不评分 | tested / gold-blind / no-action |
 | `experiments/v1-message/pregold/tests/` | gold/provenance/盲法拒绝、显式 popup scope、零动作、私有输出与公开摘要测试 | 9 tests passing |
 | `experiments/v1-message/pregold/PUBLIC_PREGOLD_SUMMARY.json` | 私有逐项预测的无文本聚合、实现/输入/输出哈希 | pass / unscored / not paper eligible |
 | `refine-logs/FINAL_PROPOSAL.md` | 当前问题锚、benchmark 与 MG-PU proposal | provisional |

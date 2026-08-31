@@ -31,6 +31,17 @@ or executes a popup action.
 structured candidate text across the tree and therefore exposes possible host-page
 contamination. With no usable structured text it abstains.
 
+`the-ok-text-rule` ports the consent-dialog decision from the official
+`the-ok-is-not-enough/scala-appanalyzer` revision
+`b618948c0d24b917b3a46a88f5c1cf6ff84571cd`. It consumes only raw Appium-like
+`features.text` from Appium-like structured channels, not DOM/protocol or
+normalized icon/class fallbacks. The original rule's
+dialog/link/regular/half-keyword corpus and `keywordThreshold=1` are frozen under
+`resources/the-ok/`. A rule match predicts popup presence and deterministically
+joins only contributing element text as the v1 message; this message projection is
+our action-free benchmark adaptation. A non-match with raw text is a judged
+negative, while missing raw text abstains.
+
 `mg-pu-gated-union-v1` uses a separately preregistered popup-scope gate:
 
 1. A structured candidate is popup-scoped only when
@@ -65,6 +76,10 @@ Use the project interpreter:
   --public-summary experiments/v1-message/pregold/PUBLIC_PREGOLD_SUMMARY.json \
   --expected-count 30
 ```
+
+The 30-item public summary also includes A2 aggregate status only: 10 raw-text
+items were judged as rule no-match and 20 items abstained because raw element text
+was unavailable. These are unscored pre-gold outputs, not performance results.
 
 The adapted Model-B evidence is a **model-workflow visual candidate**, not a formal
 paper baseline: its exact model identity and execution reproducibility are not

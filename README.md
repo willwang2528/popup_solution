@@ -25,13 +25,14 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 17. [`dataset-v1/annotation-pilot/README.md`](./dataset-v1/annotation-pilot/README.md)：冻结 30 条 pilot、双人盲标模板、一致性计算和裁决协议。
 18. [`experiments/v1-message/README.md`](./experiments/v1-message/README.md)：零动作 baseline／MG-PU 路由与 v1 指标评测骨架。
 19. [`experiments/v1-message/BASELINE_IMPLEMENTATION_MATRIX.md`](./experiments/v1-message/BASELINE_IMPLEMENTATION_MATRIX.md)：14 篇论文方法到 v1 的忠实性、可执行性与硬缺口矩阵。
-20. [`dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md`](./dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md)：人工 gold 开标前的 NO-GO 门与全量裁决要求。
-21. [`dataset-v1/empirical-pilot/README.md`](./dataset-v1/empirical-pilot/README.md)：30 条真实来源观测的 255 字段 pending-union 物化、隐私边界与复现命令。
-19. [`dataset-v1/work/MODEL_PREANNOTATION_STATUS.md`](./dataset-v1/work/MODEL_PREANNOTATION_STATUS.md)：双模型预标注的非金标状态与唯一分歧项。
-20. [`experiments/v1-message/ocr/README.md`](./experiments/v1-message/ocr/README.md)：本地 Vision OCR、隐私 withholding 和公开聚合证据。
-21. [`experiments/v1-message/features/README.md`](./experiments/v1-message/features/README.md)：人工金标解锁前的结构化特征冻结与泄漏隔离。
-22. [`experiments/v1-message/pregold/README.md`](./experiments/v1-message/pregold/README.md)：零动作、未评分的方法预测冻结。
-23. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
+20. [`experiments/v1-message/B2_POPSWEEPER_REPRODUCIBILITY_GATE.md`](./experiments/v1-message/B2_POPSWEEPER_REPRODUCIBILITY_GATE.md)：PopSweeper exact 复现的 fail-closed 资产门禁，并区分 close-button bbox 与 popup ROI。
+21. [`dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md`](./dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md)：人工 gold 开标前的 NO-GO 门与全量裁决要求。
+22. [`dataset-v1/empirical-pilot/README.md`](./dataset-v1/empirical-pilot/README.md)：30 条真实来源观测的 255 字段 pending-union 物化、隐私边界与复现命令。
+23. [`dataset-v1/work/MODEL_PREANNOTATION_STATUS.md`](./dataset-v1/work/MODEL_PREANNOTATION_STATUS.md)：双模型预标注的非金标状态与唯一分歧项。
+24. [`experiments/v1-message/ocr/README.md`](./experiments/v1-message/ocr/README.md)：本地 Vision OCR、隐私 withholding 和公开聚合证据。
+25. [`experiments/v1-message/features/README.md`](./experiments/v1-message/features/README.md)：人工金标解锁前的结构化特征冻结与泄漏隔离。
+26. [`experiments/v1-message/pregold/README.md`](./experiments/v1-message/pregold/README.md)：零动作、未评分的方法预测冻结。
+27. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 
 ## v1 闭环
 
@@ -75,9 +76,9 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 其中 30 条候选已冻结为首轮标注批次，并通过 fail-closed adapter 在 Git 忽略目录中真实导出 30 张截图及 44 份 RICO 结构化附件；双人盲标模板、agreement/adjudication 工具也已就绪。两个独立模型已完成 30+30 条盲式工作流预标注，但均明确为非人工、不可计分。
 
-七种零动作 baseline／MG-PU 路由已通过 synthetic smoke，但所有 smoke 输出都标明 `paper_result_eligible=false`。本地 macOS Vision OCR 也已在正式 30 图上运行；因为全屏 OCR 不能证明 popup presence，30 条全部安全弃答。原图和可能含第三方信息的 OCR 派生文本均不公开，仅发布不含文本的聚合摘要、配置与哈希。
+八种零动作 baseline／MG-PU 路由已通过 synthetic smoke，但所有 smoke 输出都标明 `paper_result_eligible=false`。本地 macOS Vision OCR 也已在正式 30 图上运行；因为全屏 OCR 不能证明 popup presence，30 条全部安全弃答。原图和可能含第三方信息的 OCR 派生文本均不公开，仅发布不含文本的聚合摘要、配置与哈希。
 
-人工金标解锁前的输入与预测现已冻结：30 项中 22 项有 RICO 结构、8 项结构缺失，共 186 个结构节点；structure-only 产生 15 个判断和 15 个弃答。按预注册的显式 popup-scope gate，MG-PU 候选对 2 项使用结构、28 项调用冻结的 Model-B 视觉候选。该视觉候选的精确模型身份和运行可复现性不完整，因此不是正式论文 baseline；整轮输出均为 `human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
+人工金标解锁前的输入与预测现已冻结：30 项中 22 项有 RICO 结构、8 项结构缺失，共 186 个结构节点；A1 structure-only 产生 15 个判断和 15 个弃答；A2 The OK text rule 对 10 个有 raw text 的 item 均判断为 rule no-match，其余 20 个因 raw text 缺失弃答。按预注册的显式 popup-scope gate，MG-PU 候选对 2 项使用结构、28 项调用冻结的 Model-B 视觉候选。该视觉候选的精确模型身份和运行可复现性不完整，因此不是正式论文 baseline；整轮输出均为 `human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
 
 这 30 条观测现已物化为完整的 90+165=255 字段 union item，但生命周期仍是 `collected + pending_human_annotation`：所有 scenario/popup/candidate/message gold 均为空，0 项可进入指标。私有 bundle 不发布；公开摘要只含 30/22/8/186 聚合计数、输入/实现/schema/private-bundle 哈希和负向声明。隔离的人类截图 viewer 与“全部 30 项 final adjudication”输入链已实现；实际 A/B/第三人标注与 PI 预冻结质量阈值仍未完成。
 

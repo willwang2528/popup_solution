@@ -13,9 +13,18 @@ import sys
 import tempfile
 from typing import Any, Iterable
 
+EXPERIMENT_ROOT = Path(__file__).resolve().parents[1]
+if str(EXPERIMENT_ROOT) not in sys.path:
+    sys.path.insert(0, str(EXPERIMENT_ROOT))
+
+from popup_eval.the_ok_baseline import (  # noqa: E402 - direct-script import path
+    TheOkTextBaseline,
+    UPSTREAM_REVISION as THE_OK_UPSTREAM_REVISION,
+)
+from popup_eval.metrics import normalize_text  # noqa: E402 - shared A1 contract
 
 CONTRACT_VERSION = "popup-message-pregold-v1.0"
-METHOD_IDS = ("structured-only-v1", "mg-pu-gated-union-v1")
+METHOD_IDS = ("structured-only-v1", "mg-pu-gated-union-v1", "the-ok-text-rule")
 ITEM_ID_PATTERN = re.compile(r"PMJ-PILOT-\d{3}")
 GAP_REASONS = {
     "ambiguous",
@@ -300,7 +309,7 @@ def _rows_by_visual_id(
 
 
 def _text_key(value: str) -> str:
-    return " ".join(value.casefold().split())
+    return normalize_text(value)
 
 
 def _structured_message(feature: dict[str, Any]) -> tuple[str | None, list[str]]:
@@ -311,10 +320,6 @@ def _structured_message(feature: dict[str, Any]) -> tuple[str | None, list[str]]
         normalized = candidate["normalized"]
         features = candidate.get("features", {})
         if normalized.get("visible") is False:
-            continue
-        if features.get("belongs_to_host_page") is True:
-            continue
-        if features.get("inside_popup_roi") is False:
             continue
         for reason in features.get("gap_reasons", []):
             if reason in GAP_REASONS:
@@ -447,10 +452,25 @@ def freeze_predictions(
 ) -> list[dict[str, Any]]:
     structured_predictions: list[dict[str, Any]] = []
     gated_predictions: list[dict[str, Any]] = []
+    the_ok_predictions: list[dict[str, Any]] = []
+    the_ok = TheOkTextBaseline()
     for item_id in sorted(features_by_id):
         feature = features_by_id[item_id]
         structured, _ = _structured_prediction(item_id, feature)
         structured_predictions.append(structured)
+        the_ok_result = the_ok.predict(feature)
+        the_ok_predictions.append(
+            _prediction(
+                item_id,
+                "the-ok-text-rule",
+                status=the_ok_result["status"],
+                popup_present=the_ok_result["popup_present_pred"],
+                message=the_ok_result["message_text_pred"],
+                confidence=the_ok_result["confidence"],
+                visual_called=False,
+                route_reason=the_ok_result["route_reason"],
+            )
+        )
         scoped_message, gaps = _popup_scoped_message(feature)
         if not gaps:
             gated_predictions.append(
@@ -494,7 +514,7 @@ def freeze_predictions(
                     route_reason="visual_evidence_missing_or_unstable",
                 )
             )
-    return structured_predictions + gated_predictions
+    return structured_predictions + the_ok_predictions + gated_predictions
 
 
 def _method_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -538,7 +558,12 @@ def build_public_summary(
     )
     feature_builder = Path(__file__).resolve().parent.parent / "features" / "build_pilot_features.py"
     visual_adapter = Path(__file__).resolve().parent / "adapt_model_preannotation.py"
-    if not feature_builder.is_file() or not visual_adapter.is_file():
+    the_ok_implementation = EXPERIMENT_ROOT / "popup_eval" / "the_ok_baseline.py"
+    if (
+        not feature_builder.is_file()
+        or not visual_adapter.is_file()
+        or not the_ok_implementation.is_file()
+    ):
         raise ContractError("implementation dependency file is missing")
     return {
         "action_policy": "no_action",
@@ -553,6 +578,8 @@ def build_public_summary(
         "paper_result_eligible": False,
         "predictions_sha256": _sha256(_canonical_jsonl(predictions)),
         "scored": False,
+        "the_ok_implementation_sha256": _sha256(the_ok_implementation.read_bytes()),
+        "the_ok_upstream_revision": THE_OK_UPSTREAM_REVISION,
         "visual_evidence_sha256": (
             _sha256(_canonical_jsonl(visual_rows)) if visual_rows else None
         ),

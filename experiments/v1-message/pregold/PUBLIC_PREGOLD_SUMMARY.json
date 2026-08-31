@@ -4,7 +4,7 @@
   "feature_builder_implementation_sha256": "a09919f0f7deeba7b04e957cac851d35106d1bd39974007e007cd413c63192b4",
   "feature_contract_sha256": "4bd7d62994414482e24012ff0ea21f9b5ededda64036873ea76c4c3c93cc8131",
   "human_gold_used": false,
-  "implementation_sha256": "4b51bee6a4e6803e662b2c025147843a14c38de26dc244e4bc9eba57b89ca5ab",
+  "implementation_sha256": "f83f11fb24fcb6d3d45983a459effd7659b951b6ae539a94ac4fa44207eba934",
   "input_item_count": 30,
   "item_identity_sha256": "a53af22ec3172a5696a77dfe46dfd2340cd1823d72272178bdb7cc0f414457c9",
   "methods": {
@@ -29,11 +29,24 @@
         "structured_message_missing": 15
       },
       "visual_call_count": 0
+    },
+    "the-ok-text-rule": {
+      "abstain_count": 20,
+      "item_count": 30,
+      "judged_count": 10,
+      "predictions_sha256": "e7028324dab4d0d83916547e4dc343f6fd0c4eb4257cbed5971286ed5d94eaee",
+      "route_counts": {
+        "the_ok_consent_rule_no_match": 10,
+        "the_ok_raw_element_text_missing": 20
+      },
+      "visual_call_count": 0
     }
   },
   "paper_result_eligible": false,
-  "predictions_sha256": "b8f39d4faf73c9305a7268274d9560a42380c40fa5d03831d0200e39f300710e",
+  "predictions_sha256": "ac76aafd421694ba6cff62204ace0c4e63e341edce1ef51d7d6c154ed2f7724d",
   "scored": false,
+  "the_ok_implementation_sha256": "5253ad4ceae8841952f2dd06159ce4cc2ba642c6518ef781654e257cf47e8b33",
+  "the_ok_upstream_revision": "b618948c0d24b917b3a46a88f5c1cf6ff84571cd",
   "visual_adapter_implementation_sha256": "37968d722278fe95a24524bf2d43d55f9ed41d2ffd38a1fea8be7468e9f234af",
   "visual_evidence_is_formal_baseline": false,
   "visual_evidence_role": "model-workflow-visual-candidate",

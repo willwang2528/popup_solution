@@ -11,11 +11,13 @@
   "excluded_items": [],
   "experiment_contract_version": "popup-message-eval-v1.0",
   "implementation_sha256": {
-    "baselines.py": "f941a6d98600978bd10cf4499c635406ff3e5257817519c8e1ec528c1217b2e6",
-    "cli.py": "63c64c086a6e9f25fdda0b18c09087c948f1b60319777231d73111d78f5f3eb8",
+    "baselines.py": "68083ee2a9d3b021efa6f071be7d20356ed9c90c4103d326b1057b4e8db678f2",
+    "cli.py": "d35bcd3f9938b32f627dab24e4222ae28e328c8758e79cf81884546c9206a04e",
     "io.py": "f20b5c7ee79c6811bf3ba89cb17c1588bb36cc8f435eaea8cd29fe8597df6d2c",
-    "metrics.py": "40724fa01d5d7ac50e9f0cc18973bb01a1fed397af3fb6df042cc94ada02abba",
-    "runner.py": "5dfd8aa74ee303cbe089a3d3cf787d903ce15bdafdb6b162e5d4dd29b723e01a"
+    "metrics.py": "231c5e898622bc73b384e5b6ddd2a134bc2f8a149bd754b602b9165d4bef0955",
+    "resources/the-ok/indicators.json": "8b376a5391e76abef6b73b2889129ed36c64b4fd096fa4e1c51d781493bf34c9",
+    "runner.py": "62decdecf8e6a036e1d19564d5b6bc06aa33e034e6b4c7f2a401ab4eb75438db",
+    "the_ok_baseline.py": "5253ad4ceae8841952f2dd06159ce4cc2ba642c6518ef781654e257cf47e8b33"
   },
   "input_item_count": 3,
   "inputs": {
@@ -27,8 +29,8 @@
   "method_config": {},
   "paper_result_eligible": false,
   "route_counts": {
-    "no_structured_popup_text": 1,
-    "structured_popup_scope_text": 2
+    "structured_full_tree_missing": 1,
+    "structured_full_tree_text": 2
   },
   "seed": 17
 }

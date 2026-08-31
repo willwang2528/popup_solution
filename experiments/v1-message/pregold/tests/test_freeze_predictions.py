@@ -232,7 +232,7 @@ class FreezePredictionsCliTest(unittest.TestCase):
             predictions = read_jsonl(private_output)
             self.assertEqual(stat.S_IMODE(private_output.parent.stat().st_mode), 0o700)
             self.assertEqual(stat.S_IMODE(private_output.stat().st_mode), 0o600)
-            self.assertEqual(len(predictions), 6)
+            self.assertEqual(len(predictions), 9)
             by_key = {(row["method_id"], row["pilot_item_id"]): row for row in predictions}
             self.assertEqual(
                 by_key[("structured-only-v1", "PMJ-PILOT-001")]["message_text_pred"],
@@ -244,6 +244,10 @@ class FreezePredictionsCliTest(unittest.TestCase):
             )
             self.assertEqual(
                 by_key[("mg-pu-gated-union-v1", "PMJ-PILOT-003")]["status"],
+                "abstain",
+            )
+            self.assertEqual(
+                by_key[("the-ok-text-rule", "PMJ-PILOT-003")]["status"],
                 "abstain",
             )
             for row in predictions:
@@ -262,10 +266,19 @@ class FreezePredictionsCliTest(unittest.TestCase):
             self.assertEqual(summary["input_item_count"], 3)
             self.assertEqual(
                 set(summary["methods"]),
-                {"structured-only-v1", "mg-pu-gated-union-v1"},
+                {
+                    "structured-only-v1",
+                    "mg-pu-gated-union-v1",
+                    "the-ok-text-rule",
+                },
             )
             self.assertRegex(summary["predictions_sha256"], r"^[0-9a-f]{64}$")
             self.assertRegex(summary["implementation_sha256"], r"^[0-9a-f]{64}$")
+            self.assertRegex(summary["the_ok_implementation_sha256"], r"^[0-9a-f]{64}$")
+            self.assertEqual(
+                summary["the_ok_upstream_revision"],
+                "b618948c0d24b917b3a46a88f5c1cf6ff84571cd",
+            )
             self.assertEqual(
                 summary.get("feature_builder_implementation_sha256"),
                 hashlib.sha256(

@@ -37,8 +37,18 @@ def _input_manifest(paths: dict[str, Path | None]) -> dict[str, dict[str, str]]:
 
 def _implementation_manifest() -> dict[str, str]:
     package_root = Path(__file__).resolve().parent
-    names = ["baselines.py", "cli.py", "io.py", "metrics.py", "runner.py"]
-    return {name: sha256_file(package_root / name) for name in names}
+    paths = {
+        "baselines.py": package_root / "baselines.py",
+        "cli.py": package_root / "cli.py",
+        "io.py": package_root / "io.py",
+        "metrics.py": package_root / "metrics.py",
+        "resources/the-ok/indicators.json": (
+            package_root.parent / "resources" / "the-ok" / "indicators.json"
+        ),
+        "runner.py": package_root / "runner.py",
+        "the_ok_baseline.py": package_root / "the_ok_baseline.py",
+    }
+    return {name: sha256_file(path) for name, path in paths.items()}
 
 
 def main(argv: list[str] | None = None) -> int:

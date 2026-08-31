@@ -7,10 +7,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from popup_eval.baselines import (
     MajorityNoInputBaseline,
     MessageGapRouter,
+    PopupScopedStructuredTextBaseline,
     PredictionAdapter,
     StructuredTextRuleBaseline,
     select_random_matched_ids,
 )
+from pregold.freeze_predictions import _structured_prediction as pregold_structured_prediction
 
 
 def item(item_id, popup_gt, message_gt=None, candidates=None, node_count=1, sync="synchronized"):
@@ -112,8 +114,76 @@ class StructuredBaselineTests(unittest.TestCase):
 
         result = StructuredTextRuleBaseline().predict(example)
 
-        self.assertEqual(result["popup_present_pred"], False)
+        self.assertEqual(result["status"], "abstain")
+        self.assertIsNone(result["popup_present_pred"])
         self.assertIsNone(result["message_text_pred"])
+        self.assertIsNone(result["confidence"])
+
+    def test_structured_rule_is_full_tree_flatten_without_popup_scope_oracle(self):
+        # Break caught: A1 uses gold-derived popup ROI/host ownership unavailable to the baseline.
+        example = item(
+            "e1",
+            True,
+            candidates=[
+                candidate("accessibility", "Host heading", host=True, inside=False),
+                candidate("accessibility", "Popup notice"),
+            ],
+        )
+
+        result = StructuredTextRuleBaseline().predict(example)
+
+        self.assertEqual(result["message_text_pred"], "Host heading Popup notice")
+        self.assertEqual(result["route_reason"], "structured_full_tree_text")
+
+    def test_formal_a1_matches_pregold_on_nonempty_and_empty_structure(self):
+        # Break caught: the frozen pre-gold A1 and formal evaluator assign different statuses.
+        for text in ("Network unavailable", None):
+            with self.subTest(text=text):
+                candidates = [] if text is None else [candidate("structured", text)]
+                example = item("e1", True, candidates=candidates, node_count=len(candidates))
+                formal = StructuredTextRuleBaseline().predict(example)
+                feature = {
+                    "candidates": candidates,
+                    "observations": [
+                        {
+                            "structured_representation": {
+                                "availability": "available" if candidates else "missing",
+                                "node_count": len(candidates),
+                            }
+                        }
+                    ],
+                }
+                pregold, _ = pregold_structured_prediction("e1", feature)
+
+                self.assertEqual(formal["status"], pregold["status"])
+                self.assertEqual(formal["popup_present_pred"], pregold["popup_present_pred"])
+                self.assertEqual(formal["message_text_pred"], pregold["message_text_pred"])
+
+    def test_formal_a1_matches_pregold_nfkc_deduplication(self):
+        # Break caught: full-width and ASCII-equivalent fragments are deduplicated
+        # differently before and after gold unlock.
+        candidates = [
+            candidate("structured", "Ａ"),
+            candidate("structured", "A"),
+        ]
+        example = item("e1", True, candidates=candidates, node_count=2)
+        feature = {
+            "candidates": candidates,
+            "observations": [
+                {
+                    "structured_representation": {
+                        "availability": "available",
+                        "node_count": 2,
+                    }
+                }
+            ],
+        }
+
+        formal = StructuredTextRuleBaseline().predict(example)
+        pregold, _ = pregold_structured_prediction("e1", feature)
+
+        self.assertEqual(formal["message_text_pred"], "Ａ")
+        self.assertEqual(formal["message_text_pred"], pregold["message_text_pred"])
 
 
 class AdapterTests(unittest.TestCase):
@@ -157,7 +227,7 @@ class RouterTests(unittest.TestCase):
             "unused gold",
             candidates=[candidate("accessibility", "Title", gaps=["merged"])],
         )
-        self.structured = StructuredTextRuleBaseline()
+        self.structured = PopupScopedStructuredTextBaseline()
         self.visual = PredictionAdapter.from_rows([visual_row("e1")])
 
     def test_mgpu_routes_nonempty_merged_structure_to_visual(self):

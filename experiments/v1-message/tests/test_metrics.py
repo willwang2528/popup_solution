@@ -8,7 +8,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from popup_eval.metrics import evaluate_predictions, normalize_text, token_f1
 
 
-def gold_item(item_id, popup_present, message=None, facts=None):
+def gold_item(
+    item_id,
+    popup_present,
+    message=None,
+    facts=None,
+    message_observability=None,
+):
+    if message_observability is None:
+        message_observability = "complete" if popup_present else "not_applicable"
     return {
         "identity": {"item_id": item_id, "record_kind": "synthetic_schema_fixture"},
         "message_judgment": {
@@ -16,6 +24,7 @@ def gold_item(item_id, popup_present, message=None, facts=None):
                 "popup_present_gt": popup_present,
                 "message_text_gt": message,
                 "critical_facts_gt": facts or [],
+                "message_text_observability": message_observability,
             }
         },
     }
@@ -117,6 +126,33 @@ class AggregateMetricTests(unittest.TestCase):
         self.assertEqual(metrics["presence"]["negative_class_precision"], 1.0)
         self.assertEqual(metrics["presence"]["negative_class_recall"], 1.0)
         self.assertEqual(metrics["presence"]["macro_f1_with_abstain_as_miss"], 0.5)
+
+    def test_unobservable_positive_remains_in_presence_but_not_message_or_vpma(self):
+        # Break caught: unreadable message evidence removes a valid popup-presence example
+        # or is silently scored as a message failure.
+        items = [
+            gold_item(
+                "p-hidden",
+                True,
+                message=None,
+                message_observability="not_observable",
+            ),
+            gold_item("n1", False),
+        ]
+        predictions = [
+            prediction("p-hidden", "judged", True, message="Unverifiable guess"),
+            prediction("n1", "judged", False),
+        ]
+
+        metrics = evaluate_predictions(items, predictions)
+
+        self.assertEqual(metrics["presence"]["tp"], 1)
+        self.assertEqual(metrics["message"]["denominator_popup_positive_complete"], 0)
+        self.assertEqual(metrics["message"]["excluded_partial"], 0)
+        self.assertEqual(metrics["message"]["excluded_not_observable"], 1)
+        self.assertIsNone(metrics["vpma"]["item_values"]["p-hidden"])
+        self.assertEqual(metrics["vpma"]["null_abstention_count"], 0)
+        self.assertEqual(metrics["vpma"]["null_message_unobservable_count"], 1)
 
 
 if __name__ == "__main__":

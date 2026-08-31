@@ -13,11 +13,15 @@
   "evidence_level": "synthetic_pipeline_fixture",
   "message": {
     "denominator_popup_positive": 2,
+    "denominator_popup_positive_complete": 2,
     "exact_match": 0.0,
+    "excluded_not_observable": 0,
+    "excluded_other_observability_or_ineligible": 0,
+    "excluded_partial": 0,
     "normalized_exact_match": 0.0,
     "token_f1": 0.3333333333333333
   },
-  "metric_contract_version": "popup-message-v1.0",
+  "metric_contract_version": "popup-message-v1.1",
   "n_items": 3,
   "n_judged": 3,
   "paper_result_eligible": false,
@@ -48,6 +52,8 @@
     },
     "mode": "normalized_exact_proxy",
     "null_abstention_count": 0,
+    "null_message_partial_count": 0,
+    "null_message_unobservable_count": 0,
     "overall_success_rate": 0.3333333333333333,
     "rate_on_covered": 0.3333333333333333,
     "success_count": 1

@@ -113,7 +113,9 @@ class MajorityNoInputBaseline:
         )
 
 
-def _structured_candidates(item: dict[str, Any]) -> Iterable[dict[str, Any]]:
+def _structured_candidates(
+    item: dict[str, Any], *, popup_scoped: bool = False
+) -> Iterable[dict[str, Any]]:
     for candidate in item.get("candidates", []):
         if candidate.get("source_channel") not in STRUCTURED_CHANNELS:
             continue
@@ -121,15 +123,16 @@ def _structured_candidates(item: dict[str, Any]) -> Iterable[dict[str, Any]]:
         features = candidate.get("features", {})
         if normalized.get("visible") is False:
             continue
-        if features.get("belongs_to_host_page") is True:
-            continue
-        if features.get("inside_popup_roi") is False:
-            continue
+        if popup_scoped:
+            if features.get("belongs_to_host_page") is True:
+                continue
+            if features.get("inside_popup_roi") is False:
+                continue
         yield candidate
 
 
 class StructuredTextRuleBaseline:
-    """Structure-only concatenation baseline; never reads labels or pixels."""
+    """Full-tree structure-only concatenation; never reads labels or pixels."""
 
     method_id = "structured-text-rule"
 
@@ -145,15 +148,43 @@ class StructuredTextRuleBaseline:
                     seen.add(key)
                     fragments.append(value.strip())
         message = " ".join(fragments) or None
+        if message is None:
+            return _prediction(
+                item,
+                self.method_id,
+                status="abstain",
+                popup_present=None,
+                message=None,
+                confidence=None,
+                route_reason="structured_full_tree_missing",
+            )
         return _prediction(
             item,
             self.method_id,
             status="judged",
-            popup_present=message is not None,
+            popup_present=True,
             message=message,
-            confidence=0.65 if message else 0.55,
-            route_reason="structured_popup_scope_text" if message else "no_structured_popup_text",
+            confidence=0.65,
+            route_reason="structured_full_tree_text",
         )
+
+
+class PopupScopedStructuredTextBaseline(StructuredTextRuleBaseline):
+    """Popup-scoped structure component used only inside the proposed router."""
+
+    method_id = "popup-scoped-structured-text-rule"
+
+    def predict(self, item: dict[str, Any]) -> dict[str, Any]:
+        scoped = deepcopy(item)
+        scoped["candidates"] = list(_structured_candidates(item, popup_scoped=True))
+        result = super().predict(scoped)
+        result["method_id"] = self.method_id
+        result["route_reason"] = (
+            "structured_popup_scope_text"
+            if result["status"] == "judged"
+            else "structured_popup_scope_missing"
+        )
+        return result
 
 
 class PredictionAdapter:
@@ -219,7 +250,7 @@ def message_gap_reasons(item: dict[str, Any], structured_prediction: dict[str, A
     reasons: set[str] = set()
     if not structured_prediction.get("message_text_pred"):
         reasons.add("missing")
-    for candidate in _structured_candidates(item):
+    for candidate in _structured_candidates(item, popup_scoped=True):
         for reason in candidate.get("features", {}).get("gap_reasons", []):
             if reason in MESSAGE_GAPS:
                 reasons.add(reason)

@@ -8,16 +8,19 @@ from typing import Any
 from .baselines import (
     MajorityNoInputBaseline,
     MessageGapRouter,
+    PopupScopedStructuredTextBaseline,
     PredictionAdapter,
     StructuredTextRuleBaseline,
     select_random_matched_ids,
 )
 from .metrics import evaluate_predictions
+from .the_ok_baseline import INDICATORS_SHA256, TheOkTextBaseline, UPSTREAM_REVISION
 
 
 METHODS = {
     "majority",
     "structured",
+    "the-ok",
     "visual-adapter",
     "mg-pu",
     "always-visual",
@@ -128,9 +131,11 @@ def _partition_metric_items(
                     popup_present,
                 ):
                     reasons.append("human_presence_adjudication_missing")
-                if popup_present:
-                    if metric_eligibility.get("eligible_for_v1_message_metric") is not True:
-                        reasons.append("message_metric_eligibility_not_verified")
+                if (
+                    popup_present
+                    and labels.get("message_text_observability") == "complete"
+                    and metric_eligibility.get("eligible_for_v1_message_metric") is True
+                ):
                     message_text = labels.get("message_text_gt")
                     if not has_human_adjudication(
                         item,
@@ -163,6 +168,7 @@ def _make_baseline(
     seed: int,
 ):
     structured = StructuredTextRuleBaseline()
+    popup_scoped_structured = PopupScopedStructuredTextBaseline()
     visual = PredictionAdapter.from_rows(prediction_rows or [])
     if method == "majority":
         if not fit_items:
@@ -175,16 +181,27 @@ def _make_baseline(
         return MajorityNoInputBaseline.fit(fit_items), {}
     if method == "structured":
         return structured, {}
+    if method == "the-ok":
+        return TheOkTextBaseline(), {
+            "upstream_revision": UPSTREAM_REVISION,
+            "vendored_indicators_sha256": INDICATORS_SHA256,
+            "adaptation": "matched_appium_element_text_projection",
+        }
     if method == "visual-adapter":
         return visual, {}
     if method in {"mg-pu", "always-visual", "empty-tree"}:
-        return MessageGapRouter(structured, visual, mode=method), {}
+        return MessageGapRouter(popup_scoped_structured, visual, mode=method), {}
 
-    mgpu = MessageGapRouter(structured, visual, mode="mg-pu")
+    mgpu = MessageGapRouter(popup_scoped_structured, visual, mode="mg-pu")
     matched_count = sum(mgpu.predict(item)["visual_call_count"] for item in items)
     selected = select_random_matched_ids(items, matched_count, seed)
     return (
-        MessageGapRouter(structured, visual, mode="random-matched", random_call_ids=selected),
+        MessageGapRouter(
+            popup_scoped_structured,
+            visual,
+            mode="random-matched",
+            random_call_ids=selected,
+        ),
         {"matched_visual_call_count": matched_count, "random_call_item_ids": sorted(selected)},
     )
 

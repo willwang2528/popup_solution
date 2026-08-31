@@ -135,7 +135,7 @@ Gate：
 | ID | System | Input | Purpose |
 |---|---|---|---|
 | B1 | OCR-only | screenshot／popup ROI | 对齐 Freely Given Consent 式 OCR |
-| B2 | PopSweeper detector + OCR | screenshot + detected ROI | popup-specific visual baseline |
+| B2 | PopSweeper paper reconstruction + OCR | screenshot + full-screen OCR | popup-specific visual reconstruction；exact 需先通过资产门禁，popup ROI 另列本研究 adaptation |
 | B3 | screenshot-only VLM | screenshot | 强视觉 baseline |
 
 ### Family C — Fusion
