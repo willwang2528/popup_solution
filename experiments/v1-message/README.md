@@ -45,6 +45,11 @@ CLI 的 `--method` 支持：
 
 这里的 Model-B 输出只用于证明预金标工作流可冻结；因为精确模型身份与执行复现信息不完整，它明确不是正式论文 baseline，也不能支持性能比较。
 
+30-item pending-union 现保留稳定的 `identity.pilot_item_id`，因此最终人工
+gold、私有结构候选和预金标预测可以在不依赖显示顺序的前提下连接。
+The OK adapter 同时支持预金标 `candidate.features.text` 与 union
+`candidate.android_raw.text`，避免 schema 物化后 A2 因字段迁移而全体弃答。
+
 ## 输入
 
 `--items` 支持两种冻结 JSONL：
@@ -54,7 +59,12 @@ CLI 的 `--method` 支持：
 
 非 synthetic 的完整 union item 只有在 presence gold 已通过 `eligible_for_v1_presence_metric=true`、无 exclusion reason、至少一个非空证据 URI，并且 presence 标签有 human-role、`adjudicated`、带裁决者与非空证据 URI 的 annotation 时才进入 presence 指标。message 是独立条件分母：只有 `message_text_observability=complete` 且 `eligible_for_v1_message_metric=true` 的正样本还需 message/critical-facts 人工裁决并进入 message 指标。`partial`、`not_observable` 不会删除同一 item 的 presence 证据。model/source label 即使伪装成 `real_app` 也会被排除。
 
-若输入 pilot manifest，必须同时通过 `--annotations` 提供已完成、已 resolved 的 `adjudication_output.schema.json` JSONL。连接键固定为 `pilot_item_id`；不会用显示顺序、文件名或 `source_sampling_label` 冒充人工 gold。待裁决、`uncertain`、`unusable` item 保留 exclusion reason，不进入指标。
+若提供 `--annotations`，CLI 会先执行整批 finalization：人工输出必须与输入
+item 构成严格的一对一 `pilot_item_id` 双射，重复、未知、缺失或空白行均
+fail-closed。`cannot_resolve` 行必须不携带任何 final label，保留 exclusion
+reason，不进入指标。规范化后的私有 gold 行按 ID 排序并生成
+`adjudication_batch.batch_sha256`；公开 run manifest 只记录计数和哈希，不写
+人工消息内容。连接不会使用显示顺序、文件名或 `source_sampling_label`。
 
 评测适配器会在接纳 gold 前逐字段检查冻结协议／批次、匿名 adjudicator、ISO-8601 裁决时间、语义槽约束与 `evidence_rechecked_via_adapter=true`；缺字段、额外字段或证据未复核均 fail-closed。
 
@@ -76,6 +86,44 @@ CLI 的 `--method` 支持：
   "source_observation_id": "obs.before"
 }
 ```
+
+正式 pilot 评分不得在看到 gold 后重新运行 A1/A2/MG-PU。使用：
+
+```bash
+../.venv/bin/python3 experiments/v1-message/run_eval.py \
+  --items dataset-v1/empirical-pilot/private/pilot-30.pending-union.private.jsonl \
+  --annotations /private/path/final-adjudication.jsonl \
+  --predictions experiments/v1-message/pregold/private/pilot-30.predictions.private.jsonl \
+  --method frozen-prediction \
+  --frozen-prediction-method-id structured-only-v1 \
+  --output-dir /private/path/scored-a1
+```
+
+该路径严格检查整批 prediction 覆盖与 `no_action/gold_blind/unscored` 状态，
+直接评分冻结行并写出方法 snapshot SHA-256。gold 文本变化不能改变 prediction
+hash 或 prediction 内容。
+
+## 语义复核与配对统计
+
+[`schemas/semantic_output_adjudication.schema.json`](./schemas/semantic_output_adjudication.schema.json)
+定义方法输出的盲式消息语义复核。每条记录绑定
+`(pilot_item_id, method_id, prediction_row_sha256)`；若启用人工 VPMA，则每个
+比较方法的所有 eligible positive output 必须完整覆盖，否则拒绝运行，不能把
+人工语义判断与字符串 proxy 混在同一比较中。
+
+[`statistics/`](./statistics/) 提供冻结预测后的 exploratory paired scorer：
+
+- 所有方法共用同一 finalized gold batch 与 metric item set；
+- strongest/reference baseline 必须由调用者预先显式指定，test 端不自动挑选；
+- 私有 group-map 与模型输入隔离，使用 `group_key + content_key` 连通分量；
+- 默认 10,000 次、固定 seed、整 cluster 有放回抽样；
+- 主统计量是 VPMA overall success 的配对差，`null/abstain` 按失败计；
+- 公开输出不含 item、消息或 source metadata，并永久保持
+  `analysis_tier=exploratory_pilot`、`paper_result_eligible=false`。
+
+当前 group-map 为 30 个 singleton cluster，尚不足以证明正式 leakage control；
+B1 popup-ROI、B2 exact PopSweeper 和可复现视觉模型也仍未解锁。因此仓库尚无
+正式方法比较数字。
 
 ## 输出与口径
 

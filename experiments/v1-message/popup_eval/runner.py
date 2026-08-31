@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from collections import Counter
+from copy import deepcopy
+import hashlib
+import json
 from typing import Any
 
 from .baselines import (
@@ -35,6 +38,21 @@ FORBIDDEN_PREDICTION_KEYS = {
     "target",
     "target_candidate_id",
     "execution_channel",
+}
+FROZEN_PREDICTION_KEYS = {
+    "action_policy",
+    "confidence",
+    "critical_facts_pred",
+    "human_gold_used",
+    "message_text_pred",
+    "method_id",
+    "paper_result_eligible",
+    "pilot_item_id",
+    "popup_present_pred",
+    "route_reason",
+    "scored",
+    "status",
+    "visual_called",
 }
 
 
@@ -105,11 +123,19 @@ def _partition_metric_items(
         if not isinstance(popup_present, bool):
             reasons.append("resolved_presence_gold_missing")
         else:
-            record_kind = item.get("identity", {}).get("record_kind")
+            identity = item.get("identity", {})
+            record_kind = identity.get("record_kind")
+            provenance = item.get("adjudication_provenance", {})
+            is_finalized_pilot = (
+                isinstance(identity.get("pilot_item_id"), str)
+                and provenance.get("adjudication_status") == "resolved"
+                and provenance.get("evidence_rechecked_via_adapter") is True
+                and isinstance(provenance.get("adjudication_batch_sha256"), str)
+                and len(provenance["adjudication_batch_sha256"]) == 64
+            )
             if record_kind == "synthetic_schema_fixture":
                 pass
-            elif record_kind == "annotation_pilot_candidate":
-                provenance = item.get("adjudication_provenance", {})
+            elif record_kind == "annotation_pilot_candidate" or is_finalized_pilot:
                 if (
                     provenance.get("adjudication_status") != "resolved"
                     or provenance.get("evidence_rechecked_via_adapter") is not True
@@ -209,7 +235,11 @@ def _make_baseline(
 def _evidence_level(items: list[dict[str, Any]]) -> str:
     if all(item["identity"].get("record_kind") == "synthetic_schema_fixture" for item in items):
         return "synthetic_pipeline_fixture"
-    if any(item["identity"].get("record_kind") == "annotation_pilot_candidate" for item in items):
+    if any(
+        item["identity"].get("record_kind") == "annotation_pilot_candidate"
+        or "adjudication_batch_sha256" in item.get("adjudication_provenance", {})
+        for item in items
+    ):
         return "adjudicated_annotation_pilot"
     return "technical_dataset_evaluation"
 
@@ -264,6 +294,156 @@ def run_experiment(
         "excluded_items": excluded,
         "method_config": method_config,
         "route_counts": dict(sorted(route_counts.items())),
+        "evidence_level": evidence_level,
+        "paper_result_eligible": False,
+        "claims": {
+            "empirical_performance": False,
+            "user_experience_improvement": False,
+            "recovery_or_dismissal": False,
+        },
+    }
+    return {"run": run, "metrics": metrics, "predictions": predictions}
+
+
+def _validate_frozen_prediction_row(
+    row: dict[str, Any], method_id: str
+) -> None:
+    if set(row) != FROZEN_PREDICTION_KEYS:
+        missing = sorted(FROZEN_PREDICTION_KEYS - set(row))
+        unexpected = sorted(set(row) - FROZEN_PREDICTION_KEYS)
+        raise ContractError(
+            f"frozen prediction keys are invalid: missing={missing} unexpected={unexpected}"
+        )
+    if row["method_id"] != method_id:
+        raise ContractError("frozen prediction method_id mismatch")
+    if row["action_policy"] != "no_action":
+        raise ContractError("frozen prediction must be action-free")
+    if row["human_gold_used"] is not False or row["scored"] is not False:
+        raise ContractError("frozen prediction must be gold-blind and unscored")
+    if row["paper_result_eligible"] is not False:
+        raise ContractError("pre-gold prediction cannot claim paper-result eligibility")
+    if not isinstance(row["pilot_item_id"], str) or not row["pilot_item_id"].startswith(
+        "PMJ-PILOT-"
+    ):
+        raise ContractError("frozen prediction requires pilot_item_id")
+    if not isinstance(row["visual_called"], bool):
+        raise ContractError("frozen prediction visual_called must be boolean")
+    if row["status"] not in {"judged", "abstain"}:
+        raise ContractError("frozen prediction status is invalid")
+    facts = row["critical_facts_pred"]
+    if not isinstance(facts, list) or not all(isinstance(fact, str) for fact in facts):
+        raise ContractError("frozen prediction critical facts must be strings")
+    confidence = row["confidence"]
+    if confidence is not None and (
+        not isinstance(confidence, (int, float))
+        or isinstance(confidence, bool)
+        or not 0 <= confidence <= 1
+    ):
+        raise ContractError("frozen prediction confidence is invalid")
+    present = row["popup_present_pred"]
+    message = row["message_text_pred"]
+    if row["status"] == "abstain":
+        if present is not None or message is not None or facts or confidence is not None:
+            raise ContractError("abstaining frozen prediction must not carry an answer")
+    elif not isinstance(present, bool):
+        raise ContractError("judged frozen prediction requires boolean presence")
+    elif present:
+        if not isinstance(message, str) or not message.strip():
+            raise ContractError("positive frozen prediction requires a message")
+    elif message is not None or facts:
+        raise ContractError("negative frozen prediction cannot carry message semantics")
+
+
+def run_frozen_prediction_experiment(
+    items: list[dict[str, Any]],
+    prediction_rows: list[dict[str, Any]],
+    method_id: str,
+    *,
+    semantic_annotations: dict[tuple[str, str], dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Score one exact pre-gold method snapshot without rerunning its implementation."""
+    validate_frozen_items(items)
+    metric_items, excluded = _partition_metric_items(items)
+    if not metric_items:
+        raise ContractError("no items have resolved, metric-eligible presence gold")
+
+    all_items_by_pilot: dict[str, dict[str, Any]] = {}
+    for item in items:
+        pilot_id = item.get("identity", {}).get("pilot_item_id")
+        if not isinstance(pilot_id, str):
+            raise ContractError("frozen prediction scoring requires pilot_item_id on every item")
+        if pilot_id in all_items_by_pilot:
+            raise ContractError(f"duplicate input pilot_item_id: {pilot_id}")
+        all_items_by_pilot[pilot_id] = item
+
+    selected: dict[str, dict[str, Any]] = {}
+    for raw_row in prediction_rows:
+        if raw_row.get("method_id") != method_id:
+            continue
+        row = deepcopy(raw_row)
+        _validate_frozen_prediction_row(row, method_id)
+        pilot_id = row["pilot_item_id"]
+        if pilot_id not in all_items_by_pilot:
+            raise ContractError(f"frozen prediction has unknown pilot_item_id: {pilot_id}")
+        if pilot_id in selected:
+            raise ContractError(f"duplicate frozen prediction: {method_id}/{pilot_id}")
+        selected[pilot_id] = row
+    missing = sorted(set(all_items_by_pilot) - set(selected))
+    if missing:
+        raise ContractError(f"missing frozen predictions for {method_id}: {missing}")
+
+    sorted_rows = [selected[pilot_id] for pilot_id in sorted(selected)]
+    canonical_payload = "".join(
+        json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        for row in sorted_rows
+    ).encode("utf-8")
+    prediction_sha256 = hashlib.sha256(canonical_payload).hexdigest()
+
+    predictions: list[dict[str, Any]] = []
+    for item in metric_items:
+        pilot_id = item["identity"]["pilot_item_id"]
+        frozen = selected[pilot_id]
+        observation_id = (
+            item["observations"][0].get("observation_id")
+            if item.get("observations")
+            else None
+        )
+        predictions.append(
+            {
+                "item_id": item["identity"]["item_id"],
+                "method_id": method_id,
+                "status": frozen["status"],
+                "popup_present_pred": frozen["popup_present_pred"],
+                "message_text_pred": frozen["message_text_pred"],
+                "critical_facts_pred": deepcopy(frozen["critical_facts_pred"]),
+                "confidence": frozen["confidence"],
+                "visual_called": frozen["visual_called"],
+                "visual_call_count": int(frozen["visual_called"]),
+                "route_reason": frozen["route_reason"],
+                "source_observation_id": observation_id,
+            }
+        )
+
+    metrics = evaluate_predictions(metric_items, predictions, semantic_annotations)
+    evidence_level = _evidence_level(metric_items)
+    for prediction in predictions:
+        prediction["evidence_level"] = evidence_level
+        prediction["paper_result_eligible"] = False
+    metrics["evidence_level"] = evidence_level
+    metrics["paper_result_eligible"] = False
+    run = {
+        "experiment_contract_version": "popup-message-eval-v1.0",
+        "method": method_id,
+        "prediction_source": "pregold_frozen_snapshot",
+        "frozen_prediction_sha256": prediction_sha256,
+        "action_policy": "no_action",
+        "input_item_count": len(items),
+        "evaluated_item_count": len(metric_items),
+        "excluded_item_count": len(excluded),
+        "excluded_items": excluded,
+        "route_counts": dict(
+            sorted(Counter(row["route_reason"] for row in predictions).items())
+        ),
         "evidence_level": evidence_level,
         "paper_result_eligible": False,
         "claims": {

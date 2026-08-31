@@ -74,11 +74,14 @@ class TheOkTextBaseline:
         for input_index, candidate in enumerate(item.get("candidates", [])):
             if candidate.get("source_channel") not in APPIUM_LIKE_CHANNELS:
                 continue
-            text = candidate.get("features", {}).get("text")
+            features = candidate.get("features", {})
+            text = features.get("text")
+            if not isinstance(text, str) or not text.strip():
+                text = (candidate.get("android_raw") or {}).get("text")
             if not isinstance(text, str) or not text.strip():
                 continue
             stripped = text.strip()
-            node_index = candidate.get("features", {}).get("node_index")
+            node_index = features.get("node_index")
             stable_index = node_index if isinstance(node_index, int) else 2**31 - 1
             elements.append((stable_index, input_index, stripped, stripped.lower()))
         return elements

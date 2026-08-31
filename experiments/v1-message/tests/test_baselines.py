@@ -12,6 +12,7 @@ from popup_eval.baselines import (
     StructuredTextRuleBaseline,
     select_random_matched_ids,
 )
+from popup_eval.the_ok_baseline import TheOkTextBaseline
 from pregold.freeze_predictions import _structured_prediction as pregold_structured_prediction
 
 
@@ -184,6 +185,39 @@ class StructuredBaselineTests(unittest.TestCase):
 
         self.assertEqual(formal["message_text_pred"], "Ａ")
         self.assertEqual(formal["message_text_pred"], pregold["message_text_pred"])
+
+
+class TheOkBaselineTests(unittest.TestCase):
+    def test_the_ok_reads_raw_android_text_from_union_candidate(self):
+        # Break caught: union conversion moves Appium-like raw text and A2 abstains on every item.
+        example = item(
+            "e1",
+            True,
+            candidates=[
+                {
+                    "source_channel": "uiautomator",
+                    "normalized": {
+                        "role_or_class": "android.widget.TextView",
+                        "name_or_text": "We use cookies",
+                        "value_or_hint": None,
+                        "visible": True,
+                    },
+                    "features": {
+                        "inside_popup_roi": None,
+                        "belongs_to_host_page": None,
+                        "owner_consistent": None,
+                        "gap_reasons": [],
+                    },
+                    "android_raw": {"text": "We use cookies"},
+                }
+            ],
+        )
+
+        result = TheOkTextBaseline().predict(example)
+
+        self.assertEqual(result["status"], "judged")
+        self.assertTrue(result["popup_present_pred"])
+        self.assertEqual(result["message_text_pred"], "We use cookies")
 
 
 class AdapterTests(unittest.TestCase):

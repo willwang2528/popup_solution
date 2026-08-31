@@ -21,6 +21,11 @@ VALIDATOR_PATH = ROOT / "scripts" / "validate_dataset.py"
 CONTRACT_VERSION = "pending-empirical-union-v1.0"
 FEATURE_CONTRACT_VERSION = "pmj-pilot-structured-features-v1.0"
 DEFAULT_PREDICTION_METHOD = "mg-pu-gated-union-v1"
+PREGOLD_METHOD_IDS = {
+    "structured-only-v1",
+    "the-ok-text-rule",
+    "mg-pu-gated-union-v1",
+}
 PILOT_ID_PATTERN = re.compile(r"PMJ-PILOT-(\d{3})")
 
 PAPER_METHOD_IDS = [
@@ -309,7 +314,7 @@ def _validate_prediction_row(row: dict[str, Any]) -> tuple[str, str, dict[str, A
     _assert_exact_keys(row, PREDICTION_KEYS, "pregold prediction")
     item_id, _ = _pilot_id(row.get("pilot_item_id"), "pregold prediction")
     method_id = row.get("method_id")
-    if method_id not in {"structured-only-v1", "mg-pu-gated-union-v1"}:
+    if method_id not in PREGOLD_METHOD_IDS:
         raise ContractError(f"{item_id}: unsupported pregold method_id")
     required = {
         "action_policy": "no_action",
@@ -612,6 +617,7 @@ def _build_item(
     item["identity"].update(
         {
             "item_id": item_id,
+            "pilot_item_id": pilot_id,
             "record_kind": "real_app",
             "collection_status": "collected",
             "split": "pilot",
@@ -871,7 +877,7 @@ def _build_item(
             "method_version": "pregold-frozen" if prediction else "not-run",
             "method_family": (
                 "tree_baseline"
-                if method_id == "structured-only-v1"
+                if method_id in {"structured-only-v1", "the-ok-text-rule"}
                 else "ours"
             ),
             "candidate_input_ids": [candidate["candidate_id"] for candidate in item["candidates"]],
@@ -1205,7 +1211,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--expected-count", type=int, default=30)
     parser.add_argument(
         "--prediction-method",
-        choices=["structured-only-v1", "mg-pu-gated-union-v1"],
+        choices=sorted(PREGOLD_METHOD_IDS),
         default=DEFAULT_PREDICTION_METHOD,
     )
     return parser.parse_args(argv)

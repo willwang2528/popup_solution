@@ -1,0 +1,20 @@
+{
+  "algorithm": "pilot_manifest_group_content_connected_components_v1",
+  "contract_version": "popup-message-pilot-group-map-v1.0",
+  "counts": {
+    "clusters": 30,
+    "items": 30,
+    "largest_cluster_items": 1,
+    "shared_content_keys": 0,
+    "shared_group_keys": 0
+  },
+  "hashes": {
+    "input_manifest_sha256": "b44f47596bf992a398a09ebf05603cda800625899803029473f97c753a7613a1",
+    "private_group_map_sha256": "cfcc02ca161cb44f74ab452918c3579b19c42aeadbad8c369a052cd109b5f2db"
+  },
+  "negative_claims": {
+    "formal_leakage_control_sufficient": false,
+    "paper_result_eligible": false,
+    "used_as_model_input": false
+  }
+}

@@ -7,8 +7,15 @@ from copy import deepcopy
 import json
 from pathlib import Path
 
-from .io import prepare_items, read_jsonl, sha256_file, write_json, write_jsonl
-from .runner import METHODS, run_experiment
+from .io import (
+    prepare_finalized_pilot_items,
+    prepare_items,
+    read_jsonl,
+    sha256_file,
+    write_json,
+    write_jsonl,
+)
+from .runner import METHODS, run_experiment, run_frozen_prediction_experiment
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -21,7 +28,13 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--fit-items", type=Path, help="Disjoint labeled fit JSONL for majority/no-input")
     parser.add_argument("--predictions", type=Path, help="Frozen OCR/VLM prediction JSONL adapter input")
-    parser.add_argument("--method", required=True, choices=sorted(METHODS))
+    parser.add_argument(
+        "--method", required=True, choices=sorted(METHODS | {"frozen-prediction"})
+    )
+    parser.add_argument(
+        "--frozen-prediction-method-id",
+        help="Exact pre-gold method_id to score when --method=frozen-prediction",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--output-dir", required=True, type=Path)
     return parser
@@ -52,23 +65,49 @@ def _implementation_manifest() -> dict[str, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = _parser().parse_args(argv)
+    parser = _parser()
+    args = parser.parse_args(argv)
+    if args.method == "frozen-prediction":
+        if args.predictions is None or not args.frozen_prediction_method_id:
+            parser.error(
+                "--method=frozen-prediction requires --predictions and "
+                "--frozen-prediction-method-id"
+            )
+    elif args.frozen_prediction_method_id:
+        parser.error("--frozen-prediction-method-id requires --method=frozen-prediction")
     annotation_rows = read_jsonl(args.annotations) if args.annotations else []
-    items, semantic_annotations = prepare_items(read_jsonl(args.items), annotation_rows)
+    source_items = read_jsonl(args.items)
+    adjudication_summary = None
+    if args.annotations:
+        items, semantic_annotations, adjudication_summary = prepare_finalized_pilot_items(
+            source_items, annotation_rows
+        )
+    else:
+        items, semantic_annotations = prepare_items(source_items)
     fit_items = None
     if args.fit_items:
         fit_items, _ = prepare_items(read_jsonl(args.fit_items))
     prediction_rows = read_jsonl(args.predictions) if args.predictions else []
 
-    result = run_experiment(
-        items,
-        method=args.method,
-        seed=args.seed,
-        fit_items=fit_items,
-        prediction_rows=prediction_rows,
-        semantic_annotations=semantic_annotations,
-    )
+    if args.method == "frozen-prediction":
+        result = run_frozen_prediction_experiment(
+            items,
+            prediction_rows,
+            args.frozen_prediction_method_id,
+            semantic_annotations=semantic_annotations,
+        )
+    else:
+        result = run_experiment(
+            items,
+            method=args.method,
+            seed=args.seed,
+            fit_items=fit_items,
+            prediction_rows=prediction_rows,
+            semantic_annotations=semantic_annotations,
+        )
     manifest = deepcopy(result["run"])
+    if adjudication_summary is not None:
+        manifest["adjudication_batch"] = adjudication_summary
     manifest["implementation_sha256"] = _implementation_manifest()
     manifest["inputs"] = _input_manifest(
         {
@@ -90,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
         json.dumps(
             {
                 "status": "pass",
-                "method": args.method,
+                "method": manifest["method"],
                 "evaluated_item_count": manifest["evaluated_item_count"],
                 "evidence_level": manifest["evidence_level"],
                 "paper_result_eligible": manifest["paper_result_eligible"],

@@ -1,0 +1,11 @@
+{
+  "status": "ready_for_real_human_annotation",
+  "batch_id": "popsweeper-message-pilot-30-v1",
+  "batch_size": 30,
+  "human_gold_status": "pending_real_human_annotation",
+  "scored": false,
+  "paper_result_eligible": false,
+  "user_experience_claim_eligible": false,
+  "recovery_claim_eligible": false,
+  "checks_failed": []
+}

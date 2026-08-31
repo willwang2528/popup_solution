@@ -14,6 +14,8 @@
 
 ```text
 annotation-pilot/
+├── PILOT_PROTOCOL_FREEZE.json
+├── HUMAN_ANNOTATION_READINESS.json
 ├── manifests/pilot_batch_30.jsonl
 ├── schemas/
 │   ├── annotation_record.schema.json
@@ -22,6 +24,7 @@ annotation-pilot/
 ├── scripts/
 │   ├── build_pilot_bundle.py
 │   ├── calculate_agreement.py
+│   ├── check_human_annotation_readiness.py
 │   └── serve_blind_viewer.py
 ├── templates/
 │   ├── annotator_a.jsonl
@@ -203,13 +206,26 @@ test -x "$ARIS_PYTHON"
   --adjudication-input /ABSOLUTE/PRIVATE/PATH/adjudication-input.jsonl
 ```
 
-启动 A/B 各自的隔离 viewer（示例为 A；服务只允许 loopback 地址）：
+开始真人标注前，先用冻结的唯一媒体根运行 readiness gate：
+
+```bash
+"$ARIS_PYTHON" \
+  popup-solution/dataset-v1/annotation-pilot/scripts/check_human_annotation_readiness.py \
+  --repo-root popup-solution \
+  --adapter-root popup-solution/dataset-v1/work/annotation-media/pilot-batch-30 \
+  --private-root popup-solution/dataset-v1/annotation-pilot/private \
+  --report popup-solution/dataset-v1/annotation-pilot/HUMAN_ANNOTATION_READINESS.json
+```
+
+只有输出 `ready_for_real_human_annotation` 才允许 coordinator 启动 A/B；该状态只证明协议、空白工作副本、权限和 adapter evidence 已冻结，不代表已有 human gold、实验分数或论文结果。旧目录 `work/annotation-media/pilot-30` 即使内容相同也不得代替上述 canonical root。
+
+随后启动 A/B 各自的隔离 viewer（示例为 A；服务只允许 loopback 地址）：
 
 ```bash
 "$ARIS_PYTHON" \
   popup-solution/dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py \
   --annotations-template popup-solution/dataset-v1/annotation-pilot/templates/annotator_a.jsonl \
-  --adapter-root /ABSOLUTE/GIT-IGNORED/annotation-media
+  --adapter-root popup-solution/dataset-v1/work/annotation-media/pilot-batch-30
 ```
 
 输出中的随机 URL 与 `view_session_id` 只用于该次人工会话；不要把它们提交到 Git。
@@ -228,11 +244,15 @@ test -x "$ARIS_PYTHON"
 
 ## 8. Pilot 通过条件与后续 N=120
 
-本目录不预填 kappa 阈值或“通过”结论。两位 annotator 完成 30 条并裁决后，研究者应在看 N=120 结果前冻结：
+[`PILOT_PROTOCOL_FREEZE.json`](./PILOT_PROTOCOL_FREEZE.json) 已在 A/B 输出出现前冻结接受／返工口径；这是 preregistration，不是“pilot 已通过”的结论：
 
-- presence κ 的接受/返工阈值；
-- exact/normalized/semantic-slot 分歧的修订规则；
-- `uncertain/unusable/not_observable` 的最大容许率；
-- 完整 N=120 的 annotator 分配、抽检比例和裁决预算。
+- presence observed agreement ≥ 0.90，Cohen's κ ≥ 0.80；κ 不可定义时不自动通过；
+- jointly-popup comparable items ≥ 10；
+- normalized message agreement ≥ 0.85，exact agreement ≥ 0.70；
+- semantic-slot exact-set ≥ 0.75，mean Jaccard ≥ 0.85；
+- 每位 annotator 的 `uncertain + unusable` ≤ 3/30；final `cannot_resolve` ≤ 3/30；
+- 全部 30 项都由第三位真人重新查看 evidence 并裁决，包括 A/B 一致项；`cannot_resolve` 不进入 metrics。
+
+两位 annotator 完成 30 条并经第三人裁决后，只能依据上述冻结值决定“接受协议”或“修订后重跑 pilot”。不能回看结果再改阈值。完整 N=120 的人员分配、抽检比例和裁决预算必须在扩展前另行冻结。
 
 如果协议或 slot 定义发生变化，pilot 必须用新 `protocol_version` 重跑；不能用 outcome-driven 修改覆盖已有标注。

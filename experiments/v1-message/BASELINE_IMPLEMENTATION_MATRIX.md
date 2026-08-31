@@ -44,3 +44,21 @@ A0、A3、B2、B3、C1、C2、C4 仍只有接口、计划或 synthetic smoke。A
 4. 只有在同一 gold、同一输入资格和同一 evaluator 下，才运行 C3 对 dev-selected strongest deployable baseline 的主比较。
 
 在以上条件完成前，本仓库只报告工程就绪度、abstention、visual-call routing 和可复现性缺口，不报告 accuracy、VPMA 或“优于已有方法”。
+
+## 当前 post-gold 评分链
+
+工程链已经能在真实人工输出到位后执行以下 fail-closed 步骤，但目前没有真人
+gold，因此没有运行结果：
+
+1. finalizer 要求 adjudication 与冻结 pilot item 严格一对一，拒绝重复、未知、
+   缺失和夹带 final label 的 `cannot_resolve`；
+2. gold 通过稳定 `pilot_item_id` 连接到 30-item pending-union 的私有结构特征；
+3. A1、A2、MG-PU 直接评分 gold 前冻结的 prediction snapshot，不在 gold 解锁后
+   重跑方法；
+4. 可选消息语义复核绑定逐条 prediction SHA-256，并要求比较方法完整覆盖；
+5. paired scorer 使用显式私有 group-map、预声明 reference baseline 和确定性
+   10,000 次 cluster bootstrap。
+
+当前 pilot group-map 是 30 个 singleton cluster，仅能支撑 exploratory pipeline
+检查，不能声称正式 near-duplicate/app/template leakage control。B1 popup-ROI、
+B2 exact、C1 equal-budget 和可复现视觉模型身份仍是独立硬门。

@@ -55,6 +55,14 @@ def _message_metric_eligible(item: dict[str, Any]) -> bool:
     record_kind = item.get("identity", {}).get("record_kind")
     if record_kind in {"synthetic_schema_fixture", "annotation_pilot_candidate"}:
         return True
+    provenance = item.get("adjudication_provenance", {})
+    if (
+        provenance.get("adjudication_status") == "resolved"
+        and provenance.get("evidence_rechecked_via_adapter") is True
+        and isinstance(provenance.get("adjudication_batch_sha256"), str)
+        and len(provenance["adjudication_batch_sha256"]) == 64
+    ):
+        return True
     return (
         item.get("message_judgment", {})
         .get("eligibility", {})

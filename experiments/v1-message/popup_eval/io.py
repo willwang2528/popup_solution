@@ -200,7 +200,12 @@ def _validate_adjudication_row(row: dict[str, Any]) -> None:
             raise _adjudication_error("semantic_slots_final contains a duplicate")
         seen_slots.add(serialized)
 
-    if row["adjudication_status"] == "resolved":
+    if row["adjudication_status"] == "cannot_resolve":
+        if presence is not None or message is not None or observability is not None or slots:
+            raise _adjudication_error(
+                "cannot_resolve row cannot carry final presence or message labels"
+            )
+    elif row["adjudication_status"] == "resolved":
         if presence == "popup":
             if observability not in {"complete", "partial", "not_observable"}:
                 raise _adjudication_error("popup observability is inconsistent")
@@ -212,6 +217,78 @@ def _validate_adjudication_row(row: dict[str, Any]) -> None:
         elif presence == "no_popup":
             if message is not None or observability != "not_applicable" or slots:
                 raise _adjudication_error("no_popup cannot carry message semantics")
+
+
+def finalize_adjudication_batch(
+    items: list[dict[str, Any]], annotation_rows: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Validate an exact frozen-item/adjudication bijection and hash the private batch.
+
+    The returned rows contain human labels and must remain private.  The summary
+    contains only counts and a content hash, so callers can publish it after
+    applying their normal privacy review.
+    """
+    expected_ids: list[str] = []
+    for raw_item in items:
+        pilot_id = _pilot_item_id(_adapt_item_row(raw_item))
+        if pilot_id is None:
+            raise _adjudication_error("frozen item is missing pilot_item_id")
+        expected_ids.append(pilot_id)
+    duplicate_item_ids = sorted(
+        pilot_id for pilot_id in set(expected_ids) if expected_ids.count(pilot_id) > 1
+    )
+    if duplicate_item_ids:
+        raise _adjudication_error(f"duplicate frozen pilot_item_id values: {duplicate_item_ids}")
+
+    rows_by_id: dict[str, dict[str, Any]] = {}
+    duplicate_row_ids: set[str] = set()
+    for row in annotation_rows:
+        if row.get("record_status") == "blank":
+            raise _adjudication_error("blank row cannot finalize a batch")
+        _validate_adjudication_row(row)
+        pilot_id = row["pilot_item_id"]
+        if pilot_id in rows_by_id:
+            duplicate_row_ids.add(pilot_id)
+        else:
+            rows_by_id[pilot_id] = deepcopy(row)
+    if duplicate_row_ids:
+        raise _adjudication_error(
+            f"duplicate adjudication pilot_item_id values: {sorted(duplicate_row_ids)}"
+        )
+
+    expected_set = set(expected_ids)
+    actual_set = set(rows_by_id)
+    unknown_ids = sorted(actual_set - expected_set)
+    if unknown_ids:
+        raise _adjudication_error(f"unknown pilot_item_id values: {unknown_ids}")
+    missing_ids = sorted(expected_set - actual_set)
+    if missing_ids:
+        raise _adjudication_error(f"missing pilot_item_id values: {missing_ids}")
+
+    finalized_rows = [rows_by_id[pilot_id] for pilot_id in sorted(expected_set)]
+    canonical_payload = "".join(
+        json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        for row in finalized_rows
+    ).encode("utf-8")
+    resolved_count = sum(
+        row["adjudication_status"] == "resolved" for row in finalized_rows
+    )
+    metric_eligible_count = sum(
+        row["adjudication_status"] == "resolved"
+        and row["presence_label_final"] in {"popup", "no_popup"}
+        for row in finalized_rows
+    )
+    summary = {
+        "status": "finalized_human_adjudication_batch",
+        "protocol_version": "1.0.0",
+        "batch_id": "popsweeper-message-pilot-30-v1",
+        "item_count": len(finalized_rows),
+        "resolved_count": resolved_count,
+        "cannot_resolve_count": len(finalized_rows) - resolved_count,
+        "metric_eligible_count": metric_eligible_count,
+        "batch_sha256": hashlib.sha256(canonical_payload).hexdigest(),
+    }
+    return finalized_rows, summary
 
 
 def _apply_pilot_adjudication(item: dict[str, Any], row: dict[str, Any]) -> None:
@@ -266,3 +343,20 @@ def prepare_items(
             raise ValueError(f"adjudication pilot_item_id has no frozen item: {pilot_id!r}")
         _apply_pilot_adjudication(by_pilot_id[pilot_id], row)
     return prepared, {}
+
+
+def prepare_finalized_pilot_items(
+    items: list[dict[str, Any]], annotation_rows: list[dict[str, Any]]
+) -> tuple[
+    list[dict[str, Any]],
+    dict[tuple[str, str], dict[str, Any]],
+    dict[str, Any],
+]:
+    """Finalize a complete pilot gold batch, then join it to private feature items."""
+    finalized_rows, summary = finalize_adjudication_batch(items, annotation_rows)
+    prepared, semantic_annotations = prepare_items(items, finalized_rows)
+    for item in prepared:
+        provenance = item.get("adjudication_provenance")
+        if provenance is not None:
+            provenance["adjudication_batch_sha256"] = summary["batch_sha256"]
+    return prepared, semantic_annotations, summary

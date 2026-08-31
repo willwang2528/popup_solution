@@ -173,6 +173,11 @@
       "properties": {
         "schema_version": {"const": "1.1.0-provisional"},
         "item_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+        "pilot_item_id": {
+          "type": ["string", "null"],
+          "pattern": "^PMJ-PILOT-[0-9]{3}$",
+          "description": "Stable private annotation-pilot join key when this union item originates from the frozen pilot; null or absent otherwise."
+        },
         "record_kind": {
           "enum": ["real_app", "controlled_fixture", "synthetic_schema_fixture", "paper_reconstruction"]
         },

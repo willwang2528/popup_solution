@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/popup-message-output-adjudication-v1.schema.json",
+  "title": "Popup message output adjudication v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "batch_id",
+    "pilot_item_id",
+    "method_id",
+    "prediction_row_sha256",
+    "record_status",
+    "adjudicator_id_pseudonymous",
+    "message_semantically_correct",
+    "critical_hallucination",
+    "decision_rationale",
+    "evidence_rechecked_via_adapter",
+    "resolved_at"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "popup-message-output-adjudication-v1.0"
+    },
+    "batch_id": {
+      "const": "popsweeper-message-pilot-30-v1"
+    },
+    "pilot_item_id": {
+      "type": "string",
+      "pattern": "^PMJ-PILOT-[0-9]{3}$"
+    },
+    "method_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prediction_row_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "record_status": {
+      "const": "completed"
+    },
+    "adjudicator_id_pseudonymous": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message_semantically_correct": {
+      "type": "boolean"
+    },
+    "critical_hallucination": {
+      "type": "boolean"
+    },
+    "decision_rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_rechecked_via_adapter": {
+      "const": true
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

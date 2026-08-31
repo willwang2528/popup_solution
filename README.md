@@ -32,7 +32,9 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 24. [`experiments/v1-message/ocr/README.md`](./experiments/v1-message/ocr/README.md)：本地 Vision OCR、隐私 withholding 和公开聚合证据。
 25. [`experiments/v1-message/features/README.md`](./experiments/v1-message/features/README.md)：人工金标解锁前的结构化特征冻结与泄漏隔离。
 26. [`experiments/v1-message/pregold/README.md`](./experiments/v1-message/pregold/README.md)：零动作、未评分的方法预测冻结。
-27. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
+27. [`dataset-v1/annotation-pilot/HUMAN_ANNOTATION_READINESS.json`](./dataset-v1/annotation-pilot/HUMAN_ANNOTATION_READINESS.json)：人工 A/B 可启动、但 gold/评分仍未形成的 fail-closed 回证。
+28. [`experiments/v1-message/statistics/README.md`](./experiments/v1-message/statistics/README.md)：gold 后冻结预测评分、语义复核与 exploratory paired bootstrap 契约。
+29. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 
 ## v1 闭环
 
@@ -80,6 +82,21 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 人工金标解锁前的输入与预测现已冻结：30 项中 22 项有 RICO 结构、8 项结构缺失，共 186 个结构节点；A1 structure-only 产生 15 个判断和 15 个弃答；A2 The OK text rule 对 10 个有 raw text 的 item 均判断为 rule no-match，其余 20 个因 raw text 缺失弃答。按预注册的显式 popup-scope gate，MG-PU 候选对 2 项使用结构、28 项调用冻结的 Model-B 视觉候选。该视觉候选的精确模型身份和运行可复现性不完整，因此不是正式论文 baseline；整轮输出均为 `human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
 
-这 30 条观测现已物化为完整的 90+165=255 字段 union item，但生命周期仍是 `collected + pending_human_annotation`：所有 scenario/popup/candidate/message gold 均为空，0 项可进入指标。私有 bundle 不发布；公开摘要只含 30/22/8/186 聚合计数、输入/实现/schema/private-bundle 哈希和负向声明。隔离的人类截图 viewer 与“全部 30 项 final adjudication”输入链已实现；实际 A/B/第三人标注与 PI 预冻结质量阈值仍未完成。
+这 30 条观测现已物化为完整的 90+165=255 字段 union item，并保留 30/30
+稳定 `pilot_item_id`；其中 22 项有结构、8 项缺失，共 186 个候选节点。生命周期
+仍是 `collected + pending_human_annotation`：所有 scenario/popup/candidate/message
+gold 均为空，0 项可进入指标。私有 bundle 不发布；公开摘要只含聚合计数、
+输入/实现/schema/private-bundle 哈希和负向声明。
+
+人工标注协议、阈值、全部 30 项第三人 evidence recheck、私有目录权限和媒体
+哈希已预冻结，readiness checker 当前为 `ready_for_real_human_annotation`；这只
+表示真人 A/B 可以开始，不表示人工 gold、评分或体验证据已经存在。实际两位
+真人 A/B、第三位真人裁决和消息输出语义复核仍未完成。
+
+post-gold 工程链已补齐严格 batch finalizer、gold+结构特征连接、gold 前冻结
+prediction 的直接评分、prediction-hash-bound 语义复核，以及显式 group-map 的
+paired cluster bootstrap。当前 pilot group-map 是 30 个 singleton cluster，且
+B1 popup-ROI、B2 exact、C1 equal-budget 与可复现视觉模型仍未解锁，所以该链即使
+拿到 gold 也先标为 exploratory、`paper_result_eligible=false`。
 
 当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比指标或 iOS 数据。上述冻结只证明输入隔离、路由和预测持久化已经发生；仓库中的 3 条 fixture 和 synthetic smoke 也只验证数据／评测管线，均不构成论文效果或用户体验证据。

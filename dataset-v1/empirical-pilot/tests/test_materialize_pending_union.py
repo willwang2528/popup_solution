@@ -95,7 +95,11 @@ def prediction_rows(count: int) -> list[dict]:
     rows: list[dict] = []
     for index in range(1, count + 1):
         item_id = f"PMJ-PILOT-{index:03d}"
-        for method_id in ("structured-only-v1", "mg-pu-gated-union-v1"):
+        for method_id in (
+            "structured-only-v1",
+            "the-ok-text-rule",
+            "mg-pu-gated-union-v1",
+        ):
             visual_called = method_id == "mg-pu-gated-union-v1" and index % 2 == 0
             rows.append(
                 {
@@ -174,6 +178,10 @@ class PendingUnionMaterializerCliTest(unittest.TestCase):
             rows = [json.loads(line) for line in private_output.read_text().splitlines()]
             self.assertEqual(len(rows), 30)
             self.assertEqual(len({row["identity"]["item_id"] for row in rows}), 30)
+            self.assertEqual(
+                {row["identity"]["pilot_item_id"] for row in rows},
+                {f"PMJ-PILOT-{index:03d}" for index in range(1, 31)},
+            )
             self.assertEqual(stat.S_IMODE(private_output.parent.stat().st_mode), 0o700)
             self.assertEqual(stat.S_IMODE(private_output.stat().st_mode), 0o600)
             for row in rows:

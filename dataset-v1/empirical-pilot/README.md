@@ -22,6 +22,9 @@ Every output row is a complete union item with:
 
 - `record_kind=real_app`, meaning an **archived real-app source observation**;
   this does not claim a newly executed or verified real-device episode;
+- `identity.pilot_item_id` preserved as the stable private join key for final
+  human gold, structured features, frozen predictions, and statistical groups;
+  display order is never a join key;
 - source device kind, OS, model, app/package, screen-reader state, and other
   unavailable environment facts remain null/not observable rather than being
   inferred from the archive;
@@ -37,6 +40,11 @@ Every output row is a complete union item with:
 - an optional frozen prediction only when it remains schema-stable without
   inventing confidence. A connected prediction is still gold-blind, unscored,
   action-free, and ineligible for paper results.
+
+Android raw element text remains in `candidate.android_raw.text`. The A2 The OK
+adapter reads that field as the union-schema equivalent of its pre-gold raw
+element text, so materialization does not silently turn available A2 input into
+abstention.
 
 The materializer calls the project validator as an imported module. It validates
 the schema, item invariants, and dataset invariants in memory and does not invoke

@@ -1,6 +1,6 @@
 # Human-gold 解锁检查表
 
-状态：**NO-GO（2026-09-01）**。现有 30-item 批次、盲标模板、adapter evidence 与 agreement 工具已经就绪，但以下门槛未全部满足，因而不能开始可计分实验，也不能把来源目录名、OCR 或模型输出当作 gold。
+状态：**真人标注可启动；human gold／可计分实验仍为 NO-GO（2026-09-01）**。协议、阈值、30-item 批次、盲标模板和 canonical adapter evidence 已冻结；尚未建立真实 A/B 会话，也没有任何人工标签或裁决结果。
 
 ## 开标前门槛
 
@@ -8,8 +8,9 @@
 - [ ] Coordinator 在隔离权限下分别启动 A/B viewer，并只交付随机 URL 与 `view_session_id`；A/B 不获得 repo 或 adapter 根目录文件权限。
 - [x] 私有目录 `dataset-v1/annotation-pilot/private/` 已进入 Git ignore。
 - [x] 已创建本地私有工作副本：目录权限 `0700`、A/B 与 adjudication 工作文件权限 `0600`；这些文件均被 Git ignore，不会原地填写 tracked templates。
-- [ ] PI 在查看 A/B 输出前冻结 pilot 接受/返工阈值。
-- [ ] 冻结“全部 30 项 final adjudication”流程：分歧项裁决；一致项也由第三位真实人复核确认。
+- [x] 依据用户授权的 ARIS `AUTO_PROCEED`，在查看任何 A/B 输出前把 pilot 接受／返工阈值写入 `PILOT_PROTOCOL_FREEZE.json`；这不是 PI 审阅通过或 pilot 结果。
+- [x] 已冻结“全部 30 项 final adjudication”流程：分歧项裁决；一致项也由第三位真实人复核确认；`cannot_resolve` 不进入 metrics。
+- [x] Readiness gate 只接受 `work/annotation-media/pilot-batch-30`，并校验冻结文件、截图、媒体清单、空白工作副本和 `0700/0600` 权限。
 
 ## 不能由模型代填
 
@@ -28,9 +29,9 @@ Adjudicator 人工字段：adjudicator pseudonym、全部 `*_final`、decision r
 - `cannot_resolve` 项不得进入 metrics。
 - 私有输出持续被 Git ignore，权限保持 `0700/0600`，且不含原图、base64、source label 或带标签的源路径。
 
-## 待 PI 预冻结的 provisional 阈值建议
+## 已预冻结的 pilot 接受／返工阈值
 
-这些阈值是审计建议，不是当前已经批准的研究事实：
+这些阈值在 A/B 输出出现前冻结，只用于决定协议接受或返工，不代表已经达到：
 
 - presence observed agreement ≥ 0.90；Cohen's κ ≥ 0.80；κ 因退化分布不可定义时不自动通过；
 - jointly-popup comparable items ≥ 10，否则扩充 pilot；
