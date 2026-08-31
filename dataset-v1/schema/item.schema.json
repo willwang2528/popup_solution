@@ -1,0 +1,1367 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.aris/popup-solution/dataset-v1/item.schema.json",
+  "title": "Popup Episode Union Dataset item",
+  "description": "One complete popup-recovery episode containing the union of literature-derived signals and Actionability-Gap-Gated Recovery fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identity",
+    "provenance",
+    "scenario",
+    "environment",
+    "assistive_technology",
+    "capability_profile",
+    "observations",
+    "candidates",
+    "decision",
+    "action_attempts",
+    "verification",
+    "feedback",
+    "observability",
+    "annotations",
+    "quality"
+  ],
+  "properties": {
+    "identity": {"$ref": "#/$defs/identity"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "scenario": {"$ref": "#/$defs/scenario"},
+    "environment": {"$ref": "#/$defs/environment"},
+    "assistive_technology": {"$ref": "#/$defs/assistiveTechnology"},
+    "capability_profile": {"$ref": "#/$defs/capabilityProfile"},
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/observation"}
+    },
+    "candidates": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/candidate"}
+    },
+    "decision": {"$ref": "#/$defs/decision"},
+    "action_attempts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/actionAttempt"}
+    },
+    "verification": {"$ref": "#/$defs/verification"},
+    "feedback": {"$ref": "#/$defs/feedback"},
+    "observability": {"$ref": "#/$defs/observability"},
+    "annotations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/annotation"}
+    },
+    "quality": {"$ref": "#/$defs/quality"}
+  },
+  "$defs": {
+    "stringOrNull": {"type": ["string", "null"]},
+    "boolOrNull": {"type": ["boolean", "null"]},
+    "numberOrNull": {"type": ["number", "null"]},
+    "integerOrNull": {"type": ["integer", "null"]},
+    "scoreOrNull": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "bboxOrNull": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      ]
+    },
+    "pointOrNull": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      ]
+    },
+    "presence": {
+      "type": "object",
+      "description": "Map from a local field name or JSON Pointer to why its value is or is not present.",
+      "additionalProperties": {
+        "enum": [
+          "observed",
+          "derived",
+          "annotated",
+          "not_available",
+          "not_applicable",
+          "not_observable",
+          "collection_failed",
+          "redacted",
+          "unknown"
+        ]
+      }
+    },
+    "fieldProvenance": {
+      "type": "object",
+      "description": "Map from local field name or JSON Pointer to provenance descriptors.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["source_kind", "source_ref"],
+        "properties": {
+          "source_kind": {
+            "enum": [
+              "platform_api",
+              "accessibility_tree",
+              "dom",
+              "protocol",
+              "screenshot",
+              "ocr",
+              "detector",
+              "vlm",
+              "device_log",
+              "task_probe",
+              "human_annotation",
+              "derived",
+              "schema_fixture"
+            ]
+          },
+          "source_ref": {"type": ["string", "null"]},
+          "collector_version": {"type": ["string", "null"]},
+          "timestamp": {"type": ["string", "null"]},
+          "notes": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifactRef": {
+      "type": ["object", "null"],
+      "properties": {
+        "uri": {"type": "string"},
+        "sha256": {"type": ["string", "null"]},
+        "media_type": {"type": ["string", "null"]},
+        "redaction_status": {
+          "enum": ["not_reviewed", "not_needed", "redacted", "withheld", null]
+        },
+        "capture_channel": {"type": ["string", "null"]}
+      },
+      "required": ["uri"],
+      "additionalProperties": false
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "item_id",
+        "record_kind",
+        "collection_status",
+        "split",
+        "scenario_group_id",
+        "app_group_id",
+        "popup_template_group_id",
+        "sdk_or_cmp_group_id",
+        "os_family_group_id",
+        "near_duplicate_group_id",
+        "randomization_seed",
+        "started_at",
+        "ended_at"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0.0-provisional"},
+        "item_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+        "record_kind": {
+          "enum": ["real_app", "controlled_fixture", "synthetic_schema_fixture", "paper_reconstruction"]
+        },
+        "collection_status": {
+          "enum": ["planned", "collected", "annotated", "adjudicated", "excluded"]
+        },
+        "split": {"enum": ["unassigned", "train", "validation", "test", "pilot", "schema_fixture"]},
+        "scenario_group_id": {"$ref": "#/$defs/stringOrNull"},
+        "app_group_id": {"$ref": "#/$defs/stringOrNull"},
+        "popup_template_group_id": {"$ref": "#/$defs/stringOrNull"},
+        "sdk_or_cmp_group_id": {"$ref": "#/$defs/stringOrNull"},
+        "os_family_group_id": {"$ref": "#/$defs/stringOrNull"},
+        "near_duplicate_group_id": {"$ref": "#/$defs/stringOrNull"},
+        "randomization_seed": {"$ref": "#/$defs/integerOrNull"},
+        "started_at": {"$ref": "#/$defs/stringOrNull"},
+        "ended_at": {"$ref": "#/$defs/stringOrNull"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset_name",
+        "field_catalog_version",
+        "paper_method_ids",
+        "collection_session_id",
+        "source_origin",
+        "source_dataset",
+        "source_artifacts",
+        "raw_capture_hashes",
+        "collector_and_model_versions",
+        "annotation_record_ids",
+        "episode_evidence_uris",
+        "evidence_level",
+        "license_or_permission",
+        "privacy_review_status",
+        "notes"
+      ],
+      "properties": {
+        "dataset_name": {"const": "Popup Episode Union Dataset"},
+        "field_catalog_version": {"const": "1.0.0-provisional"},
+        "paper_method_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "collection_session_id": {"$ref": "#/$defs/stringOrNull"},
+        "source_origin": {
+          "enum": ["real_device", "emulator", "controlled_fixture", "synthetic_schema_fixture", "paper_artifact"]
+        },
+        "source_dataset": {"$ref": "#/$defs/stringOrNull"},
+        "source_artifacts": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/artifactRef"}
+        },
+        "raw_capture_hashes": {"type": "object", "additionalProperties": {"type": "string"}},
+        "collector_and_model_versions": {"type": "object"},
+        "annotation_record_ids": {"type": "array", "items": {"type": "string"}},
+        "episode_evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}},
+        "evidence_level": {"enum": ["full_device_evidence", "partial_device_evidence", "controlled_fixture", "paper_reconstruction", "synthetic_schema_fixture"]},
+        "license_or_permission": {"$ref": "#/$defs/stringOrNull"},
+        "privacy_review_status": {
+          "enum": ["not_reviewed", "not_needed", "passed", "restricted", "failed"]
+        },
+        "notes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "target_population",
+        "task_goal",
+        "blocked_step",
+        "trigger_action",
+        "blocked_target_gt",
+        "task_postcondition_gt",
+        "scope_label",
+        "popup_expected_gt",
+        "popup_kind_gt",
+        "popup_owner_type_gt",
+        "popup_owner_gt",
+        "host_owner_gt",
+        "allowed_action_set_gt",
+        "disallowed_action_set_gt",
+        "abstain_allowed_gt",
+        "unsafe_context_gt",
+        "safety_category_gt",
+        "action_topology_gt",
+        "exposure_status_gt",
+        "exposure_cause_gt",
+        "exposure_cause_evidence"
+      ],
+      "properties": {
+        "scenario_id": {"type": "string"},
+        "target_population": {"const": "blind_and_low_vision_screen_reader_users"},
+        "task_goal": {"type": "string"},
+        "blocked_step": {"type": "string"},
+        "trigger_action": {"type": "string"},
+        "blocked_target_gt": {"type": ["object", "null"]},
+        "task_postcondition_gt": {"type": ["object", "null"]},
+        "scope_label": {
+          "enum": ["ordinary_low_risk_popup", "abstain_only_sensitive_popup", "out_of_scope"]
+        },
+        "popup_expected_gt": {"type": "boolean"},
+        "popup_kind_gt": {"$ref": "#/$defs/stringOrNull"},
+        "popup_owner_type_gt": {"enum": ["app", "system", "browser", "webview", "cross_app", "unknown"]},
+        "popup_owner_gt": {"$ref": "#/$defs/stringOrNull"},
+        "host_owner_gt": {"$ref": "#/$defs/stringOrNull"},
+        "allowed_action_set_gt": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "disallowed_action_set_gt": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "abstain_allowed_gt": {"type": "boolean"},
+        "unsafe_context_gt": {"type": "boolean"},
+        "safety_category_gt": {
+          "enum": [
+            "ordinary_exit",
+            "permission_or_privacy_authorization",
+            "authentication",
+            "payment_or_purchase",
+            "install_delete_or_device_management",
+            "risk_control_or_captcha",
+            "unknown"
+          ]
+        },
+        "action_topology_gt": {
+          "enum": ["one_step", "multi_step", "verified_back", "verified_outside_tap", "no_safe_action", "unknown"]
+        },
+        "exposure_status_gt": {
+          "enum": [
+            "separately_exposed",
+            "not_separately_exposed",
+            "merged",
+            "semantic_missing",
+            "action_missing",
+            "ambiguous",
+            "non_actionable",
+            "owner_mismatch",
+            "stale_or_tool_failure",
+            "visual_only",
+            "unknown_cause"
+          ]
+        },
+        "exposure_cause_gt": {
+          "enum": ["framework_merge", "platform_filter_or_limit", "developer_exposure_defect", "tool_failure", "unknown", null]
+        },
+        "exposure_cause_evidence": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "os_version",
+        "os_build",
+        "device_model",
+        "device_kind",
+        "screen_size_px",
+        "app_or_package",
+        "app_version",
+        "ui_framework",
+        "foreground_owner",
+        "window_or_context",
+        "locale",
+        "theme",
+        "orientation",
+        "font_scale",
+        "display_scale",
+        "viewport_px",
+        "network_profile",
+        "device_state",
+        "permission_state",
+        "driver_and_adapter_version",
+        "reset_snapshot_id",
+        "randomized_variant"
+      ],
+      "properties": {
+        "platform": {"enum": ["android", "ios", "mobile_web"]},
+        "os_version": {"$ref": "#/$defs/stringOrNull"},
+        "os_build": {"$ref": "#/$defs/stringOrNull"},
+        "device_model": {"$ref": "#/$defs/stringOrNull"},
+        "device_kind": {"enum": ["physical", "emulator", "simulator", "browser_fixture"]},
+        "screen_size_px": {"type": ["array", "null"], "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
+        "app_or_package": {"$ref": "#/$defs/stringOrNull"},
+        "app_version": {"$ref": "#/$defs/stringOrNull"},
+        "ui_framework": {"$ref": "#/$defs/stringOrNull"},
+        "foreground_owner": {"$ref": "#/$defs/stringOrNull"},
+        "window_or_context": {"$ref": "#/$defs/stringOrNull"},
+        "locale": {"$ref": "#/$defs/stringOrNull"},
+        "theme": {"enum": ["light", "dark", "system", "unknown", null]},
+        "orientation": {"enum": ["portrait", "landscape", "unknown", null]},
+        "font_scale": {"$ref": "#/$defs/numberOrNull"},
+        "display_scale": {"$ref": "#/$defs/numberOrNull"},
+        "viewport_px": {"type": ["array", "null"], "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
+        "network_profile": {"$ref": "#/$defs/stringOrNull"},
+        "device_state": {"$ref": "#/$defs/stringOrNull"},
+        "permission_state": {"type": "object"},
+        "driver_and_adapter_version": {"type": "object"},
+        "reset_snapshot_id": {"$ref": "#/$defs/stringOrNull"},
+        "randomized_variant": {"type": "object"}
+      }
+    },
+    "assistiveTechnology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "enabled",
+        "speech_rate",
+        "verbosity",
+        "touch_exploration",
+        "focus_navigation_mode",
+        "braille_display",
+        "config_uri",
+        "focus_observability",
+        "utterance_observability",
+        "observer_kind",
+        "presence",
+        "field_provenance"
+      ],
+      "properties": {
+        "name": {"enum": ["talkback", "voiceover", "other_screen_reader", "none"]},
+        "version": {"$ref": "#/$defs/stringOrNull"},
+        "enabled": {"type": "boolean"},
+        "speech_rate": {"$ref": "#/$defs/numberOrNull"},
+        "verbosity": {"$ref": "#/$defs/stringOrNull"},
+        "touch_exploration": {"$ref": "#/$defs/boolOrNull"},
+        "focus_navigation_mode": {"$ref": "#/$defs/stringOrNull"},
+        "braille_display": {"$ref": "#/$defs/stringOrNull"},
+        "config_uri": {"$ref": "#/$defs/artifactRef"},
+        "focus_observability": {"enum": ["machine", "fixture", "human", "not_observable"]},
+        "utterance_observability": {"enum": ["machine", "fixture", "human", "not_observable"]},
+        "observer_kind": {"enum": ["automation", "researcher", "target_user", "fixture_oracle", "none"]},
+        "presence": {"$ref": "#/$defs/presence"},
+        "field_provenance": {"$ref": "#/$defs/fieldProvenance"}
+      }
+    },
+    "capabilityProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "structured_read_status",
+        "action_execution_status",
+        "screen_reader_focus_observability",
+        "utterance_observability",
+        "technical_closed_loop_status",
+        "accessible_closed_loop_status",
+        "ios_field_status",
+        "evidence_refs"
+      ],
+      "properties": {
+        "structured_read_status": {"enum": ["verified", "partial", "failed", "pending_capability_probe", "not_applicable"]},
+        "action_execution_status": {"enum": ["verified", "partial", "failed", "pending_capability_probe", "not_applicable"]},
+        "screen_reader_focus_observability": {"enum": ["verified_machine", "verified_fixture", "human_only", "not_observable", "pending_capability_probe"]},
+        "utterance_observability": {"enum": ["verified_machine", "verified_fixture", "human_only", "not_observable", "pending_capability_probe"]},
+        "technical_closed_loop_status": {"enum": ["verified", "partial", "failed", "pending_capability_probe", "not_applicable"]},
+        "accessible_closed_loop_status": {"enum": ["verified", "partial", "failed", "pending_capability_probe", "not_applicable"]},
+        "ios_field_status": {"enum": ["verified_on_target", "pending_capability_probe", "not_applicable"]},
+        "evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+      }
+    },
+    "ownerContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["foreground_owner", "window_or_context", "activity_or_page", "native_or_web", "origin_or_frame", "protocol_event", "owner_known"],
+      "properties": {
+        "foreground_owner": {"$ref": "#/$defs/stringOrNull"},
+        "window_or_context": {"$ref": "#/$defs/stringOrNull"},
+        "activity_or_page": {"$ref": "#/$defs/stringOrNull"},
+        "native_or_web": {"enum": ["native", "webview", "mobile_web", "system", "mixed", "unknown", null]},
+        "origin_or_frame": {"$ref": "#/$defs/stringOrNull"},
+        "protocol_event": {"$ref": "#/$defs/stringOrNull"},
+        "owner_known": {"$ref": "#/$defs/boolOrNull"}
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "phase",
+        "timestamp",
+        "stable_after_ms",
+        "artifacts",
+        "synchronization",
+        "owner_context",
+        "popup",
+        "structured_representation",
+        "visual_representation",
+        "screen_reader_state",
+        "literature_signals",
+        "presence",
+        "field_provenance"
+      ],
+      "properties": {
+        "observation_id": {"type": "string"},
+        "phase": {"enum": ["pre_trigger", "popup", "pre_action", "post_action", "relaunch", "task_check"]},
+        "timestamp": {"$ref": "#/$defs/stringOrNull"},
+        "stable_after_ms": {"$ref": "#/$defs/integerOrNull"},
+        "artifacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["screenshot", "accessibility_tree", "dom", "protocol_trace", "screen_reader_trace", "device_log"],
+          "properties": {
+            "screenshot": {"$ref": "#/$defs/artifactRef"},
+            "accessibility_tree": {"$ref": "#/$defs/artifactRef"},
+            "dom": {"$ref": "#/$defs/artifactRef"},
+            "protocol_trace": {"$ref": "#/$defs/artifactRef"},
+            "screen_reader_trace": {"$ref": "#/$defs/artifactRef"},
+            "device_log": {"$ref": "#/$defs/artifactRef"}
+          }
+        },
+        "synchronization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tree_screenshot_sync_status", "capture_delta_ms", "ui_fingerprint", "stale_or_tool_failure"],
+          "properties": {
+            "tree_screenshot_sync_status": {"enum": ["synchronized", "within_tolerance", "stale", "unknown"]},
+            "capture_delta_ms": {"$ref": "#/$defs/integerOrNull"},
+            "ui_fingerprint": {"$ref": "#/$defs/stringOrNull"},
+            "stale_or_tool_failure": {"$ref": "#/$defs/boolOrNull"}
+          }
+        },
+        "owner_context": {"$ref": "#/$defs/ownerContext"},
+        "popup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["present_gt", "present_pred", "kind_gt", "bbox_gt", "owner_gt", "modal_gt", "blocking_gt", "overlay_ratio", "dimming_ratio"],
+          "properties": {
+            "present_gt": {"$ref": "#/$defs/boolOrNull"},
+            "present_pred": {"$ref": "#/$defs/boolOrNull"},
+            "kind_gt": {"$ref": "#/$defs/stringOrNull"},
+            "bbox_gt": {"$ref": "#/$defs/bboxOrNull"},
+            "owner_gt": {"$ref": "#/$defs/stringOrNull"},
+            "modal_gt": {"$ref": "#/$defs/boolOrNull"},
+            "blocking_gt": {"$ref": "#/$defs/boolOrNull"},
+            "overlay_ratio": {"$ref": "#/$defs/scoreOrNull"},
+            "dimming_ratio": {"$ref": "#/$defs/scoreOrNull"}
+          }
+        },
+        "structured_representation": {"$ref": "#/$defs/structuredRepresentation"},
+        "visual_representation": {"$ref": "#/$defs/visualRepresentation"},
+        "screen_reader_state": {"$ref": "#/$defs/screenReaderState"},
+        "literature_signals": {"$ref": "#/$defs/literatureSignals"},
+        "presence": {"$ref": "#/$defs/presence"},
+        "field_provenance": {"$ref": "#/$defs/fieldProvenance"}
+      }
+    },
+    "structuredRepresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "source_channels",
+        "node_count",
+        "interactive_node_count",
+        "tree_diff_from_previous",
+        "host_tree_diff",
+        "state_signature",
+        "state_similarity",
+        "traversal_state",
+        "transition_graph_uri",
+        "transition_stack",
+        "replay_path",
+        "android_raw",
+        "ios_raw",
+        "dom_raw"
+      ],
+      "properties": {
+        "available": {"$ref": "#/$defs/boolOrNull"},
+        "source_channels": {"type": "array", "items": {"type": "string"}},
+        "node_count": {"$ref": "#/$defs/integerOrNull"},
+        "interactive_node_count": {"$ref": "#/$defs/integerOrNull"},
+        "tree_diff_from_previous": {"$ref": "#/$defs/numberOrNull"},
+        "host_tree_diff": {"$ref": "#/$defs/numberOrNull"},
+        "state_signature": {"$ref": "#/$defs/stringOrNull"},
+        "state_similarity": {"$ref": "#/$defs/scoreOrNull"},
+        "traversal_state": {"type": ["object", "null"]},
+        "transition_graph_uri": {"$ref": "#/$defs/artifactRef"},
+        "transition_stack": {"type": "array", "items": {"type": "string"}},
+        "replay_path": {"type": "array", "items": {"type": "string"}},
+        "android_raw": {"$ref": "#/$defs/androidObservationRaw"},
+        "ios_raw": {"$ref": "#/$defs/iosObservationRaw"},
+        "dom_raw": {"$ref": "#/$defs/domObservationRaw"}
+      }
+    },
+    "androidObservationRaw": {
+      "type": ["object", "null"],
+      "properties": {
+        "package": {"$ref": "#/$defs/stringOrNull"},
+        "activity": {"$ref": "#/$defs/stringOrNull"},
+        "window_id": {"$ref": "#/$defs/stringOrNull"},
+        "window_type": {"$ref": "#/$defs/stringOrNull"},
+        "window_bounds": {"$ref": "#/$defs/bboxOrNull"},
+        "source_layer": {"enum": ["view", "compose", "webview", "system", "mixed", "unknown", null]},
+        "uiautomator_xml_uri": {"$ref": "#/$defs/artifactRef"},
+        "accessibility_actions_available": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "iosObservationRaw": {
+      "type": ["object", "null"],
+      "properties": {
+        "bundle_id": {"$ref": "#/$defs/stringOrNull"},
+        "application": {"$ref": "#/$defs/stringOrNull"},
+        "window_type": {"$ref": "#/$defs/stringOrNull"},
+        "system_alert_marker": {"$ref": "#/$defs/boolOrNull"},
+        "xcui_hierarchy_uri": {"$ref": "#/$defs/artifactRef"},
+        "accessibility_audit_uri": {"$ref": "#/$defs/artifactRef"},
+        "springboard_active": {"$ref": "#/$defs/boolOrNull"}
+      },
+      "additionalProperties": false
+    },
+    "domObservationRaw": {
+      "type": ["object", "null"],
+      "properties": {
+        "url": {"$ref": "#/$defs/stringOrNull"},
+        "origin": {"$ref": "#/$defs/stringOrNull"},
+        "top_frame": {"$ref": "#/$defs/stringOrNull"},
+        "iframe_src": {"$ref": "#/$defs/stringOrNull"},
+        "cmp_id": {"$ref": "#/$defs/stringOrNull"},
+        "dom_uri": {"$ref": "#/$defs/artifactRef"},
+        "viewport_px": {"type": ["array", "null"], "items": {"type": "integer"}, "minItems": 2, "maxItems": 2}
+      },
+      "additionalProperties": false
+    },
+    "visualRepresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recording_id",
+        "frame_id",
+        "sample_interval_ms",
+        "histogram_similarity",
+        "frame_gate_threshold",
+        "image_hash_change",
+        "ocr_jaccard",
+        "screen_change_proxy",
+        "popup_prediction_stage1",
+        "popup_prediction_stage2",
+        "popup_detector_class",
+        "popup_detector_confidence",
+        "popup_bbox_pred",
+        "popup_roi",
+        "hsv_interval",
+        "shadow_mask_ratio",
+        "shadow_threshold",
+        "ocr_items",
+        "vlm_output",
+        "model_name",
+        "model_version",
+        "prompt_version"
+      ],
+      "properties": {
+        "recording_id": {"$ref": "#/$defs/stringOrNull"},
+        "frame_id": {"$ref": "#/$defs/stringOrNull"},
+        "sample_interval_ms": {"$ref": "#/$defs/integerOrNull"},
+        "histogram_similarity": {"$ref": "#/$defs/scoreOrNull"},
+        "frame_gate_threshold": {"$ref": "#/$defs/scoreOrNull"},
+        "image_hash_change": {"$ref": "#/$defs/scoreOrNull"},
+        "ocr_jaccard": {"$ref": "#/$defs/scoreOrNull"},
+        "screen_change_proxy": {"$ref": "#/$defs/boolOrNull"},
+        "popup_prediction_stage1": {"$ref": "#/$defs/scoreOrNull"},
+        "popup_prediction_stage2": {"$ref": "#/$defs/scoreOrNull"},
+        "popup_detector_class": {"$ref": "#/$defs/stringOrNull"},
+        "popup_detector_confidence": {"$ref": "#/$defs/scoreOrNull"},
+        "popup_bbox_pred": {"$ref": "#/$defs/bboxOrNull"},
+        "popup_roi": {"$ref": "#/$defs/bboxOrNull"},
+        "hsv_interval": {"type": ["array", "null"], "items": {"type": "number"}},
+        "shadow_mask_ratio": {"$ref": "#/$defs/scoreOrNull"},
+        "shadow_threshold": {"$ref": "#/$defs/scoreOrNull"},
+        "ocr_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text", "bbox", "confidence"],
+            "properties": {
+              "text": {"type": "string"},
+              "bbox": {"$ref": "#/$defs/bboxOrNull"},
+              "confidence": {"$ref": "#/$defs/scoreOrNull"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "vlm_output": {"type": ["object", "null"]},
+        "model_name": {"$ref": "#/$defs/stringOrNull"},
+        "model_version": {"$ref": "#/$defs/stringOrNull"},
+        "prompt_version": {"$ref": "#/$defs/stringOrNull"}
+      }
+    },
+    "screenReaderState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "focus_item_ref",
+        "focus_path",
+        "focus_label",
+        "focus_order_uri",
+        "utterance_text",
+        "utterance_trace_uri",
+        "spoken_context",
+        "navigation_step_count",
+        "unexpected_focus_loss",
+        "observable_by"
+      ],
+      "properties": {
+        "focus_item_ref": {"$ref": "#/$defs/stringOrNull"},
+        "focus_path": {"type": "array", "items": {"type": "string"}},
+        "focus_label": {"$ref": "#/$defs/stringOrNull"},
+        "focus_order_uri": {"$ref": "#/$defs/artifactRef"},
+        "utterance_text": {"$ref": "#/$defs/stringOrNull"},
+        "utterance_trace_uri": {"$ref": "#/$defs/artifactRef"},
+        "spoken_context": {"$ref": "#/$defs/stringOrNull"},
+        "navigation_step_count": {"$ref": "#/$defs/integerOrNull"},
+        "unexpected_focus_loss": {"$ref": "#/$defs/boolOrNull"},
+        "observable_by": {"enum": ["machine", "fixture", "human", "not_observable"]}
+      }
+    },
+    "literatureSignals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text_rule_match",
+        "matched_keywords",
+        "negation_flag",
+        "normalized_tokens",
+        "tfidf_vector_uri",
+        "cluster_id",
+        "semantic_match_score",
+        "cmp_id",
+        "iabtcf_values",
+        "interface_similarity",
+        "destination_state",
+        "state_transition",
+        "command_recognized",
+        "app_stopped",
+        "network_state",
+        "persistent_business_choice",
+        "dialog_present_after_relaunch"
+      ],
+      "properties": {
+        "text_rule_match": {"$ref": "#/$defs/boolOrNull"},
+        "matched_keywords": {"type": "array", "items": {"type": "string"}},
+        "negation_flag": {"$ref": "#/$defs/boolOrNull"},
+        "normalized_tokens": {"type": "array", "items": {"type": "string"}},
+        "tfidf_vector_uri": {"$ref": "#/$defs/artifactRef"},
+        "cluster_id": {"$ref": "#/$defs/stringOrNull"},
+        "semantic_match_score": {"$ref": "#/$defs/scoreOrNull"},
+        "cmp_id": {"$ref": "#/$defs/stringOrNull"},
+        "iabtcf_values": {"type": "object"},
+        "interface_similarity": {"$ref": "#/$defs/scoreOrNull"},
+        "destination_state": {"$ref": "#/$defs/stringOrNull"},
+        "state_transition": {"type": ["object", "null"]},
+        "command_recognized": {"$ref": "#/$defs/boolOrNull"},
+        "app_stopped": {"$ref": "#/$defs/boolOrNull"},
+        "network_state": {"type": ["object", "null"]},
+        "persistent_business_choice": {"type": ["object", "null"]},
+        "dialog_present_after_relaunch": {"$ref": "#/$defs/boolOrNull"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "observation_id",
+        "source_channel",
+        "raw_ref",
+        "matched_cross_channel_candidate_ids",
+        "normalized",
+        "android_raw",
+        "ios_raw",
+        "dom_raw",
+        "visual_raw",
+        "features",
+        "scores",
+        "ground_truth",
+        "presence",
+        "field_provenance"
+      ],
+      "properties": {
+        "candidate_id": {"type": "string"},
+        "observation_id": {"type": "string"},
+        "source_channel": {"enum": ["protocol", "accessibility", "uiautomator", "xcui", "dom", "ocr", "detector", "vlm", "human"]},
+        "raw_ref": {"$ref": "#/$defs/stringOrNull"},
+        "matched_cross_channel_candidate_ids": {"type": "array", "items": {"type": "string"}},
+        "normalized": {"$ref": "#/$defs/normalizedCandidate"},
+        "android_raw": {"$ref": "#/$defs/androidCandidateRaw"},
+        "ios_raw": {"$ref": "#/$defs/iosCandidateRaw"},
+        "dom_raw": {"$ref": "#/$defs/domCandidateRaw"},
+        "visual_raw": {"$ref": "#/$defs/visualCandidateRaw"},
+        "features": {"$ref": "#/$defs/candidateFeatures"},
+        "scores": {"$ref": "#/$defs/candidateScores"},
+        "ground_truth": {"$ref": "#/$defs/candidateGroundTruth"},
+        "presence": {"$ref": "#/$defs/presence"},
+        "field_provenance": {"$ref": "#/$defs/fieldProvenance"}
+      }
+    },
+    "normalizedCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "window_or_context",
+        "role_or_class",
+        "name_or_text",
+        "value_or_hint",
+        "stable_id",
+        "supported_actions",
+        "enabled",
+        "clickable",
+        "hittable",
+        "visible",
+        "focusable",
+        "scrollable",
+        "checkable",
+        "checked_or_toggle",
+        "selected",
+        "bounds_normalized",
+        "z_or_layer",
+        "hierarchy_path",
+        "parent_id",
+        "children_ids",
+        "sibling_index",
+        "tree_depth"
+      ],
+      "properties": {
+        "owner": {"$ref": "#/$defs/stringOrNull"},
+        "window_or_context": {"$ref": "#/$defs/stringOrNull"},
+        "role_or_class": {"$ref": "#/$defs/stringOrNull"},
+        "name_or_text": {"$ref": "#/$defs/stringOrNull"},
+        "value_or_hint": {"$ref": "#/$defs/stringOrNull"},
+        "stable_id": {"$ref": "#/$defs/stringOrNull"},
+        "supported_actions": {"type": "array", "items": {"type": "string"}},
+        "enabled": {"$ref": "#/$defs/boolOrNull"},
+        "clickable": {"$ref": "#/$defs/boolOrNull"},
+        "hittable": {"$ref": "#/$defs/boolOrNull"},
+        "visible": {"$ref": "#/$defs/boolOrNull"},
+        "focusable": {"$ref": "#/$defs/boolOrNull"},
+        "scrollable": {"$ref": "#/$defs/boolOrNull"},
+        "checkable": {"$ref": "#/$defs/boolOrNull"},
+        "checked_or_toggle": {"type": ["boolean", "string", "null"]},
+        "selected": {"$ref": "#/$defs/boolOrNull"},
+        "bounds_normalized": {"$ref": "#/$defs/bboxOrNull"},
+        "z_or_layer": {"$ref": "#/$defs/numberOrNull"},
+        "hierarchy_path": {"type": "array", "items": {"type": "string"}},
+        "parent_id": {"$ref": "#/$defs/stringOrNull"},
+        "children_ids": {"type": "array", "items": {"type": "string"}},
+        "sibling_index": {"$ref": "#/$defs/integerOrNull"},
+        "tree_depth": {"$ref": "#/$defs/integerOrNull"}
+      }
+    },
+    "androidCandidateRaw": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "package": {"$ref": "#/$defs/stringOrNull"},
+        "activity": {"$ref": "#/$defs/stringOrNull"},
+        "window_id": {"$ref": "#/$defs/stringOrNull"},
+        "source_layer": {"enum": ["view", "compose", "webview", "system", "unknown", null]},
+        "resource_id": {"$ref": "#/$defs/stringOrNull"},
+        "content_description": {"$ref": "#/$defs/stringOrNull"},
+        "text": {"$ref": "#/$defs/stringOrNull"},
+        "hint": {"$ref": "#/$defs/stringOrNull"},
+        "placeholder": {"$ref": "#/$defs/stringOrNull"},
+        "class_name": {"$ref": "#/$defs/stringOrNull"},
+        "role": {"$ref": "#/$defs/stringOrNull"},
+        "bounds": {"$ref": "#/$defs/bboxOrNull"},
+        "size": {"type": ["array", "null"], "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "position": {"$ref": "#/$defs/pointOrNull"},
+        "z": {"$ref": "#/$defs/numberOrNull"},
+        "parent_id": {"$ref": "#/$defs/stringOrNull"},
+        "children_ids": {"type": "array", "items": {"type": "string"}},
+        "sibling_index": {"$ref": "#/$defs/integerOrNull"},
+        "path": {"type": "array", "items": {"type": "string"}},
+        "clickable": {"$ref": "#/$defs/boolOrNull"},
+        "enabled": {"$ref": "#/$defs/boolOrNull"},
+        "focusable": {"$ref": "#/$defs/boolOrNull"},
+        "scrollable": {"$ref": "#/$defs/boolOrNull"},
+        "checkable": {"$ref": "#/$defs/boolOrNull"},
+        "checked": {"$ref": "#/$defs/boolOrNull"},
+        "selected": {"$ref": "#/$defs/boolOrNull"},
+        "actions": {"type": "array", "items": {"type": "string"}},
+        "raw_node_ref": {"$ref": "#/$defs/stringOrNull"}
+      }
+    },
+    "iosCandidateRaw": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "bundle_id": {"$ref": "#/$defs/stringOrNull"},
+        "application": {"$ref": "#/$defs/stringOrNull"},
+        "window_type": {"$ref": "#/$defs/stringOrNull"},
+        "element_type": {"$ref": "#/$defs/stringOrNull"},
+        "label": {"$ref": "#/$defs/stringOrNull"},
+        "name": {"$ref": "#/$defs/stringOrNull"},
+        "identifier": {"$ref": "#/$defs/stringOrNull"},
+        "value": {"type": ["string", "number", "boolean", "null"]},
+        "traits": {"type": "array", "items": {"type": "string"}},
+        "frame": {"$ref": "#/$defs/bboxOrNull"},
+        "center": {"$ref": "#/$defs/pointOrNull"},
+        "path": {"type": "array", "items": {"type": "string"}},
+        "index": {"$ref": "#/$defs/integerOrNull"},
+        "enabled": {"$ref": "#/$defs/boolOrNull"},
+        "exists": {"$ref": "#/$defs/boolOrNull"},
+        "hittable": {"$ref": "#/$defs/boolOrNull"},
+        "selected": {"$ref": "#/$defs/boolOrNull"},
+        "actions": {"type": "array", "items": {"type": "string"}},
+        "accessibility_audit_entry": {"type": ["object", "null"]},
+        "voice_control_label": {"$ref": "#/$defs/stringOrNull"},
+        "voice_control_grid_region": {"$ref": "#/$defs/stringOrNull"},
+        "label_first_token": {"$ref": "#/$defs/stringOrNull"},
+        "raw_element_ref": {"$ref": "#/$defs/stringOrNull"}
+      }
+    },
+    "domCandidateRaw": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "url": {"$ref": "#/$defs/stringOrNull"},
+        "origin": {"$ref": "#/$defs/stringOrNull"},
+        "frame_id": {"$ref": "#/$defs/stringOrNull"},
+        "iframe_src": {"$ref": "#/$defs/stringOrNull"},
+        "cmp_id": {"$ref": "#/$defs/stringOrNull"},
+        "tag": {"$ref": "#/$defs/stringOrNull"},
+        "text_content": {"$ref": "#/$defs/stringOrNull"},
+        "aria_role": {"$ref": "#/$defs/stringOrNull"},
+        "aria_label": {"$ref": "#/$defs/stringOrNull"},
+        "title": {"$ref": "#/$defs/stringOrNull"},
+        "id": {"$ref": "#/$defs/stringOrNull"},
+        "name": {"$ref": "#/$defs/stringOrNull"},
+        "input_type": {"$ref": "#/$defs/stringOrNull"},
+        "visible": {"$ref": "#/$defs/boolOrNull"},
+        "enabled": {"$ref": "#/$defs/boolOrNull"},
+        "checked": {"$ref": "#/$defs/boolOrNull"},
+        "selected": {"$ref": "#/$defs/boolOrNull"},
+        "expanded": {"$ref": "#/$defs/boolOrNull"},
+        "dom_path": {"type": "array", "items": {"type": "string"}},
+        "parent_id": {"$ref": "#/$defs/stringOrNull"},
+        "children_ids": {"type": "array", "items": {"type": "string"}},
+        "z_index": {"$ref": "#/$defs/numberOrNull"},
+        "position_fixed": {"$ref": "#/$defs/boolOrNull"},
+        "css_position": {"$ref": "#/$defs/stringOrNull"},
+        "dom_rect": {"$ref": "#/$defs/bboxOrNull"},
+        "viewport_px": {"type": ["array", "null"], "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
+        "word_count": {"$ref": "#/$defs/integerOrNull"},
+        "supported_events": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "visualCandidateRaw": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "candidate_bbox": {"$ref": "#/$defs/bboxOrNull"},
+        "center": {"$ref": "#/$defs/pointOrNull"},
+        "tap_coordinate": {"$ref": "#/$defs/pointOrNull"},
+        "ocr_text": {"$ref": "#/$defs/stringOrNull"},
+        "ocr_bbox": {"$ref": "#/$defs/bboxOrNull"},
+        "ocr_confidence": {"$ref": "#/$defs/scoreOrNull"},
+        "detector_class": {"$ref": "#/$defs/stringOrNull"},
+        "detector_confidence": {"$ref": "#/$defs/scoreOrNull"},
+        "icon_or_control_class": {"$ref": "#/$defs/stringOrNull"},
+        "visual_mark_id": {"$ref": "#/$defs/stringOrNull"},
+        "color_emphasis": {"$ref": "#/$defs/numberOrNull"},
+        "size_emphasis": {"$ref": "#/$defs/numberOrNull"},
+        "shadow_or_occlusion_ratio": {"$ref": "#/$defs/scoreOrNull"},
+        "matched_structured_candidate_id": {"$ref": "#/$defs/stringOrNull"},
+        "model_name": {"$ref": "#/$defs/stringOrNull"},
+        "model_version": {"$ref": "#/$defs/stringOrNull"},
+        "prompt_version": {"$ref": "#/$defs/stringOrNull"},
+        "raw_output": {"type": ["object", "null"]}
+      }
+    },
+    "candidateFeatures": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text_rule_match",
+        "matched_keywords",
+        "negation_flag",
+        "normalized_tokens",
+        "semantic_similarity",
+        "inside_popup_roi",
+        "belongs_to_host_page",
+        "owner_consistent",
+        "tree_screenshot_consistent",
+        "gap_reasons",
+        "hard_negative_type"
+      ],
+      "properties": {
+        "text_rule_match": {"$ref": "#/$defs/boolOrNull"},
+        "matched_keywords": {"type": "array", "items": {"type": "string"}},
+        "negation_flag": {"$ref": "#/$defs/boolOrNull"},
+        "normalized_tokens": {"type": "array", "items": {"type": "string"}},
+        "semantic_similarity": {"$ref": "#/$defs/scoreOrNull"},
+        "inside_popup_roi": {"$ref": "#/$defs/boolOrNull"},
+        "belongs_to_host_page": {"$ref": "#/$defs/boolOrNull"},
+        "owner_consistent": {"$ref": "#/$defs/boolOrNull"},
+        "tree_screenshot_consistent": {"$ref": "#/$defs/boolOrNull"},
+        "gap_reasons": {"type": "array", "items": {"type": "string"}},
+        "hard_negative_type": {"$ref": "#/$defs/stringOrNull"}
+      }
+    },
+    "candidateScores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actionability_score", "actionability_score_pre_visual", "actionability_score_post_visual", "safety_score", "rank", "top1_top2_margin", "calibrated_confidence"],
+      "properties": {
+        "actionability_score": {"$ref": "#/$defs/scoreOrNull"},
+        "actionability_score_pre_visual": {"$ref": "#/$defs/scoreOrNull"},
+        "actionability_score_post_visual": {"$ref": "#/$defs/scoreOrNull"},
+        "safety_score": {"$ref": "#/$defs/scoreOrNull"},
+        "rank": {"$ref": "#/$defs/integerOrNull"},
+        "top1_top2_margin": {"$ref": "#/$defs/numberOrNull"},
+        "calibrated_confidence": {"$ref": "#/$defs/scoreOrNull"}
+      }
+    },
+    "candidateGroundTruth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action_semantics_gt", "is_valid_exit_target_gt", "is_safe_to_execute_gt", "exposure_status_gt", "valid_for_task_gt"],
+      "properties": {
+        "action_semantics_gt": {"$ref": "#/$defs/stringOrNull"},
+        "is_valid_exit_target_gt": {"$ref": "#/$defs/boolOrNull"},
+        "is_safe_to_execute_gt": {"$ref": "#/$defs/boolOrNull"},
+        "exposure_status_gt": {"$ref": "#/$defs/stringOrNull"},
+        "valid_for_task_gt": {"$ref": "#/$defs/boolOrNull"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method_id",
+        "method_version",
+        "method_family",
+        "candidate_input_ids",
+        "gate",
+        "policy",
+        "selection",
+        "visual_fallback",
+        "abstention",
+        "rationale_trace",
+        "model_versions"
+      ],
+      "properties": {
+        "method_id": {"type": "string"},
+        "method_version": {"$ref": "#/$defs/stringOrNull"},
+        "method_family": {"enum": ["ours", "protocol_baseline", "tree_baseline", "vision_baseline", "always_fusion_baseline", "paper_inspired_baseline", "oracle", "human"]},
+        "candidate_input_ids": {"type": "array", "items": {"type": "string"}},
+        "gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["threshold_tau", "margin_delta", "top1_candidate_id", "top1_score", "top2_score", "margin", "structured_sufficient", "owner_consistent", "action_executable", "low_risk_policy_satisfied", "capture_fresh_and_synchronized", "gap_reasons", "visual_fallback_triggered", "final_candidate_id", "final_score", "final_state", "scorer_version", "calibration_version"],
+          "properties": {
+            "threshold_tau": {"$ref": "#/$defs/numberOrNull"},
+            "margin_delta": {"$ref": "#/$defs/numberOrNull"},
+            "top1_candidate_id": {"$ref": "#/$defs/stringOrNull"},
+            "top1_score": {"$ref": "#/$defs/scoreOrNull"},
+            "top2_score": {"$ref": "#/$defs/scoreOrNull"},
+            "margin": {"$ref": "#/$defs/numberOrNull"},
+            "structured_sufficient": {"$ref": "#/$defs/boolOrNull"},
+            "owner_consistent": {"$ref": "#/$defs/boolOrNull"},
+            "action_executable": {"$ref": "#/$defs/boolOrNull"},
+            "low_risk_policy_satisfied": {"$ref": "#/$defs/boolOrNull"},
+            "capture_fresh_and_synchronized": {"$ref": "#/$defs/boolOrNull"},
+            "gap_reasons": {"type": "array", "items": {"type": "string"}},
+            "visual_fallback_triggered": {"$ref": "#/$defs/boolOrNull"},
+            "final_candidate_id": {"$ref": "#/$defs/stringOrNull"},
+            "final_score": {"$ref": "#/$defs/scoreOrNull"},
+            "final_state": {"enum": ["structured_selected", "visual_selected", "abstained", "handoff", "no_action", null]},
+            "scorer_version": {"$ref": "#/$defs/stringOrNull"},
+            "calibration_version": {"$ref": "#/$defs/stringOrNull"}
+          }
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["allowed_action_policy_version", "allowed_semantics", "blocked_semantics", "risk_class", "decision"],
+          "properties": {
+            "allowed_action_policy_version": {"$ref": "#/$defs/stringOrNull"},
+            "allowed_semantics": {"type": "array", "items": {"type": "string"}},
+            "blocked_semantics": {"type": "array", "items": {"type": "string"}},
+            "risk_class": {"type": "string"},
+            "decision": {"enum": ["execute", "abstain", "handoff", "no_action"]}
+          }
+        },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action_semantics_pred", "target_candidate_id_pred", "execution_channel_pred", "confidence", "alternative_candidate_id"],
+          "properties": {
+            "action_semantics_pred": {"$ref": "#/$defs/stringOrNull"},
+            "target_candidate_id_pred": {"$ref": "#/$defs/stringOrNull"},
+            "execution_channel_pred": {"$ref": "#/$defs/stringOrNull"},
+            "confidence": {"$ref": "#/$defs/scoreOrNull"},
+            "alternative_candidate_id": {"$ref": "#/$defs/stringOrNull"}
+          }
+        },
+        "visual_fallback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "used", "trigger_reasons", "call_count", "latency_ms", "estimated_cost"],
+          "properties": {
+            "required": {"$ref": "#/$defs/boolOrNull"},
+            "used": {"$ref": "#/$defs/boolOrNull"},
+            "trigger_reasons": {"type": "array", "items": {"type": "string"}},
+            "call_count": {"$ref": "#/$defs/integerOrNull"},
+            "latency_ms": {"$ref": "#/$defs/integerOrNull"},
+            "estimated_cost": {"$ref": "#/$defs/numberOrNull"}
+          }
+        },
+        "abstention": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["abstained", "handoff_required", "reason", "user_message"],
+          "properties": {
+            "abstained": {"$ref": "#/$defs/boolOrNull"},
+            "handoff_required": {"$ref": "#/$defs/boolOrNull"},
+            "reason": {"$ref": "#/$defs/stringOrNull"},
+            "user_message": {"$ref": "#/$defs/stringOrNull"}
+          }
+        },
+        "rationale_trace": {"type": "array", "items": {"type": "string"}},
+        "model_versions": {"type": "object"}
+      }
+    },
+    "actionAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempt_id",
+        "attempt_index",
+        "observation_before_id",
+        "observation_after_id",
+        "action_semantics",
+        "target_candidate_id",
+        "execution_channel",
+        "confidence",
+        "rationale_trace",
+        "selector_or_locator",
+        "coordinate",
+        "protocol_handler",
+        "command_delivered",
+        "command_recognized",
+        "execution_error",
+        "latency_ms",
+        "retry_count",
+        "post_action_wait_ms",
+        "evidence_uris"
+      ],
+      "properties": {
+        "attempt_id": {"type": "string"},
+        "attempt_index": {"type": "integer", "minimum": 0},
+        "observation_before_id": {"type": "string"},
+        "observation_after_id": {"$ref": "#/$defs/stringOrNull"},
+        "action_semantics": {"type": "string"},
+        "target_candidate_id": {"$ref": "#/$defs/stringOrNull"},
+        "execution_channel": {"enum": ["protocol_callback", "structured_selector", "accessibility_action", "platform_watcher", "voice_control", "coordinate_tap", "back", "outside_tap", "human", "none"]},
+        "confidence": {"$ref": "#/$defs/scoreOrNull"},
+        "rationale_trace": {"type": "array", "items": {"type": "string"}},
+        "selector_or_locator": {"$ref": "#/$defs/stringOrNull"},
+        "coordinate": {"$ref": "#/$defs/pointOrNull"},
+        "protocol_handler": {"type": ["object", "null"]},
+        "command_delivered": {"$ref": "#/$defs/boolOrNull"},
+        "command_recognized": {"$ref": "#/$defs/boolOrNull"},
+        "execution_error": {"$ref": "#/$defs/stringOrNull"},
+        "latency_ms": {"$ref": "#/$defs/integerOrNull"},
+        "retry_count": {"type": "integer", "minimum": 0},
+        "post_action_wait_ms": {"$ref": "#/$defs/integerOrNull"},
+        "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weak_proxies",
+        "dismissal",
+        "technical_context_recovery",
+        "accessible_context_recovery",
+        "task",
+        "persistence",
+        "safety",
+        "metrics",
+        "eligibility"
+      ],
+      "properties": {
+        "weak_proxies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["coordinate_hit", "command_delivered", "screen_changed", "tree_changed", "interface_similarity", "destination_state_changed", "app_stopped", "network_state_changed"],
+          "properties": {
+            "coordinate_hit": {"$ref": "#/$defs/boolOrNull"},
+            "command_delivered": {"$ref": "#/$defs/boolOrNull"},
+            "screen_changed": {"$ref": "#/$defs/boolOrNull"},
+            "tree_changed": {"$ref": "#/$defs/boolOrNull"},
+            "interface_similarity": {"$ref": "#/$defs/scoreOrNull"},
+            "destination_state_changed": {"$ref": "#/$defs/boolOrNull"},
+            "app_stopped": {"$ref": "#/$defs/boolOrNull"},
+            "network_state_changed": {"$ref": "#/$defs/boolOrNull"}
+          }
+        },
+        "dismissal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["visual_popup_gone", "semantic_popup_gone", "D", "observability", "evidence_uris"],
+          "properties": {
+            "visual_popup_gone": {"$ref": "#/$defs/boolOrNull"},
+            "semantic_popup_gone": {"$ref": "#/$defs/boolOrNull"},
+            "D": {"$ref": "#/$defs/boolOrNull"},
+            "observability": {"enum": ["full", "partial", "not_observable"]},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "technical_context_recovery": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner_after", "window_context_after", "owner_context_restored", "blocked_target_visible", "blocked_target_operable", "C_tech", "evidence_uris"],
+          "properties": {
+            "owner_after": {"$ref": "#/$defs/stringOrNull"},
+            "window_context_after": {"$ref": "#/$defs/stringOrNull"},
+            "owner_context_restored": {"$ref": "#/$defs/boolOrNull"},
+            "blocked_target_visible": {"$ref": "#/$defs/boolOrNull"},
+            "blocked_target_operable": {"$ref": "#/$defs/boolOrNull"},
+            "C_tech": {"$ref": "#/$defs/boolOrNull"},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "accessible_context_recovery": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["focus_before", "focus_after", "focus_restored_to_blocked_target_or_successor", "utterance_before", "utterance_after", "spoken_context_consistent", "C_a11y", "observability", "target_user_validation", "evidence_uris"],
+          "properties": {
+            "focus_before": {"$ref": "#/$defs/stringOrNull"},
+            "focus_after": {"$ref": "#/$defs/stringOrNull"},
+            "focus_restored_to_blocked_target_or_successor": {"$ref": "#/$defs/boolOrNull"},
+            "utterance_before": {"$ref": "#/$defs/stringOrNull"},
+            "utterance_after": {"$ref": "#/$defs/stringOrNull"},
+            "spoken_context_consistent": {"$ref": "#/$defs/boolOrNull"},
+            "C_a11y": {"$ref": "#/$defs/boolOrNull"},
+            "observability": {"enum": ["machine", "fixture", "human", "partial", "not_observable"]},
+            "target_user_validation": {"type": ["object", "null"]},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "task": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["postcondition_verifiable", "task_postcondition_satisfied", "T", "evidence_uris"],
+          "properties": {
+            "postcondition_verifiable": {"type": "boolean"},
+            "task_postcondition_satisfied": {"$ref": "#/$defs/boolOrNull"},
+            "T": {"$ref": "#/$defs/boolOrNull"},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "persistence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["relaunch_performed", "popup_absent_after_relaunch", "business_choice_persisted", "iabtcf_values_after", "evidence_uris"],
+          "properties": {
+            "relaunch_performed": {"$ref": "#/$defs/boolOrNull"},
+            "popup_absent_after_relaunch": {"$ref": "#/$defs/boolOrNull"},
+            "business_choice_persisted": {"$ref": "#/$defs/boolOrNull"},
+            "iabtcf_values_after": {"type": "object"},
+            "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}}
+          }
+        },
+        "safety": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sensitive_context_flags", "safe_exit_exists_gt", "policy_violation", "false_intervention", "harmful_action", "wrong_action", "side_effect_detected", "cross_app_jump", "task_abandonment", "user_handoff_required", "retry_budget", "retry_count", "retry_exhausted"],
+          "properties": {
+            "sensitive_context_flags": {"type": "array", "items": {"type": "string"}},
+            "safe_exit_exists_gt": {"$ref": "#/$defs/boolOrNull"},
+            "policy_violation": {"$ref": "#/$defs/boolOrNull"},
+            "false_intervention": {"$ref": "#/$defs/boolOrNull"},
+            "harmful_action": {"$ref": "#/$defs/boolOrNull"},
+            "wrong_action": {"$ref": "#/$defs/boolOrNull"},
+            "side_effect_detected": {"$ref": "#/$defs/boolOrNull"},
+            "cross_app_jump": {"$ref": "#/$defs/boolOrNull"},
+            "task_abandonment": {"$ref": "#/$defs/boolOrNull"},
+            "user_handoff_required": {"$ref": "#/$defs/boolOrNull"},
+            "retry_budget": {"$ref": "#/$defs/integerOrNull"},
+            "retry_count": {"$ref": "#/$defs/integerOrNull"},
+            "retry_exhausted": {"$ref": "#/$defs/boolOrNull"}
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["VTR_tech", "A_VTR", "recovery_time_ms", "extra_navigation_steps_after_dismissal", "action_attempt_count", "visual_call_count", "total_latency_ms", "estimated_model_cost"],
+          "properties": {
+            "VTR_tech": {"$ref": "#/$defs/boolOrNull"},
+            "A_VTR": {"$ref": "#/$defs/boolOrNull"},
+            "recovery_time_ms": {"$ref": "#/$defs/integerOrNull"},
+            "extra_navigation_steps_after_dismissal": {"$ref": "#/$defs/integerOrNull"},
+            "action_attempt_count": {"$ref": "#/$defs/integerOrNull"},
+            "visual_call_count": {"$ref": "#/$defs/integerOrNull"},
+            "total_latency_ms": {"$ref": "#/$defs/integerOrNull"},
+            "estimated_model_cost": {"$ref": "#/$defs/numberOrNull"}
+          }
+        },
+        "eligibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["eligible_for_training", "eligible_for_main_metric", "eligible_for_user_experience_claim", "exclusion_reasons"],
+          "properties": {
+            "eligible_for_training": {"type": "boolean"},
+            "eligible_for_main_metric": {"type": "boolean"},
+            "eligible_for_user_experience_claim": {"type": "boolean"},
+            "exclusion_reasons": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "message", "handoff_options", "delivered"],
+      "properties": {
+        "status": {"enum": ["success", "failure", "abstained", "handoff", "not_delivered"]},
+        "message": {"$ref": "#/$defs/stringOrNull"},
+        "handoff_options": {"type": "array", "items": {"type": "string"}},
+        "delivered": {"$ref": "#/$defs/boolOrNull"}
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field_status", "measurement_channel"],
+      "properties": {
+        "field_status": {"$ref": "#/$defs/presence"},
+        "measurement_channel": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["annotation_id", "target_json_pointer", "annotator_id_pseudonymous", "annotator_role", "label_name", "label_value", "confidence", "evidence_uris", "adjudication_status", "adjudicator_id_pseudonymous"],
+      "properties": {
+        "annotation_id": {"type": "string"},
+        "target_json_pointer": {"type": "string"},
+        "annotator_id_pseudonymous": {"type": "string"},
+        "annotator_role": {"enum": ["researcher", "target_user", "accessibility_expert", "fixture_oracle", "automated_probe"]},
+        "label_name": {"type": "string"},
+        "label_value": {},
+        "confidence": {"$ref": "#/$defs/scoreOrNull"},
+        "evidence_uris": {"type": "array", "items": {"$ref": "#/$defs/artifactRef"}},
+        "adjudication_status": {"enum": ["single", "agreement", "disputed", "adjudicated", "not_required"]},
+        "adjudicator_id_pseudonymous": {"$ref": "#/$defs/stringOrNull"}
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_valid",
+        "all_referenced_artifacts_exist",
+        "field_presence_audited",
+        "field_provenance_complete",
+        "cross_platform_raw_fields_preserved",
+        "dual_annotation_complete",
+        "adjudication_complete",
+        "split_leakage_check_passed",
+        "privacy_review_passed",
+        "synthetic_or_fixture_disclosed",
+        "review_status",
+        "review_notes"
+      ],
+      "properties": {
+        "schema_valid": {"$ref": "#/$defs/boolOrNull"},
+        "all_referenced_artifacts_exist": {"$ref": "#/$defs/boolOrNull"},
+        "field_presence_audited": {"$ref": "#/$defs/boolOrNull"},
+        "field_provenance_complete": {"$ref": "#/$defs/boolOrNull"},
+        "cross_platform_raw_fields_preserved": {"$ref": "#/$defs/boolOrNull"},
+        "dual_annotation_complete": {"$ref": "#/$defs/boolOrNull"},
+        "adjudication_complete": {"$ref": "#/$defs/boolOrNull"},
+        "split_leakage_check_passed": {"$ref": "#/$defs/boolOrNull"},
+        "privacy_review_passed": {"$ref": "#/$defs/boolOrNull"},
+        "synthetic_or_fixture_disclosed": {"type": "boolean"},
+        "review_status": {"enum": ["unreviewed", "provisional", "accepted", "rejected"]},
+        "review_notes": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

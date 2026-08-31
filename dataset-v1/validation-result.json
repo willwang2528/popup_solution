@@ -1,0 +1,37 @@
+{
+  "status": "pass",
+  "data_file": "data/items.schema-fixture.jsonl",
+  "item_count": 1,
+  "schema_version": "1.0.0-provisional",
+  "source_field_counts": {
+    "literature": 90,
+    "our_method": 165,
+    "crosswalk_total": 255
+  },
+  "qa_contract_counts": {
+    "item_gates": 23,
+    "dataset_gates": 6
+  },
+  "qa_implementation_coverage": {
+    "automated_full": 5,
+    "automated_partial": 17,
+    "manual_release": 7,
+    "total": 29
+  },
+  "validation_scope": "schema_shape_and_documented_automated_assertions_only",
+  "manual_release_gate_ids": [
+    "ITEM-005",
+    "ITEM-008",
+    "ITEM-019",
+    "DATASET-003",
+    "DATASET-004",
+    "DATASET-005",
+    "DATASET-006"
+  ],
+  "errors": [],
+  "warnings": [
+    "dataset contains no empirical real-app episodes yet",
+    "dataset contains no iOS capability or episode record yet"
+  ],
+  "empirical_status": "pending_real_device_collection"
+}

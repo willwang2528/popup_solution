@@ -1,0 +1,1517 @@
+{
+  "schema_version": "0.1.0",
+  "status": "provisional_method_field_catalog",
+  "unit": "one_popup_episode",
+  "method": "Actionability-Gap-Gated Recovery",
+  "target_population": "blind_and_low_vision_screen_reader_users",
+  "source_documents": [
+    "popup-solution/method/METHOD_SPEC.md",
+    "popup-solution/DATASET_SCHEMA.md",
+    "popup-solution/RESEARCH_BRIEF.md"
+  ],
+  "requiredness_legend": {
+    "required": "Every episode record must carry the field.",
+    "required_if": "Required when the condition written after the colon is true.",
+    "required_if_observable": "Required only after the target-device capability probe establishes observability.",
+    "recommended": "Not needed to parse the record, but needed for the planned analysis or reproducibility."
+  },
+  "global_missing_value_policy": {
+    "rule": "Never use an unqualified null or empty string.",
+    "allowed_reason_codes": [
+      "not_applicable",
+      "not_observable",
+      "not_collected",
+      "tool_failure",
+      "pending_capability_probe",
+      "unknown"
+    ],
+    "ios_boundary": "iOS/XCUI and VoiceOver capabilities are candidates until verified on the target device and OS. XCTest/Appium page-source visibility must not be treated as VoiceOver focus, utterance, or deployable accessibility visibility."
+  },
+  "fields": [
+    {
+      "field_path": "episode.episode_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "collector",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Primary key for joining observations, candidates, attempts, outcomes, annotations, and evidence."
+    },
+    {
+      "field_path": "episode.scenario_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "experiment_designer",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Links the run to its fixed task, ground truth, and safety contract."
+    },
+    {
+      "field_path": "episode.method_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "experiment_runner",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Separates the proposed method, baselines, and ablations under paired episodes."
+    },
+    {
+      "field_path": "episode.seed",
+      "type": "integer",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "experiment_runner",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Makes randomized order, timing, and model behavior reproducible."
+    },
+    {
+      "field_path": "task_context.target_population",
+      "type": "enum[blind_and_low_vision_screen_reader_users]",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "experiment_designer",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Prevents a technical popup benchmark from silently drifting away from the stated population."
+    },
+    {
+      "field_path": "task_context.task_goal",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "experiment_designer",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Supplies q, the task context used by the actionability scorer and final recovery check."
+    },
+    {
+      "field_path": "task_context.blocked_step",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "experiment_designer",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Identifies where the popup interrupts the original task."
+    },
+    {
+      "field_path": "task_context.trigger_action",
+      "type": "object",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "fixture_log_or_human_annotation",
+      "missing_value_policy": "unknown_only_with_provenance",
+      "why_needed": "Allows deterministic replay from the same pre-popup state."
+    },
+    {
+      "field_path": "task_context.blocked_target_gt",
+      "type": "object",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "human_annotation_or_fixture_oracle",
+      "missing_value_policy": "unknown_only_with_annotation_reason",
+      "why_needed": "Defines the target that must become operable again for context recovery."
+    },
+    {
+      "field_path": "task_context.task_postcondition_gt",
+      "type": "object",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "experiment_designer_or_fixture_oracle",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Defines T independently of screenshot change or popup disappearance."
+    },
+    {
+      "field_path": "task_context.scope_label",
+      "type": "enum[ordinary_low_risk_popup,excluded_sensitive_or_control,negative_no_popup]",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "human_annotation_with_policy",
+      "missing_value_policy": "unknown_requires_adjudication_before_evaluation",
+      "why_needed": "Enforces the boundary between ordinary dismissible popups, excluded flows, and false-intervention controls."
+    },
+    {
+      "field_path": "task_context.popup_kind",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "human_annotation",
+      "missing_value_policy": "unknown",
+      "why_needed": "Supports the platform by owner by popup-kind stratification."
+    },
+    {
+      "field_path": "task_context.owner_type_gt",
+      "type": "enum[app,webview,browser,system,unknown]",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "fixture_or_reference_trace_or_adjudicated_annotation",
+      "missing_value_policy": "unknown_not_inferred_from_appearance",
+      "why_needed": "Provides ground truth for owner/context mismatch analysis."
+    },
+    {
+      "field_path": "task_context.action_topology",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "human_annotation_or_fixture",
+      "missing_value_policy": "unknown",
+      "why_needed": "Captures whether safe exit is direct, nested, scroll-dependent, protocol-only, or absent."
+    },
+    {
+      "field_path": "task_context.allowed_action_set_gt",
+      "type": "array<enum[close,cancel,later,skip,acknowledge,back,outside_tap]>",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "policy_review_and_human_annotation",
+      "missing_value_policy": "empty_array_means_no_safe_autonomous_action",
+      "why_needed": "Provides multi-answer ground truth for safe action choice without forcing one canonical button."
+    },
+    {
+      "field_path": "task_context.abstain_allowed_gt",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "policy_review",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Supports calibrated coverage and correct-abstention evaluation."
+    },
+    {
+      "field_path": "task_context.fixture_or_real_app",
+      "type": "enum[controlled_fixture,real_app]",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "dataset_curator",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Determines which causal exposure labels can be supported and how external validity is interpreted."
+    },
+    {
+      "field_path": "task_context.popup_expected_gt",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "scenario_definition",
+      "label_source": "fixture_or_adjudicated_annotation",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Enables explicit no-popup negative episodes and False Intervention measurement."
+    },
+    {
+      "field_path": "platform_context.platform",
+      "type": "enum[android,ios,mobile_web]",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Routes platform-specific raw fields and prevents unsupported cross-platform claims."
+    },
+    {
+      "field_path": "platform_context.os_version",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Accessibility exposure and action behavior can vary by OS version."
+    },
+    {
+      "field_path": "platform_context.oem_or_device",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Makes OEM and device-specific accessibility behavior auditable."
+    },
+    {
+      "field_path": "platform_context.app_or_package",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "unknown_if_system_owner_else_tool_failure",
+      "why_needed": "Identifies the host app and supports owner consistency checks."
+    },
+    {
+      "field_path": "platform_context.app_version",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "unknown_with_reason",
+      "why_needed": "Prevents UI and accessibility changes across app versions from being conflated."
+    },
+    {
+      "field_path": "platform_context.ui_framework",
+      "type": "string",
+      "requiredness": "recommended",
+      "stage": "episode_setup",
+      "label_source": "fixture_metadata_or_human_annotation",
+      "missing_value_policy": "unknown",
+      "why_needed": "Supports framework-grouped splits and analysis of merged or absent nodes."
+    },
+    {
+      "field_path": "platform_context.locale",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Controls language-dependent semantics, OCR, and button order."
+    },
+    {
+      "field_path": "platform_context.theme",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter_or_experiment_runner",
+      "missing_value_policy": "unknown_with_reason",
+      "why_needed": "Controls visual candidate generation and paired randomization."
+    },
+    {
+      "field_path": "platform_context.orientation",
+      "type": "enum[portrait,landscape,other]",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Controls geometry and coordinate execution."
+    },
+    {
+      "field_path": "platform_context.font_scale",
+      "type": "number",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter",
+      "missing_value_policy": "not_observable_with_reason",
+      "why_needed": "Captures accessibility-relevant layout variation."
+    },
+    {
+      "field_path": "platform_context.assistive_technology",
+      "type": "enum[talkback,voiceover,other_screen_reader,none]",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "device_adapter_and_run_config",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Distinguishes screen-reader episodes from purely technical automation runs."
+    },
+    {
+      "field_path": "platform_context.assistive_technology_config",
+      "type": "object",
+      "requiredness": "required_if:assistive_technology!=none",
+      "stage": "episode_setup",
+      "label_source": "run_config_and_device_adapter",
+      "missing_value_policy": "not_collected_or_not_observable_with_reason",
+      "why_needed": "Focus, utterance, and navigation behavior depend on AT settings."
+    },
+    {
+      "field_path": "platform_context.driver_and_adapter_version",
+      "type": "object",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "collector",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Separates platform exposure from adapter or tooling drift."
+    },
+    {
+      "field_path": "platform_context.snapshot_state_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "experiment_runner",
+      "missing_value_policy": "unknown_only_for_nonresettable_real_app",
+      "why_needed": "Checks that paired methods start from equivalent app and device state."
+    },
+    {
+      "field_path": "episode.started_at",
+      "type": "timestamp",
+      "requiredness": "required",
+      "stage": "episode_setup",
+      "label_source": "collector_clock",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Defines the episode time boundary and supports end-to-end latency checks."
+    },
+    {
+      "field_path": "episode.ended_at",
+      "type": "timestamp",
+      "requiredness": "required",
+      "stage": "verification_summary",
+      "label_source": "collector_clock",
+      "missing_value_policy": "tool_failure_marks_episode_incomplete",
+      "why_needed": "Closes the episode boundary and distinguishes completed runs from interrupted collection."
+    },
+    {
+      "field_path": "platform_context.screen_reader_focus_order_uri",
+      "type": "uri",
+      "requiredness": "required_if_observable",
+      "stage": "observation_collection",
+      "label_source": "verified_at_adapter_or_target_user_session",
+      "missing_value_policy": "not_observable_or_pending_capability_probe_or_not_collected",
+      "why_needed": "Preserves the raw focus trace behind focus-restoration and navigation-step labels."
+    },
+    {
+      "field_path": "platform_context.screen_reader_utterance_trace_uri",
+      "type": "uri",
+      "requiredness": "required_if_observable",
+      "stage": "observation_collection",
+      "label_source": "verified_at_adapter_or_target_user_session",
+      "missing_value_policy": "not_observable_or_pending_capability_probe_or_not_collected",
+      "why_needed": "Preserves the raw utterance evidence behind spoken-context labels."
+    },
+    {
+      "field_path": "capability_profile.structured_read_status",
+      "type": "enum[verified,not_supported,not_observable,pending_capability_probe,tool_failure]",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "target_device_capability_probe",
+      "missing_value_policy": "pending_capability_probe",
+      "why_needed": "Prevents absence in a collected tree from being called a platform defect when collection is unverified."
+    },
+    {
+      "field_path": "capability_profile.action_execution_status",
+      "type": "enum[verified,not_supported,pending_capability_probe,tool_failure]",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "target_device_capability_probe",
+      "missing_value_policy": "pending_capability_probe",
+      "why_needed": "Records whether the planned execution channel is legal and actually works on the target device."
+    },
+    {
+      "field_path": "capability_profile.screen_reader_focus_observability",
+      "type": "enum[machine_observable,user_validated,not_observable,pending_capability_probe,tool_failure]",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "target_device_at_probe",
+      "missing_value_policy": "pending_capability_probe",
+      "why_needed": "Determines whether C_a11y can be machine-verified or needs user validation."
+    },
+    {
+      "field_path": "capability_profile.utterance_observability",
+      "type": "enum[machine_observable,user_validated,not_observable,pending_capability_probe,tool_failure]",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "target_device_at_probe",
+      "missing_value_policy": "pending_capability_probe",
+      "why_needed": "Prevents a missing VoiceOver or TalkBack trace from being treated as successful spoken-context recovery."
+    },
+    {
+      "field_path": "capability_profile.technical_closed_loop_status",
+      "type": "enum[verified_supported,not_supported,pending_capability_probe,tool_failure]",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "derived_from_target_device_probe",
+      "missing_value_policy": "pending_capability_probe",
+      "why_needed": "Gates platform-level claims about D and C_tech and T."
+    },
+    {
+      "field_path": "capability_profile.accessible_closed_loop_status",
+      "type": "enum[verified_supported,user_validation_required,not_observable,not_supported,pending_capability_probe]",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "derived_from_target_device_at_probe",
+      "missing_value_policy": "pending_capability_probe",
+      "why_needed": "Gates any claim of recovery for screen-reader users, especially on unverified iOS paths."
+    },
+    {
+      "field_path": "capability_profile.evidence_refs",
+      "type": "array<uri>",
+      "requiredness": "required",
+      "stage": "capability_probe",
+      "label_source": "collector",
+      "missing_value_policy": "empty_array_requires_all_capability_statuses_pending_capability_probe",
+      "why_needed": "Makes capability assertions auditable rather than assumed from framework documentation."
+    },
+    {
+      "field_path": "observations[].observation_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "collector",
+      "missing_value_policy": "reject_observation",
+      "why_needed": "Primary key for time-aligned tree, screenshot, candidates, and attempts."
+    },
+    {
+      "field_path": "observations[].phase",
+      "type": "enum[before,popup,after,relaunch]",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "experiment_runner",
+      "missing_value_policy": "reject_observation",
+      "why_needed": "Supports before-popup-after verification and persistence checks."
+    },
+    {
+      "field_path": "observations[].timestamp",
+      "type": "timestamp",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "collector_clock",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Required to detect stale tree and screenshot pairs."
+    },
+    {
+      "field_path": "observations[].foreground_owner",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "platform_adapter",
+      "missing_value_policy": "not_observable_or_tool_failure_with_reason",
+      "why_needed": "Feeds owner-aware scoring and context-restoration verification."
+    },
+    {
+      "field_path": "observations[].window_or_context",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "platform_adapter",
+      "missing_value_policy": "not_observable_or_tool_failure_with_reason",
+      "why_needed": "Separates popup, host page, WebView, and system context."
+    },
+    {
+      "field_path": "observations[].protocol_event",
+      "type": "object",
+      "requiredness": "required_if:protocol_event_available",
+      "stage": "observation_collection",
+      "label_source": "protocol_adapter",
+      "missing_value_policy": "not_applicable_or_not_observable",
+      "why_needed": "Allows the highest-priority protocol dismiss or cancel route."
+    },
+    {
+      "field_path": "observations[].tree_uri",
+      "type": "uri",
+      "requiredness": "required_if:structured_read_status=verified",
+      "stage": "observation_collection",
+      "label_source": "platform_adapter",
+      "missing_value_policy": "not_observable_or_tool_failure_with_reason",
+      "why_needed": "Preserves the raw structured representation for replay and exposure analysis."
+    },
+    {
+      "field_path": "observations[].screenshot_uri",
+      "type": "uri",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "screen_capture_adapter",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Supports popup detection, selective visual completion, and visual dismissal proof."
+    },
+    {
+      "field_path": "observations[].tree_screenshot_sync_status",
+      "type": "enum[synchronized,stale_tree,stale_screenshot,mismatch,tool_failure,not_applicable]",
+      "requiredness": "required",
+      "stage": "observation_collection",
+      "label_source": "derived_from_timestamps_and_ui_fingerprint",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Stops stale captures from being mislabeled as accessibility exposure gaps."
+    },
+    {
+      "field_path": "observations[].ui_fingerprint",
+      "type": "string",
+      "requiredness": "recommended",
+      "stage": "observation_collection",
+      "label_source": "collector",
+      "missing_value_policy": "not_collected",
+      "why_needed": "Strengthens synchronization and same-state checks beyond timestamps."
+    },
+    {
+      "field_path": "observations[].popup_present_gt",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "annotation",
+      "label_source": "fixture_or_adjudicated_human_annotation",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Provides episode-level popup detection ground truth, including negative controls."
+    },
+    {
+      "field_path": "observations[].popup_present_pred",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "popup_detection",
+      "label_source": "method_prediction",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Separates popup recognition from action selection and recovery."
+    },
+    {
+      "field_path": "observations[].popup_bbox_gt",
+      "type": "bbox_normalized",
+      "requiredness": "required_if:popup_present_gt=true_and_visual_region_annotatable",
+      "stage": "annotation",
+      "label_source": "fixture_or_adjudicated_human_annotation",
+      "missing_value_policy": "not_applicable_or_not_observable",
+      "why_needed": "Evaluates popup localization and constrains visual fallback to the popup region."
+    },
+    {
+      "field_path": "observations[].popup_roi_pred",
+      "type": "bbox_normalized",
+      "requiredness": "required_if:gate.visual_fallback_triggered=true",
+      "stage": "visual_completion",
+      "label_source": "method_prediction",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Documents the exact region sent to OCR, detector, or VLM."
+    },
+    {
+      "field_path": "candidates[].candidate_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "normalizer",
+      "missing_value_policy": "reject_candidate",
+      "why_needed": "Stable join key for scores, decisions, attempts, and annotations."
+    },
+    {
+      "field_path": "candidates[].observation_id",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "normalizer",
+      "missing_value_policy": "reject_candidate",
+      "why_needed": "Anchors each candidate to a synchronized observation."
+    },
+    {
+      "field_path": "candidates[].source_channel",
+      "type": "enum[protocol,accessibility,uiautomator,xcui,dom,ocr,detector,vlm]",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "normalizer",
+      "missing_value_policy": "reject_candidate",
+      "why_needed": "Distinguishes structured and visual evidence and execution eligibility."
+    },
+    {
+      "field_path": "candidates[].owner",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "source_channel_or_human_annotation",
+      "missing_value_policy": "unknown_with_field_provenance",
+      "why_needed": "Feeds owner-aware gating and prevents host-page misclicks."
+    },
+    {
+      "field_path": "candidates[].window_or_context",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "source_channel_or_human_annotation",
+      "missing_value_policy": "unknown_with_field_provenance",
+      "why_needed": "Distinguishes the popup action surface from unrelated contexts."
+    },
+    {
+      "field_path": "candidates[].role_or_class",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "source_channel_or_visual_model",
+      "missing_value_policy": "unknown_with_field_presence_mask",
+      "why_needed": "Captures semantic role without forcing Android and iOS raw types into one raw attribute."
+    },
+    {
+      "field_path": "candidates[].name_or_text",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "source_channel_or_ocr_or_visual_model",
+      "missing_value_policy": "unknown_with_field_presence_mask",
+      "why_needed": "Supplies the accessible or visual semantics used to identify a safe exit."
+    },
+    {
+      "field_path": "candidates[].value_or_hint",
+      "type": "string",
+      "requiredness": "recommended",
+      "stage": "normalization",
+      "label_source": "source_channel_or_visual_model",
+      "missing_value_policy": "not_applicable_or_unknown_with_field_presence_mask",
+      "why_needed": "Disambiguates toggles, values, and hints that affect action safety."
+    },
+    {
+      "field_path": "candidates[].stable_id",
+      "type": "string",
+      "requiredness": "recommended",
+      "stage": "normalization",
+      "label_source": "source_channel",
+      "missing_value_policy": "not_observable_with_field_presence_mask",
+      "why_needed": "Supports robust execution, matching, and replay without requiring it on platforms where unavailable."
+    },
+    {
+      "field_path": "candidates[].supported_actions",
+      "type": "array<string>",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "source_channel_or_capability_inference",
+      "missing_value_policy": "empty_array_means_no_verified_supported_action",
+      "why_needed": "A candidate is insufficient if the desired action is not supported and executable."
+    },
+    {
+      "field_path": "candidates[].state",
+      "type": "object{enabled:boolean|null,clickable:boolean|null,hittable:boolean|null,visible:boolean|null,focusable:boolean|null}",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "source_channel_or_visual_model",
+      "missing_value_policy": "each_member_uses_not_observable_or_not_applicable_in_field_presence_mask",
+      "why_needed": "Separates semantic presence from actual actionability."
+    },
+    {
+      "field_path": "candidates[].bounds_normalized",
+      "type": "bbox_normalized",
+      "requiredness": "required_if:source_has_geometry_or_coordinate_execution_considered",
+      "stage": "normalization",
+      "label_source": "source_channel_or_visual_model",
+      "missing_value_policy": "not_observable_with_field_presence_mask",
+      "why_needed": "Supports cross-source matching and grounded coordinate execution."
+    },
+    {
+      "field_path": "candidates[].hierarchy_path",
+      "type": "array<string>",
+      "requiredness": "recommended",
+      "stage": "normalization",
+      "label_source": "structured_source",
+      "missing_value_policy": "not_applicable_for_visual_only_or_not_observable",
+      "why_needed": "Supports parent-child context and analysis of merged or non-separate exposure."
+    },
+    {
+      "field_path": "candidates[].field_presence_mask",
+      "type": "object<string,enum[present,absent,not_applicable,not_observable,tool_failure]>",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "normalizer",
+      "missing_value_policy": "reject_candidate",
+      "why_needed": "Prevents missing cross-platform fields from being silently imputed."
+    },
+    {
+      "field_path": "candidates[].field_provenance",
+      "type": "object<string,object>",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "normalizer",
+      "missing_value_policy": "reject_candidate",
+      "why_needed": "Records whether each normalized field came from platform raw data, OCR, VLM, or human annotation."
+    },
+    {
+      "field_path": "candidates[].raw_ref",
+      "type": "uri_or_source_pointer",
+      "requiredness": "required",
+      "stage": "normalization",
+      "label_source": "normalizer",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Allows normalized decisions to be audited against the original capture."
+    },
+    {
+      "field_path": "candidates[].android_raw",
+      "type": "object",
+      "requiredness": "required_if:platform=android_and_source_is_structured",
+      "stage": "raw_capture",
+      "label_source": "android_adapter",
+      "missing_value_policy": "not_applicable_or_tool_failure",
+      "why_needed": "Preserves Android-native attributes rather than flattening them into a lossy common schema."
+    },
+    {
+      "field_path": "candidates[].ios_raw",
+      "type": "object",
+      "requiredness": "required_if:platform=ios_and_structured_read_status=verified",
+      "stage": "raw_capture",
+      "label_source": "verified_target_ios_adapter",
+      "missing_value_policy": "pending_capability_probe_or_not_applicable_or_tool_failure",
+      "why_needed": "Keeps iOS candidate fields explicitly provisional until target-device collection verifies them."
+    },
+    {
+      "field_path": "candidates[].dom_raw",
+      "type": "object",
+      "requiredness": "required_if:platform=mobile_web_or_source=dom",
+      "stage": "raw_capture",
+      "label_source": "dom_adapter",
+      "missing_value_policy": "not_applicable_or_tool_failure",
+      "why_needed": "Preserves DOM-specific fields and iframe or viewport context."
+    },
+    {
+      "field_path": "candidates[].visual_raw",
+      "type": "object",
+      "requiredness": "required_if:source_channel in [ocr,detector,vlm]",
+      "stage": "visual_completion",
+      "label_source": "ocr_detector_or_frozen_vlm",
+      "missing_value_policy": "not_applicable_or_tool_failure",
+      "why_needed": "Retains OCR text, boxes, detector classes, confidences, prompts, and frozen-model outputs."
+    },
+    {
+      "field_path": "candidates[].matched_cross_channel_candidate_ids",
+      "type": "array<string>",
+      "requiredness": "required_if:visual_fallback_triggered=true",
+      "stage": "cross_channel_matching",
+      "label_source": "matcher",
+      "missing_value_policy": "empty_array_means_unmatched",
+      "why_needed": "Shows whether a visual proposal completes, corroborates, or conflicts with a structured candidate."
+    },
+    {
+      "field_path": "candidates[].action_semantics_gt",
+      "type": "array<string>",
+      "requiredness": "required",
+      "stage": "annotation",
+      "label_source": "adjudicated_human_annotation_or_fixture_oracle",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Supports multi-answer action semantics rather than a single brittle text label."
+    },
+    {
+      "field_path": "candidates[].is_valid_close_target_gt",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "annotation",
+      "label_source": "adjudicated_human_annotation_or_fixture_oracle",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Measures valid-close candidate recall and selection accuracy."
+    },
+    {
+      "field_path": "candidates[].exposure_status_gt",
+      "type": "enum[complete,not_separately_exposed,merged_confirmed,missing_confirmed,ambiguous,non_actionable,owner_mismatch,filtered_confirmed,developer_defect_confirmed,tool_failure,unknown]",
+      "requiredness": "required",
+      "stage": "annotation",
+      "label_source": "adjudicated_annotation_with_evidence_rule",
+      "missing_value_policy": "unknown",
+      "why_needed": "Defines the actionability gap while reserving causal labels for fixtures, reference trees, or source evidence."
+    },
+    {
+      "field_path": "candidates[].actionability_features",
+      "type": "object{owner:number,semantics:number,actions:number,state:number,geometry:number,presence:number,provenance:number}",
+      "requiredness": "required",
+      "stage": "gate_scoring",
+      "label_source": "scorer_input_pipeline",
+      "missing_value_policy": "missing_component_must_be_explicit_and_masked",
+      "why_needed": "Makes the shared scorer input auditable and supports gap-type ablations."
+    },
+    {
+      "field_path": "candidates[].actionability_score_pre_visual",
+      "type": "number[0,1]",
+      "requiredness": "required_if:source_channel not in [ocr,detector,vlm]",
+      "stage": "gate_pre_visual",
+      "label_source": "trained_scorer",
+      "missing_value_policy": "not_applicable_or_tool_failure",
+      "why_needed": "Drives the initial sufficient versus gap decision."
+    },
+    {
+      "field_path": "candidates[].actionability_score_post_visual",
+      "type": "number[0,1]",
+      "requiredness": "required_if:visual_fallback_triggered=true",
+      "stage": "gate_post_visual",
+      "label_source": "trained_scorer",
+      "missing_value_policy": "not_applicable_or_tool_failure",
+      "why_needed": "Records re-ranking after visual candidate completion."
+    },
+    {
+      "field_path": "gate.top1_candidate_id_pre_visual",
+      "type": "string",
+      "requiredness": "required_if:any_structured_candidate",
+      "stage": "gate_pre_visual",
+      "label_source": "trained_scorer",
+      "missing_value_policy": "not_applicable_if_no_candidate",
+      "why_needed": "Identifies the best structured or protocol candidate before fallback."
+    },
+    {
+      "field_path": "gate.top1_score_pre_visual",
+      "type": "number[0,1]",
+      "requiredness": "required_if:any_structured_candidate",
+      "stage": "gate_pre_visual",
+      "label_source": "trained_scorer",
+      "missing_value_policy": "not_applicable_if_no_candidate",
+      "why_needed": "Tests the absolute score threshold tau."
+    },
+    {
+      "field_path": "gate.top2_score_pre_visual",
+      "type": "number[0,1]",
+      "requiredness": "required_if:at_least_two_structured_candidates",
+      "stage": "gate_pre_visual",
+      "label_source": "trained_scorer",
+      "missing_value_policy": "not_applicable_if_fewer_than_two_candidates",
+      "why_needed": "Allows the top-one versus top-two ambiguity margin to be computed."
+    },
+    {
+      "field_path": "gate.score_threshold_tau",
+      "type": "number[0,1]",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "frozen_calibration_config",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Documents the pre-registered sufficient-path threshold."
+    },
+    {
+      "field_path": "gate.margin_pre_visual",
+      "type": "number",
+      "requiredness": "required_if:at_least_two_structured_candidates",
+      "stage": "gate_pre_visual",
+      "label_source": "derived_deterministically",
+      "missing_value_policy": "not_applicable_if_fewer_than_two_candidates",
+      "why_needed": "Detects non-empty but ambiguous structured trees."
+    },
+    {
+      "field_path": "gate.margin_threshold_delta",
+      "type": "number",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "frozen_calibration_config",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Makes the low-margin fallback rule reproducible."
+    },
+    {
+      "field_path": "gate.owner_context_known_and_consistent",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "derived_from_platform_context_and_candidate",
+      "missing_value_policy": "false_when_unknown_with_gap_reason_owner_mismatch",
+      "why_needed": "Prevents selecting a semantically plausible control from the wrong owner or context."
+    },
+    {
+      "field_path": "gate.action_supported_and_executable",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "derived_from_candidate_and_capability_profile",
+      "missing_value_policy": "false_when_unverified",
+      "why_needed": "Separates visible or named elements from executable exit paths."
+    },
+    {
+      "field_path": "gate.action_in_low_risk_policy",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "policy_engine",
+      "missing_value_policy": "false_when_unknown",
+      "why_needed": "Routes sensitive or unknown actions to abstention instead of visual guessing."
+    },
+    {
+      "field_path": "gate.capture_fresh_and_synchronized",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "derived_from_sync_status",
+      "missing_value_policy": "false_on_tool_failure_or_unknown",
+      "why_needed": "Ensures stale observations cannot pass the structured gate."
+    },
+    {
+      "field_path": "gate.structured_sufficient",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "derived_deterministically_from_gate_contract",
+      "missing_value_policy": "false_on_any_unresolved_condition",
+      "why_needed": "Records whether the structured path meets all threshold, margin, owner, execution, safety, and freshness conditions."
+    },
+    {
+      "field_path": "gate.gap_reasons",
+      "type": "array<enum[not_separately_exposed,merged,ambiguous,non_actionable,owner_mismatch,stale_or_tool_failure,low_margin,safety_policy_conflict,no_candidate]>",
+      "requiredness": "required",
+      "stage": "gate_pre_visual",
+      "label_source": "gate",
+      "missing_value_policy": "empty_array_only_when_structured_sufficient=true",
+      "why_needed": "Explains why visual completion or abstention was triggered beyond an empty-tree heuristic."
+    },
+    {
+      "field_path": "gate.visual_fallback_triggered",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "visual_completion",
+      "label_source": "gate",
+      "missing_value_policy": "false_only_with_gate_trace",
+      "why_needed": "Measures selective visual use and checks conformance to the method."
+    },
+    {
+      "field_path": "gate.final_candidate_id",
+      "type": "string",
+      "requiredness": "required_if:decision.abstain=false",
+      "stage": "gate_post_visual",
+      "label_source": "trained_scorer_and_policy",
+      "missing_value_policy": "not_applicable_if_abstained",
+      "why_needed": "Identifies the selected candidate after optional cross-channel re-scoring."
+    },
+    {
+      "field_path": "gate.final_score",
+      "type": "number[0,1]",
+      "requiredness": "required_if:decision.abstain=false",
+      "stage": "gate_post_visual",
+      "label_source": "trained_scorer",
+      "missing_value_policy": "not_applicable_if_abstained",
+      "why_needed": "Supports confidence calibration and selective-risk curves."
+    },
+    {
+      "field_path": "gate.final_state",
+      "type": "enum[structured_path,visual_completed_path,unsafe_abstain,no_safe_candidate_abstain,tool_failure_abstain]",
+      "requiredness": "required",
+      "stage": "gate_post_visual",
+      "label_source": "gate_and_policy_engine",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Makes the final routing decision explicit."
+    },
+    {
+      "field_path": "gate.scorer_version",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "gate_scoring",
+      "label_source": "model_registry",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Prevents score drift across model versions."
+    },
+    {
+      "field_path": "gate.calibration_version",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "gate_scoring",
+      "label_source": "model_registry",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Associates tau and delta with a frozen development split and calibration artifact."
+    },
+    {
+      "field_path": "decision.allowed_action_policy_version",
+      "type": "string",
+      "requiredness": "required",
+      "stage": "policy_decision",
+      "label_source": "policy_registry",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Makes safety decisions reproducible and auditable."
+    },
+    {
+      "field_path": "decision.action_semantics_pred",
+      "type": "string",
+      "requiredness": "required_if:decision.abstain=false",
+      "stage": "policy_decision",
+      "label_source": "method_prediction",
+      "missing_value_policy": "not_applicable_if_abstained",
+      "why_needed": "Records the intended low-risk action separately from the target and execution channel."
+    },
+    {
+      "field_path": "decision.target_candidate_id_pred",
+      "type": "string",
+      "requiredness": "required_if:decision.abstain=false",
+      "stage": "policy_decision",
+      "label_source": "method_prediction",
+      "missing_value_policy": "not_applicable_if_abstained",
+      "why_needed": "Joins the final decision to the exact evidence-bearing candidate."
+    },
+    {
+      "field_path": "decision.execution_channel",
+      "type": "enum[protocol_callback,structured_element,platform_watcher,grounded_coordinate,verified_back,verified_outside_tap]",
+      "requiredness": "required_if:decision.abstain=false",
+      "stage": "policy_decision",
+      "label_source": "policy_engine",
+      "missing_value_policy": "not_applicable_if_abstained",
+      "why_needed": "Checks the prescribed priority from protocol to increasingly weak interaction channels."
+    },
+    {
+      "field_path": "decision.confidence",
+      "type": "number[0,1]",
+      "requiredness": "required",
+      "stage": "policy_decision",
+      "label_source": "method_prediction",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Supports calibrated abstention and risk-coverage analysis."
+    },
+    {
+      "field_path": "decision.abstain",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "policy_decision",
+      "label_source": "policy_engine",
+      "missing_value_policy": "true_on_unresolved_safety_or_observability",
+      "why_needed": "Makes refusal a first-class outcome rather than a missing prediction."
+    },
+    {
+      "field_path": "decision.abstain_reasons",
+      "type": "array<string>",
+      "requiredness": "required_if:decision.abstain=true",
+      "stage": "policy_decision",
+      "label_source": "gate_and_policy_engine",
+      "missing_value_policy": "empty_array_invalid_when_abstain=true",
+      "why_needed": "Distinguishes unsafe, unknown, no-candidate, capability, and tool-failure abstentions."
+    },
+    {
+      "field_path": "decision.rationale_trace",
+      "type": "object",
+      "requiredness": "required",
+      "stage": "policy_decision",
+      "label_source": "method_runtime",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Provides an auditable link from observations and gate conditions to the chosen action or abstention."
+    },
+    {
+      "field_path": "action_attempts[].attempt_id",
+      "type": "string",
+      "requiredness": "required_if:decision.abstain=false",
+      "stage": "execution",
+      "label_source": "executor",
+      "missing_value_policy": "not_applicable_if_abstained",
+      "why_needed": "Primary key for execution and retry traces."
+    },
+    {
+      "field_path": "action_attempts[].attempt_index",
+      "type": "integer",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "executor",
+      "missing_value_policy": "reject_attempt",
+      "why_needed": "Enforces the bounded one-alternative retry contract."
+    },
+    {
+      "field_path": "action_attempts[].observation_id",
+      "type": "string",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "executor",
+      "missing_value_policy": "reject_attempt",
+      "why_needed": "Anchors each attempt to the exact observation used for its decision."
+    },
+    {
+      "field_path": "action_attempts[].action_semantics_pred",
+      "type": "string",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "method_prediction",
+      "missing_value_policy": "reject_attempt",
+      "why_needed": "Records the actual semantics attempted, including a preregistered alternative retry."
+    },
+    {
+      "field_path": "action_attempts[].target_candidate_id_pred",
+      "type": "string",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "method_prediction",
+      "missing_value_policy": "not_applicable_only_for_protocol_action_without_candidate",
+      "why_needed": "Links each attempt, not only the initial decision, to its target evidence."
+    },
+    {
+      "field_path": "action_attempts[].execution_channel",
+      "type": "enum[protocol_callback,structured_element,platform_watcher,grounded_coordinate,verified_back,verified_outside_tap]",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "policy_engine_and_executor",
+      "missing_value_policy": "reject_attempt",
+      "why_needed": "Allows channel-specific success, latency, and safety analysis across retries."
+    },
+    {
+      "field_path": "action_attempts[].confidence",
+      "type": "number[0,1]",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "method_prediction",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Retains the calibrated confidence for every attempted alternative."
+    },
+    {
+      "field_path": "action_attempts[].rationale_trace",
+      "type": "object",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "method_runtime",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Explains why this particular attempt followed the previous observation or failure."
+    },
+    {
+      "field_path": "action_attempts[].locator_or_coordinate",
+      "type": "object",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "executor",
+      "missing_value_policy": "not_applicable_only_for_protocol_callback_else_tool_failure",
+      "why_needed": "Makes the executed target and coordinate grounding reproducible."
+    },
+    {
+      "field_path": "action_attempts[].command_delivered",
+      "type": "boolean",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "executor",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Separates target selection from actual command delivery."
+    },
+    {
+      "field_path": "action_attempts[].execution_error",
+      "type": "object",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "executor",
+      "missing_value_policy": "not_applicable_when_no_error",
+      "why_needed": "Separates method errors from adapter and platform execution failures."
+    },
+    {
+      "field_path": "action_attempts[].latency_ms",
+      "type": "number",
+      "requiredness": "required_if:any_action_attempt",
+      "stage": "execution",
+      "label_source": "monotonic_clock",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Supports end-to-end and channel-specific latency analysis."
+    },
+    {
+      "field_path": "safety.sensitive_context_flags",
+      "type": "array<enum[captcha,risk_control,pin,biometric,authentication,payment,install,delete,device_management,positive_permission_or_privacy_grant,unknown_semantics,no_safe_exit]>",
+      "requiredness": "required",
+      "stage": "safety_screening",
+      "label_source": "policy_engine_and_adjudicated_ground_truth",
+      "missing_value_policy": "unknown_semantics",
+      "why_needed": "Enumerates conditions that require abstain or handoff."
+    },
+    {
+      "field_path": "safety.safe_exit_exists_gt",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "annotation",
+      "label_source": "policy_review_and_fixture_or_adjudicated_annotation",
+      "missing_value_policy": "unknown_requires_abstain",
+      "why_needed": "Distinguishes correct refusal from failure to find an available safe exit."
+    },
+    {
+      "field_path": "safety.policy_violation",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "safety_outcome",
+      "label_source": "derived_from_attempts_and_policy",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Detects execution outside the allowed low-risk action set."
+    },
+    {
+      "field_path": "safety.false_intervention",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "safety_outcome",
+      "label_source": "derived_from_popup_ground_truth_and_attempts",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Measures actions taken on no-popup or out-of-scope screens."
+    },
+    {
+      "field_path": "safety.harmful_action",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "safety_outcome",
+      "label_source": "adjudicated_outcome",
+      "missing_value_policy": "unknown_requires_adjudication",
+      "why_needed": "Captures sensitive, destructive, or positive-consent mistakes that invalidate autonomous deployment claims."
+    },
+    {
+      "field_path": "safety.side_effect_detected",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "safety_outcome",
+      "label_source": "fixture_oracle_or_post_action_annotation",
+      "missing_value_policy": "unknown_with_evidence_status",
+      "why_needed": "Prevents popup disappearance from masking unintended state changes."
+    },
+    {
+      "field_path": "safety.cross_app_jump",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "safety_outcome",
+      "label_source": "owner_context_trace",
+      "missing_value_policy": "unknown_if_owner_not_observable",
+      "why_needed": "Detects navigation into another app or system surface."
+    },
+    {
+      "field_path": "safety.retry_budget",
+      "type": "integer",
+      "requiredness": "required",
+      "stage": "policy_decision",
+      "label_source": "frozen_policy_config",
+      "missing_value_policy": "reject_episode",
+      "why_needed": "Enforces the pre-registered limit of at most one alternative attempt."
+    },
+    {
+      "field_path": "safety.retry_count",
+      "type": "integer",
+      "requiredness": "required",
+      "stage": "execution",
+      "label_source": "derived_from_action_attempts",
+      "missing_value_policy": "zero_when_no_retry",
+      "why_needed": "Audits compliance with the bounded retry policy."
+    },
+    {
+      "field_path": "safety.retry_exhausted",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "safety_outcome",
+      "label_source": "derived_from_action_attempts_and_retry_budget",
+      "missing_value_policy": "false_when_no_retry",
+      "why_needed": "Checks that the method abstains or hands off after its one permitted alternative fails."
+    },
+    {
+      "field_path": "outcome.visual_popup_gone",
+      "type": "boolean",
+      "requiredness": "required_if:post_action_observation_available",
+      "stage": "verification_D",
+      "label_source": "visual_diff_or_adjudicated_annotation",
+      "missing_value_policy": "not_observable_or_tool_failure",
+      "why_needed": "One conjunct of D; screenshot change alone is insufficient."
+    },
+    {
+      "field_path": "outcome.semantic_popup_gone",
+      "type": "boolean",
+      "requiredness": "required_if:structured_read_status=verified",
+      "stage": "verification_D",
+      "label_source": "platform_or_protocol_observation",
+      "missing_value_policy": "not_observable_or_tool_failure",
+      "why_needed": "Second conjunct of D; guards against visually hidden but semantically active popups."
+    },
+    {
+      "field_path": "outcome.D_dismissal",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_D",
+      "label_source": "derived_deterministically",
+      "missing_value_policy": "false_for_success_claim_if_either_conjunct_unobserved",
+      "why_needed": "Defines dismissal as both visual and semantic disappearance."
+    },
+    {
+      "field_path": "outcome.owner_context_restored",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_C_tech",
+      "label_source": "platform_adapter_and_reference_context",
+      "missing_value_policy": "not_observable_or_tool_failure_blocks_success_claim",
+      "why_needed": "Ensures the original owner and context, not just any screen, is restored."
+    },
+    {
+      "field_path": "outcome.blocked_target_operable",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_C_tech",
+      "label_source": "safe_nonmutating_probe_or_fixture_oracle",
+      "missing_value_policy": "not_observable_or_tool_failure_blocks_success_claim",
+      "why_needed": "Checks recovery of the exact task target rather than only popup disappearance."
+    },
+    {
+      "field_path": "outcome.C_tech",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_C_tech",
+      "label_source": "derived_deterministically",
+      "missing_value_policy": "false_for_success_claim_if_any_conjunct_unobserved",
+      "why_needed": "Provides the technical recovery component for VTR-tech."
+    },
+    {
+      "field_path": "outcome.screen_reader_focus_before",
+      "type": "object",
+      "requiredness": "required_if_observable",
+      "stage": "verification_C_a11y",
+      "label_source": "verified_at_adapter_or_target_user_session",
+      "missing_value_policy": "not_observable_or_pending_capability_probe",
+      "why_needed": "Establishes the accessible context that should be restored."
+    },
+    {
+      "field_path": "outcome.screen_reader_focus_after",
+      "type": "object",
+      "requiredness": "required_if_observable",
+      "stage": "verification_C_a11y",
+      "label_source": "verified_at_adapter_or_target_user_session",
+      "missing_value_policy": "not_observable_or_pending_capability_probe",
+      "why_needed": "Provides direct evidence of post-dismissal screen-reader position."
+    },
+    {
+      "field_path": "outcome.focus_restored_to_blocked_target_or_successor",
+      "type": "boolean",
+      "requiredness": "required_if_observable",
+      "stage": "verification_C_a11y",
+      "label_source": "derived_from_verified_focus_trace_or_target_user_validation",
+      "missing_value_policy": "not_observable_or_pending_capability_probe",
+      "why_needed": "Distinguishes technical UI recovery from accessible task resumption."
+    },
+    {
+      "field_path": "outcome.utterance_before",
+      "type": "object",
+      "requiredness": "required_if_observable",
+      "stage": "verification_C_a11y",
+      "label_source": "verified_at_adapter_or_target_user_session",
+      "missing_value_policy": "not_observable_or_pending_capability_probe",
+      "why_needed": "Anchors the spoken context before interruption."
+    },
+    {
+      "field_path": "outcome.utterance_after",
+      "type": "object",
+      "requiredness": "required_if_observable",
+      "stage": "verification_C_a11y",
+      "label_source": "verified_at_adapter_or_target_user_session",
+      "missing_value_policy": "not_observable_or_pending_capability_probe",
+      "why_needed": "Records what the user is told after recovery."
+    },
+    {
+      "field_path": "outcome.spoken_context_consistent",
+      "type": "boolean",
+      "requiredness": "required_if_observable",
+      "stage": "verification_C_a11y",
+      "label_source": "adjudicated_trace_or_target_user_validation",
+      "missing_value_policy": "not_observable_or_pending_capability_probe",
+      "why_needed": "Checks that post-action speech matches the resumed task when utterance is observable."
+    },
+    {
+      "field_path": "outcome.C_a11y",
+      "type": "boolean",
+      "requiredness": "required_if:accessible_closed_loop_status in [verified_supported,user_validation_required]",
+      "stage": "verification_C_a11y",
+      "label_source": "derived_from_C_tech_focus_and_observable_utterance",
+      "missing_value_policy": "not_observable; never substitute C_tech",
+      "why_needed": "Defines accessible context recovery without overstating technical recovery as user recovery."
+    },
+    {
+      "field_path": "outcome.task_postcondition_satisfied",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_T",
+      "label_source": "fixture_oracle_or_adjudicated_business_state",
+      "missing_value_policy": "not_observable_or_tool_failure_blocks_success_claim",
+      "why_needed": "Directly evaluates the original task business postcondition."
+    },
+    {
+      "field_path": "outcome.T_task_postcondition",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_T",
+      "label_source": "derived_deterministically",
+      "missing_value_policy": "false_for_success_claim_if_unobserved",
+      "why_needed": "Provides the T conjunct in both recovery metrics."
+    },
+    {
+      "field_path": "outcome.verified_technical_task_recovery",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_summary",
+      "label_source": "derived_as_D_and_C_tech_and_T",
+      "missing_value_policy": "false_for_success_claim_if_any_conjunct_unobserved",
+      "why_needed": "Reports VTR-tech separately from accessibility recovery."
+    },
+    {
+      "field_path": "outcome.accessible_verified_task_recovery",
+      "type": "boolean",
+      "requiredness": "required_if:C_a11y_observable_or_user_validated",
+      "stage": "verification_summary",
+      "label_source": "derived_as_D_and_C_a11y_and_T",
+      "missing_value_policy": "not_observable; never infer from VTR-tech",
+      "why_needed": "Implements the main A-VTR success criterion for the stated population."
+    },
+    {
+      "field_path": "outcome.extra_screen_reader_navigation_steps",
+      "type": "integer",
+      "requiredness": "required_if:target_user_or_verified_at_navigation_trace_available",
+      "stage": "verification_C_a11y",
+      "label_source": "at_trace_or_target_user_session",
+      "missing_value_policy": "not_observable_or_not_collected",
+      "why_needed": "Quantifies residual navigation burden after nominal recovery."
+    },
+    {
+      "field_path": "outcome.target_user_validation",
+      "type": "object",
+      "requiredness": "required_if:accessible_closed_loop_status=user_validation_required",
+      "stage": "user_evaluation",
+      "label_source": "consented_target_user_session",
+      "missing_value_policy": "not_collected_means_no_user_experience_claim",
+      "why_needed": "Provides the only valid substitute when screen-reader focus or utterance cannot be machine-observed."
+    },
+    {
+      "field_path": "outcome.abstained",
+      "type": "boolean",
+      "requiredness": "required",
+      "stage": "verification_summary",
+      "label_source": "derived_from_decision_and_attempts",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Provides the realized abstention outcome for coverage and selective-risk metrics."
+    },
+    {
+      "field_path": "outcome.handoff_reason",
+      "type": "string",
+      "requiredness": "required_if:outcome.abstained=true_or_feedback.status=handoff_required",
+      "stage": "feedback_handoff",
+      "label_source": "policy_engine_and_feedback_adapter",
+      "missing_value_policy": "not_applicable_when_no_handoff",
+      "why_needed": "Explains the realized safe handoff independently of an earlier abstention prediction."
+    },
+    {
+      "field_path": "feedback.status",
+      "type": "enum[recovered,abstained,handoff_required,failed]",
+      "requiredness": "required",
+      "stage": "feedback_handoff",
+      "label_source": "feedback_adapter",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Makes the system outcome available to the screen-reader user."
+    },
+    {
+      "field_path": "feedback.message",
+      "type": "string",
+      "requiredness": "required_if:assistive_technology!=none",
+      "stage": "feedback_handoff",
+      "label_source": "feedback_adapter",
+      "missing_value_policy": "not_delivered_with_reason",
+      "why_needed": "Communicates recovery, refusal, or failure accessibly."
+    },
+    {
+      "field_path": "feedback.handoff_options",
+      "type": "array<object>",
+      "requiredness": "required_if:decision.abstain=true_or_feedback.status=handoff_required",
+      "stage": "feedback_handoff",
+      "label_source": "policy_engine_and_feedback_adapter",
+      "missing_value_policy": "empty_array_requires_explicit_no_available_handoff_reason",
+      "why_needed": "Turns abstention into a usable safe fallback rather than a silent dead end."
+    },
+    {
+      "field_path": "feedback.delivered",
+      "type": "boolean",
+      "requiredness": "required_if:assistive_technology!=none",
+      "stage": "feedback_handoff",
+      "label_source": "verified_feedback_adapter",
+      "missing_value_policy": "not_observable_or_tool_failure",
+      "why_needed": "Separates generated feedback from feedback actually exposed through the AT channel."
+    },
+    {
+      "field_path": "observability.field_status",
+      "type": "object<string,enum[observed,not_observable,not_collected,not_applicable,tool_failure,pending_capability_probe]>",
+      "requiredness": "required",
+      "stage": "provenance_and_quality",
+      "label_source": "collector_and_capability_profile",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Provides a uniform per-field reason for missing or unavailable evidence."
+    },
+    {
+      "field_path": "observability.measurement_channel",
+      "type": "object<string,string>",
+      "requiredness": "required",
+      "stage": "provenance_and_quality",
+      "label_source": "collector",
+      "missing_value_policy": "unknown_with_field_status",
+      "why_needed": "Distinguishes framework-visible data, AT-visible data, visual inference, fixture truth, and user validation."
+    },
+    {
+      "field_path": "provenance.source_artifact_refs",
+      "type": "array<uri>",
+      "requiredness": "required",
+      "stage": "provenance_and_quality",
+      "label_source": "collector",
+      "missing_value_policy": "empty_array_invalid",
+      "why_needed": "Links every episode to its tree, screenshots, traces, fixture state, and policy artifacts."
+    },
+    {
+      "field_path": "provenance.raw_capture_hashes",
+      "type": "object<uri,string>",
+      "requiredness": "required",
+      "stage": "provenance_and_quality",
+      "label_source": "collector",
+      "missing_value_policy": "tool_failure",
+      "why_needed": "Detects post-collection changes to raw evidence."
+    },
+    {
+      "field_path": "provenance.collector_and_model_versions",
+      "type": "object",
+      "requiredness": "required",
+      "stage": "provenance_and_quality",
+      "label_source": "runtime_registry",
+      "missing_value_policy": "reject_record",
+      "why_needed": "Makes collection, OCR, detector, frozen VLM, normalizer, scorer, and verifier versions reproducible."
+    },
+    {
+      "field_path": "provenance.annotation_records",
+      "type": "array<object{annotation_id,target_entity_type,target_entity_id,annotator_id_pseudonymous,label_name,label_value,confidence,evidence_uri,adjudication_status,adjudicator_id_pseudonymous}>",
+      "requiredness": "required",
+      "stage": "annotation",
+      "label_source": "annotation_system",
+      "missing_value_policy": "empty_array_only_for_fully_automatic_non_ground_truth_fields",
+      "why_needed": "Keeps ground truth, confidence, evidence, and adjudication auditable at entity level."
+    },
+    {
+      "field_path": "provenance.episode_evidence_uris",
+      "type": "array<uri>",
+      "requiredness": "required",
+      "stage": "verification_summary",
+      "label_source": "collector_and_verifier",
+      "missing_value_policy": "empty_array_blocks_verified_success_claim",
+      "why_needed": "Provides the evidence bundle for D, C_tech, C_a11y, T, side effects, and abstention."
+    },
+    {
+      "field_path": "provenance.evidence_level",
+      "type": "enum[target_device_verified,target_user_validated,fixture_verified,framework_only,pending_capability_probe,unverified]",
+      "requiredness": "required",
+      "stage": "provenance_and_quality",
+      "label_source": "derived_from_evidence_and_capability_profile",
+      "missing_value_policy": "unverified",
+      "why_needed": "Prevents framework-only or pending iOS evidence from being promoted to accessibility-user validation."
+    }
+  ]
+}

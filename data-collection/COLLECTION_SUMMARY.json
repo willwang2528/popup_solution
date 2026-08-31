@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-08-31T10:55:00+08:00",
+  "status": "provisional",
+  "target_population": "blind_and_low_vision_screen_reader_users",
+  "source_ppt": "deliverables/ppt-format-2026-08-28/mobile弹窗问题调研-v1-formatted-v2.pptx",
+  "paper_count": 14,
+  "unique_paper_id_count": 14,
+  "boundary_roles": {
+    "core_experimental_seed": 6,
+    "schema_method_reference": 8
+  },
+  "evidence_levels": {
+    "full_text_verified": 10,
+    "local_note_verified": 3,
+    "ppt_only": 1
+  },
+  "strict_core_paper_ids": [
+    "abandon_all_hope_2024",
+    "vlm_fuzz_2026",
+    "tcf_aaid_2026",
+    "cookieverse_bannerclick",
+    "poker_sneaky_popups",
+    "hotmobile_ad_policy_2018"
+  ],
+  "strict_platform_coverage": {
+    "android": true,
+    "mobile_web": true,
+    "ios": false
+  },
+  "target_population_field_gap": [
+    "screen_reader_focus_before_after",
+    "focus_order_trace",
+    "utterance_before_after",
+    "accessible_context_recovery",
+    "extra_navigation_steps_after_dismissal",
+    "target_user_recovery_time",
+    "target_user_task_abandonment"
+  ],
+  "quality_warnings": [
+    "PPT slide 5 misattributes DiOS hierarchy and a modern XCUITest example to An Approach for iOS Applications' Testing; those images are excluded from that paper's evidence.",
+    "Strict three-stage inclusion is weaker than the proposed A-VTR criterion and must not be described as full task recovery.",
+    "Abandon All Hope is currently ppt_only because its full text is not present in the authorized local source set."
+  ],
+  "validation": {
+    "jsonl_parse": "passed",
+    "required_fields_and_enums": "passed_with_dependency_free_jq_checks",
+    "paper_count": "passed_14",
+    "unique_ids": "passed_14",
+    "strict_count": "passed_6",
+    "csv_jsonl_consistency": "passed"
+  }
+}

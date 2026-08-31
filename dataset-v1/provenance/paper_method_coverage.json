@@ -1,0 +1,337 @@
+{
+  "schema_version": "1.0.0-provisional",
+  "papers": [
+    {
+      "paper_id": "whispertest_2025",
+      "title": "WhisperTest: A Voice-Control-based Library for iOS UI Automation",
+      "role": "schema_method_reference",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "ios"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "discovery.visual.candidate_bbox",
+        "discovery.structured.checked_or_toggle",
+        "action.command_delivered",
+        "context.device_context",
+        "discovery.structured.name_or_text",
+        "discovery.visual.ocr_text",
+        "context.platform",
+        "action.rationale_trace",
+        "discovery.structured.role_or_class",
+        "discovery.visual.screenshot_uri",
+        "verification.visual_transition_proxy"
+      ]
+    },
+    {
+      "paper_id": "abandon_all_hope_2024",
+      "title": "Abandon All Hope Ye Who Enter Here: A Dynamic, Longitudinal Investigation of Android's Data Safety Section",
+      "role": "core_experimental_seed",
+      "evidence_level": "ppt_only",
+      "platforms": [
+        "android",
+        "webview"
+      ],
+      "strict_closed_loop": true,
+      "field_paths": [
+        "action.action_semantics",
+        "discovery.structured.checkable",
+        "discovery.structured.checked_or_toggle",
+        "context.method_id",
+        "discovery.structured.name_or_text",
+        "verification.persisted_dialog_state",
+        "context.phase",
+        "context.platform",
+        "discovery.structured.source_channel"
+      ]
+    },
+    {
+      "paper_id": "the_ok_is_not_enough_2023",
+      "title": "The OK Is Not Enough: A Large Scale Study of Consent Dialogs in Smartphone Applications",
+      "role": "schema_method_reference",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android",
+        "ios"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "action.action_semantics",
+        "discovery.visual.color_emphasis",
+        "context.method_id",
+        "discovery.structured.name_or_text",
+        "context.phase",
+        "context.platform",
+        "discovery.visual.screenshot_uri",
+        "discovery.visual.size_emphasis",
+        "discovery.structured.text_rule_match"
+      ]
+    },
+    {
+      "paper_id": "freely_given_consent_2022",
+      "title": "Freely Given Consent? Studying Consent Notice of Third-Party Tracking and Its Violations of GDPR in Android Apps",
+      "role": "schema_method_reference",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "action.action_semantics",
+        "discovery.visual.cluster_id",
+        "context.method_id",
+        "discovery.structured.name_or_text",
+        "verification.network_state",
+        "discovery.visual.normalized_tokens",
+        "discovery.visual.ocr_text",
+        "context.phase",
+        "context.platform",
+        "discovery.visual.screenshot_uri",
+        "discovery.structured.text_rule_match",
+        "discovery.visual.tfidf_vector"
+      ]
+    },
+    {
+      "paper_id": "vlm_fuzz_2026",
+      "title": "VLM-Fuzz: Vision Language Model Assisted Recursive Depth-first Search Exploration for Effective GUI Testing of Android Apps",
+      "role": "core_experimental_seed",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": true,
+      "field_paths": [
+        "discovery.structured.actionability",
+        "discovery.structured.bounds",
+        "context.foreground_owner",
+        "discovery.structured.hierarchy",
+        "discovery.structured.name_or_text",
+        "discovery.structured.owner",
+        "verification.owner_context",
+        "context.platform",
+        "action.rationale_trace",
+        "discovery.structured.role_or_class",
+        "discovery.visual.screenshot_uri",
+        "verification.transition_stack",
+        "verification.transition_trace",
+        "verification.tree_diff",
+        "action.visual_mark_id",
+        "context.window_or_context"
+      ]
+    },
+    {
+      "paper_id": "tcf_aaid_2026",
+      "title": "The TCF doesn't really A(A)ID - Automatic Privacy Analysis and Legal Compliance of TCF-based Android Applications",
+      "role": "core_experimental_seed",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": true,
+      "field_paths": [
+        "action.action_semantics",
+        "context.app_or_package",
+        "discovery.structured.checkable",
+        "discovery.structured.checked_or_toggle",
+        "context.cmp_id",
+        "action.confidence",
+        "discovery.structured.name_or_text",
+        "verification.persisted_business_choice",
+        "context.platform",
+        "action.rationale_trace",
+        "discovery.structured.role_or_class",
+        "discovery.visual.screenshot_uri",
+        "action.supported_actions",
+        "action.target_candidate"
+      ]
+    },
+    {
+      "paper_id": "cookieverse_bannerclick",
+      "title": "Exploring the Cookieverse: A Multi-Perspective Analysis of Web Cookies",
+      "role": "core_experimental_seed",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "mobile_web"
+      ],
+      "strict_closed_loop": true,
+      "field_paths": [
+        "action.action_semantics",
+        "context.cmp_id",
+        "context.window_or_page_context",
+        "context.device_profile",
+        "discovery.structured.dom_raw",
+        "verification.evidence_uris",
+        "action.execution_channel",
+        "discovery.structured.geometry",
+        "discovery.structured.hierarchy",
+        "context.locale",
+        "discovery.structured.name_or_text",
+        "context.page_context",
+        "context.platform",
+        "discovery.structured.role_or_class",
+        "discovery.visual.screenshot_uri",
+        "action.supported_actions",
+        "context.viewport",
+        "discovery.structured.visible"
+      ]
+    },
+    {
+      "paper_id": "ssldetecter_2019",
+      "title": "SSLDetecter: Detecting SSL Security Vulnerabilities of Android Applications Based on a Novel Automatic Traversal Method",
+      "role": "schema_method_reference",
+      "evidence_level": "local_note_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "action.action_semantics",
+        "context.activity",
+        "discovery.structured.geometry",
+        "discovery.structured.hierarchy",
+        "discovery.structured.name_or_text",
+        "context.platform",
+        "discovery.structured.role_or_class",
+        "context.traversal_state",
+        "verification.weak_state_similarity",
+        "context.window_or_context"
+      ]
+    },
+    {
+      "paper_id": "poker_sneaky_popups",
+      "title": "Understanding the Sneaky Patterns of Pop-up Windows in the Mobile Ecosystem",
+      "role": "core_experimental_seed",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": true,
+      "field_paths": [
+        "discovery.structured.bounds",
+        "discovery.visual.candidate_bbox",
+        "discovery.structured.clickable",
+        "action.confidence",
+        "discovery.structured.name_or_text",
+        "discovery.visual.ocr_text",
+        "discovery.visual.overlay_ratio",
+        "discovery.structured.owner",
+        "context.platform",
+        "discovery.visual.popup_bbox",
+        "verification.replay_path",
+        "discovery.visual.screenshot_uri",
+        "verification.state_signature",
+        "action.target_candidate",
+        "verification.transition_graph",
+        "verification.transition_trace",
+        "action.trigger_action"
+      ]
+    },
+    {
+      "paper_id": "popsweeper_2024",
+      "title": "PopSweeper: Automatically Detecting and Resolving App-Blocking Pop-Ups to Assist Automated Mobile GUI Testing",
+      "role": "schema_method_reference",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "context.app_or_package",
+        "discovery.visual.candidate_bbox",
+        "context.dataset",
+        "discovery.visual.frame_gate_score",
+        "context.frame_id",
+        "context.platform",
+        "discovery.visual.popup_present_gt",
+        "discovery.visual.popup_score",
+        "context.recording_id",
+        "discovery.visual.screenshot_uri",
+        "action.tap_coordinate",
+        "context.timestamp",
+        "discovery.visual.valid_close_target_gt"
+      ]
+    },
+    {
+      "paper_id": "dynamic_ios_privacy_2021",
+      "title": "Dynamic iOS Privacy Analysis: Verifying App Store Privacy Labels",
+      "role": "schema_method_reference",
+      "evidence_level": "local_note_verified",
+      "platforms": [
+        "ios"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "action.candidate_label",
+        "discovery.structured.element_type",
+        "action.label_first_token",
+        "context.platform",
+        "action.step_index"
+      ]
+    },
+    {
+      "paper_id": "hotmobile_ad_policy_2018",
+      "title": "How Do Mobile Apps Violate the Behavioral Policy of Advertisement Libraries?",
+      "role": "core_experimental_seed",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "android"
+      ],
+      "strict_closed_loop": true,
+      "field_paths": [
+        "verification.action_trace",
+        "verification.destination_state",
+        "discovery.structured.geometry",
+        "discovery.structured.hierarchy",
+        "discovery.structured.owner",
+        "verification.owner_after",
+        "context.platform",
+        "discovery.structured.popup_kind",
+        "verification.popup_present_after",
+        "discovery.structured.role_name_id_bundle",
+        "verification.state_transition",
+        "verification.transition_path",
+        "context.trigger_context"
+      ]
+    },
+    {
+      "paper_id": "ios_applications_testing_2018",
+      "title": "An Approach for iOS Applications' Testing",
+      "role": "schema_method_reference",
+      "evidence_level": "local_note_verified",
+      "platforms": [
+        "ios"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "action.center",
+        "discovery.structured.frame",
+        "context.platform",
+        "discovery.structured.raw_element",
+        "action.tap_coordinate"
+      ]
+    },
+    {
+      "paper_id": "dios_2014",
+      "title": "DiOS: Dynamic Privacy Analysis of iOS Applications",
+      "role": "schema_method_reference",
+      "evidence_level": "full_text_verified",
+      "platforms": [
+        "ios"
+      ],
+      "strict_closed_loop": false,
+      "field_paths": [
+        "context.device_context",
+        "discovery.structured.exposure_status",
+        "discovery.structured.hierarchy",
+        "context.method_id",
+        "discovery.structured.name_or_text",
+        "discovery.structured.owner",
+        "context.platform",
+        "action.policy_trace",
+        "action.protocol_event",
+        "action.target_label"
+      ]
+    }
+  ]
+}

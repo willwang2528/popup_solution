@@ -1,0 +1,61 @@
+{
+  "dataset_name": "Popup Episode Union Dataset",
+  "schema_version": "1.0.0-provisional",
+  "unit": "one_method_specific_popup_episode",
+  "status": "union_contract_complete_empirical_collection_pending",
+  "target_population": "blind_and_low_vision_screen_reader_users",
+  "source_field_union": {
+    "ppt_papers": 14,
+    "core_experimental_seed_papers": 6,
+    "schema_method_reference_papers": 8,
+    "literature_atomic_fields": 90,
+    "our_method_atomic_fields": 165,
+    "crosswalk_entries": 255,
+    "unmapped_source_fields": 0
+  },
+  "cohorts": {
+    "real_app_items": 0,
+    "controlled_fixture_items": 0,
+    "synthetic_schema_fixture_items": 1,
+    "paper_reconstruction_items": 0
+  },
+  "data_files": [
+    {
+      "path": "data/items.schema-fixture.jsonl",
+      "record_kind": "synthetic_schema_fixture",
+      "item_count": 1,
+      "empirical": false,
+      "eligible_for_training": false,
+      "eligible_for_metrics": false
+    }
+  ],
+  "contracts": {
+    "item_schema": "schema/item.schema.json",
+    "field_catalog": "schema/field_catalog.json",
+    "source_to_item_crosswalk": "schema/source_to_item_crosswalk.json",
+    "qa_rules": "schema/qa_rules.json",
+    "qa_implementation_coverage": "schema/qa_implementation_coverage.json",
+    "annotation_guide": "ANNOTATION_GUIDE.md"
+  },
+  "validation": {
+    "status": "pass_implemented_checks",
+    "scope": "schema_shape_and_documented_automated_assertions_only",
+    "result": "validation-result.json",
+    "contract_item_gates": 23,
+    "contract_dataset_gates": 6,
+    "implementation_coverage": {
+      "automated_full": 5,
+      "automated_partial": 17,
+      "manual_release": 7
+    },
+    "errors": 0,
+    "warnings": [
+      "no empirical real-app episodes yet",
+      "no iOS capability or episode record yet"
+    ]
+  },
+  "N": {
+    "value": null,
+    "status": "freeze_after_capability_pilot_and_power_analysis"
+  }
+}

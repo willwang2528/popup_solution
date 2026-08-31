@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.aris/popup-solution/paper-collection.schema.json",
+  "title": "Popup paper evidence record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "paper_id",
+    "title",
+    "year",
+    "venue",
+    "platforms",
+    "ppt_slides",
+    "boundary",
+    "evidence_level",
+    "popup_scope",
+    "detection",
+    "action_selection",
+    "execution",
+    "verification",
+    "source_evidence"
+  ],
+  "properties": {
+    "paper_id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+    "title": {"type": "string", "minLength": 1},
+    "year": {"type": ["integer", "null"]},
+    "venue": {"type": "string"},
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["android", "ios", "mobile_web", "webview", "unknown"]}
+    },
+    "ppt_slides": {
+      "type": "array",
+      "description": "Slides where the paper is mentioned or illustrated. This is not a primary-evidence flag; use source_evidence and collection_notes to determine evidential status.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "integer", "minimum": 1, "maximum": 18}
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["discovery", "action", "verification", "strict_closed_loop", "role"],
+      "properties": {
+        "discovery": {"enum": ["yes", "partial", "no", "uncertain"]},
+        "action": {"enum": ["yes", "partial", "no", "uncertain"]},
+        "verification": {"enum": ["strong_machine", "direct", "indirect", "weak_manual", "weak_visual_or_log", "none", "uncertain"]},
+        "strict_closed_loop": {"type": "boolean"},
+        "role": {"enum": ["core_experimental_seed", "schema_method_reference", "excluded_safety_reference"]},
+        "reason": {"type": "string"}
+      }
+    },
+    "evidence_level": {"enum": ["full_text_verified", "local_note_verified", "ppt_only"]},
+    "popup_scope": {"type": "array", "items": {"type": "string"}},
+    "structured_items": {"$ref": "#/$defs/items"},
+    "visual_items": {"$ref": "#/$defs/items"},
+    "context_items": {"$ref": "#/$defs/items"},
+    "detection": {"type": "array", "items": {"type": "string"}},
+    "action_selection": {"type": "array", "items": {"type": "string"}},
+    "execution": {"type": "array", "items": {"type": "string"}},
+    "verification": {"type": "array", "items": {"type": "string"}},
+    "dataset_or_sample_source": {"type": "array", "items": {"type": "string"}},
+    "reported_popup_metrics": {"type": "array", "items": {"type": "string"}},
+    "reusable_for_our_dataset": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "source_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "locator", "supports"],
+        "properties": {
+          "path": {"type": "string"},
+          "locator": {"type": "string"},
+          "supports": {"type": "string"}
+        }
+      }
+    },
+    "collection_notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "platform", "purpose", "normalized_field", "evidence_status"],
+        "properties": {
+          "item": {"type": "string"},
+          "platform": {
+            "type": "array",
+            "items": {"enum": ["android", "ios", "mobile_web", "webview", "cross_platform", "unknown"]}
+          },
+          "purpose": {
+            "type": "array",
+            "items": {"enum": ["detect_popup", "locate_action", "choose_action", "execute_action", "verify_dismissal", "verify_context", "verify_task", "characterize_gap"]}
+          },
+          "normalized_field": {"type": "string"},
+          "evidence_status": {"enum": ["reported", "inferred_from_local_source", "ppt_only_candidate", "engineering_candidate"]},
+          "notes": {"type": "string"}
+        }
+      }
+    }
+  }
+}

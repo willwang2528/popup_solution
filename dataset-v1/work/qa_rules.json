@@ -1,0 +1,577 @@
+{
+  "contract_version": "0.1.0-provisional",
+  "applies_to_schema_version": "1.0.0-provisional",
+  "artifact_kind": "popup_episode_item_and_dataset_qa_rules",
+  "status": "review_contract_only_no_empirical_samples_created",
+  "expression_language": "JSONPath-like declarative assertions; a validator implementation must evaluate every applicable rule and may not trust item.quality self-assertions.",
+  "result_enum": [
+    "pass",
+    "fail",
+    "not_applicable"
+  ],
+  "severity_semantics": {
+    "blocker": "Reject the item from every empirical cohort until fixed.",
+    "metric_blocker": "Retain for audit but exclude from the affected metric and report coverage loss.",
+    "training_blocker": "Retain for audit but exclude from model training and tuning.",
+    "warning": "Retain only with an explicit review note and stratified reporting."
+  },
+  "truth_semantics": {
+    "logic": "three_valued",
+    "and_rule": "false if any observed conjunct is false; true only if every required conjunct is true; otherwise null",
+    "unknown_is_not_false": true,
+    "analysis_note": "A preregistered conservative analysis may count measurement failures as failures, but must not overwrite stored null truth values."
+  },
+  "missing_value_contract": {
+    "allowed_presence_codes": [
+      "observed",
+      "derived",
+      "annotated",
+      "not_available",
+      "not_applicable",
+      "not_observable",
+      "collection_failed",
+      "redacted",
+      "unknown"
+    ],
+    "present_value_codes": [
+      "observed",
+      "derived",
+      "annotated"
+    ],
+    "absent_value_codes": [
+      "not_available",
+      "not_applicable",
+      "not_observable",
+      "collection_failed",
+      "redacted",
+      "unknown"
+    ],
+    "rules": [
+      "Every critical nullable JSON Pointer must have exactly one presence status.",
+      "A non-null value must use observed, derived, or annotated and must carry field provenance.",
+      "A null value must use an absent-value code; empty string, false, zero, empty object, and empty array may not stand in for unknown.",
+      "Derived values must name their formula or upstream pointers; annotated values must reference annotation evidence.",
+      "Until episode-level observability exists in item.schema.json, the validator must emit an external field-status audit for nullable fields outside assistive_technology, observations, and candidates."
+    ]
+  },
+  "item_gates": [
+    {
+      "id": "ITEM-001",
+      "severity": "blocker",
+      "scope": "item",
+      "when": "always",
+      "assertions": [
+        "JSON parses without duplicate object keys",
+        "identity.schema_version == '1.0.0-provisional'",
+        "identity.item_id is non-empty and unique in the dataset"
+      ],
+      "on_fail": "reject_item"
+    },
+    {
+      "id": "ITEM-002",
+      "severity": "blocker",
+      "scope": "item_references",
+      "when": "always",
+      "assertions": [
+        "observations[].observation_id are unique",
+        "candidates[].candidate_id are unique",
+        "action_attempts[].attempt_id are unique",
+        "every candidates[].observation_id resolves to observations[].observation_id",
+        "every decision.candidate_input_ids[] resolves to candidates[].candidate_id",
+        "every action attempt observation_before_id and non-null observation_after_id resolve",
+        "every non-null target_candidate_id resolves to candidates[].candidate_id"
+      ],
+      "on_fail": "reject_item"
+    },
+    {
+      "id": "ITEM-003",
+      "severity": "blocker",
+      "scope": "episode_sequence",
+      "when": "identity.collection_status in ['collected','annotated','adjudicated']",
+      "assertions": [
+        "timestamps are nondecreasing when observed",
+        "an executed action has a pre_action or popup observation before it",
+        "an executed action has a post_action or task_check observation after it",
+        "a verified recovery claim includes post_action and task_check evidence",
+        "frames, retries, and relaunch observations remain inside this one episode item"
+      ],
+      "on_fail": "reject_item"
+    },
+    {
+      "id": "ITEM-004",
+      "severity": "blocker",
+      "scope": "raw_normalized_provenance",
+      "when": "always",
+      "assertions": [
+        "platform raw objects are preserved and normalized never replaces raw",
+        "each non-null normalized field has a present-value presence code",
+        "each non-null normalized field has field provenance with source_kind and non-null source_ref",
+        "each null normalized or raw field has an absent-value presence code",
+        "derived normalized values reference raw, visual, protocol, or annotation inputs"
+      ],
+      "on_fail": "reject_item"
+    },
+    {
+      "id": "ITEM-005",
+      "severity": "blocker",
+      "scope": "artifact_integrity",
+      "when": "verification.eligibility.eligible_for_main_metric == true or verification.eligibility.eligible_for_training == true",
+      "assertions": [
+        "every referenced artifact exists or is resolvable under the release access policy",
+        "every evidence-bearing artifact has a non-null sha256",
+        "media_type, capture_channel, and redaction_status are non-null",
+        "privacy_review_status == 'passed' or privacy_review_status == 'not_needed'",
+        "withheld artifacts have a documented derived-label or controlled-access policy"
+      ],
+      "on_fail": "exclude_from_training_and_metrics"
+    },
+    {
+      "id": "ITEM-006",
+      "severity": "blocker",
+      "scope": "platform_raw_channel",
+      "when": "always",
+      "assertions": [
+        "environment.platform in ['android','ios','mobile_web']",
+        "android primary structured observations use android_raw unless collection failure is explicit",
+        "ios primary structured observations use ios_raw unless pending capability or collection failure is explicit",
+        "mobile_web primary structured observations use dom_raw unless collection failure is explicit",
+        "additional raw channels are allowed for WebView or mixed contexts only with source-channel provenance",
+        "inapplicable raw objects are null with presence not_applicable, not empty objects"
+      ],
+      "on_fail": "reject_item"
+    },
+    {
+      "id": "ITEM-007",
+      "severity": "metric_blocker",
+      "scope": "assistive_technology",
+      "when": "verification.metrics.A_VTR != null or verification.eligibility.eligible_for_main_metric == true",
+      "assertions": [
+        "assistive_technology.enabled == true",
+        "environment.platform == 'android' implies assistive_technology.name == 'talkback'",
+        "environment.platform == 'ios' implies assistive_technology.name == 'voiceover'",
+        "environment.platform == 'mobile_web' implies assistive_technology.name in ['talkback','voiceover','other_screen_reader']",
+        "focus observability is machine, fixture, or human and has evidence",
+        "framework hierarchy visibility is not used as VoiceOver or TalkBack focus evidence"
+      ],
+      "on_fail": "set_A_VTR_null_and_exclude_from_A_VTR_cohort"
+    },
+    {
+      "id": "ITEM-008",
+      "severity": "metric_blocker",
+      "scope": "mobile_web_host_context",
+      "when": "environment.platform == 'mobile_web'",
+      "assertions": [
+        "host OS and version are recorded",
+        "device model or browser fixture identity is recorded",
+        "browser or driver identity and version are recorded",
+        "browser_fixture items are assigned to controlled_fixture or synthetic_schema_fixture cohorts",
+        "a target-device A-VTR claim uses a physical device and actual screen reader"
+      ],
+      "on_fail": "exclude_from_mobile_web_main_metric"
+    },
+    {
+      "id": "ITEM-009",
+      "severity": "blocker",
+      "scope": "safety_scope",
+      "when": "scenario.scope_label == 'ordinary_low_risk_popup'",
+      "assertions": [
+        "scenario.unsafe_context_gt == false",
+        "scenario.safety_category_gt == 'ordinary_exit'",
+        "scenario.allowed_action_set_gt contains only close, cancel, later, skip, acknowledge, preregistered verified_back, or preregistered verified_outside_tap semantics",
+        "decision.policy.decision == 'execute' only when owner, actionability, and low-risk policy checks are true"
+      ],
+      "on_fail": "reject_item_and_flag_safety_violation"
+    },
+    {
+      "id": "ITEM-010",
+      "severity": "blocker",
+      "scope": "sensitive_abstention",
+      "when": "scenario.scope_label == 'abstain_only_sensitive_popup' or scenario.unsafe_context_gt == true or scenario.safety_category_gt != 'ordinary_exit'",
+      "assertions": [
+        "decision.policy.decision in ['abstain','handoff','no_action']",
+        "decision.abstention.abstained == true or decision.abstention.handoff_required == true",
+        "no autonomous action attempt is present",
+        "verification.eligibility.eligible_for_main_metric == false for recovery success",
+        "the item may enter only abstention, false-intervention, or harmful-action evaluation"
+      ],
+      "on_fail": "reject_item_and_flag_harmful_action"
+    },
+    {
+      "id": "ITEM-011",
+      "severity": "blocker",
+      "scope": "decision_gate",
+      "when": "decision.method_family == 'ours' and decision.gate.structured_sufficient == true",
+      "assertions": [
+        "top1_score >= threshold_tau",
+        "margin >= margin_delta",
+        "owner_consistent == true",
+        "action_executable == true",
+        "low_risk_policy_satisfied == true",
+        "the source observation is synchronized or within tolerance",
+        "gap_reasons is empty"
+      ],
+      "on_fail": "reject_decision_trace"
+    },
+    {
+      "id": "ITEM-012",
+      "severity": "blocker",
+      "scope": "selective_visual_fallback",
+      "when": "decision.method_family == 'ours' and decision.visual_fallback.used == true",
+      "assertions": [
+        "decision.visual_fallback.trigger_reasons is non-empty",
+        "at least one trigger reason corresponds to a recorded gap or stale/tool state",
+        "visual candidates are mapped to candidates[] with visual_raw and provenance",
+        "visual candidates are rescored and pass the same safety policy",
+        "VLM output alone never declares success or authorizes a sensitive action"
+      ],
+      "on_fail": "reject_decision_trace"
+    },
+    {
+      "id": "ITEM-013",
+      "severity": "blocker",
+      "scope": "action_attempt_budget",
+      "when": "action_attempts length > 0",
+      "assertions": [
+        "attempt_index values are contiguous from 0",
+        "there are no more than two autonomous attempts",
+        "a second attempt matches the one preregistered alternative candidate",
+        "no third autonomous attempt occurs",
+        "after the alternative fails the decision is abstain or handoff"
+      ],
+      "on_fail": "reject_item_and_flag_retry_policy_violation"
+    },
+    {
+      "id": "ITEM-014",
+      "severity": "metric_blocker",
+      "scope": "dismissal_D",
+      "when": "always",
+      "assertions": [
+        "verification.dismissal.D equals tri_and(visual_popup_gone, semantic_popup_gone)",
+        "D == true implies dismissal evidence_uris is non-empty",
+        "coordinate hit, command delivered, screen change, or tree change alone cannot set D true"
+      ],
+      "on_fail": "recompute_D_or_exclude_from_verified_metrics"
+    },
+    {
+      "id": "ITEM-015",
+      "severity": "metric_blocker",
+      "scope": "technical_context_C",
+      "when": "always",
+      "assertions": [
+        "technical_context_recovery.C_tech equals tri_and(owner_context_restored, blocked_target_operable)",
+        "C_tech == true implies evidence_uris is non-empty",
+        "blocked target identity is tied to scenario.blocked_target_gt"
+      ],
+      "on_fail": "recompute_C_tech_or_exclude_from_verified_metrics"
+    },
+    {
+      "id": "ITEM-016",
+      "severity": "metric_blocker",
+      "scope": "accessible_context_C",
+      "when": "always",
+      "assertions": [
+        "C_a11y includes C_tech and focus_restored_to_blocked_target_or_successor",
+        "spoken_context_consistent is an additional conjunct when utterance is observable",
+        "C_a11y is null when focus is not observable unless consented target-user validation exists",
+        "C_a11y == true implies accessible-context evidence_uris is non-empty",
+        "C_tech is never copied into C_a11y"
+      ],
+      "on_fail": "recompute_C_a11y_or_exclude_from_A_VTR"
+    },
+    {
+      "id": "ITEM-017",
+      "severity": "metric_blocker",
+      "scope": "task_T",
+      "when": "always",
+      "assertions": [
+        "verification.task.T equals task_postcondition_satisfied when postcondition_verifiable is true",
+        "T is null when postcondition_verifiable is false",
+        "T == true implies task evidence_uris is non-empty and corresponds to scenario.task_postcondition_gt"
+      ],
+      "on_fail": "recompute_T_or_exclude_from_verified_metrics"
+    },
+    {
+      "id": "ITEM-018",
+      "severity": "metric_blocker",
+      "scope": "recovery_metrics",
+      "when": "always",
+      "assertions": [
+        "verification.metrics.VTR_tech equals tri_and(D, C_tech, T)",
+        "verification.metrics.A_VTR equals tri_and(D, C_a11y, T)",
+        "A_VTR is never inferred from VTR_tech",
+        "an unobservable conjunct produces null rather than a fabricated positive or negative truth"
+      ],
+      "on_fail": "recompute_metrics_and_downgrade_eligibility"
+    },
+    {
+      "id": "ITEM-019",
+      "severity": "blocker",
+      "scope": "annotation",
+      "when": "identity.collection_status == 'adjudicated' or verification.eligibility.eligible_for_main_metric == true",
+      "assertions": [
+        "all ground-truth labels have evidence references",
+        "non-fixture subjective or semantic labels have two independent annotations",
+        "disagreements are adjudicated before main-metric eligibility",
+        "fixture_oracle is used only for controlled fixtures",
+        "target_user labels identify annotator_role target_user without exposing identity"
+      ],
+      "on_fail": "exclude_from_main_metric"
+    },
+    {
+      "id": "ITEM-020",
+      "severity": "blocker",
+      "scope": "record_kind_isolation",
+      "when": "always",
+      "assertions": [
+        "synthetic_schema_fixture implies provenance.source_origin == 'synthetic_schema_fixture' and identity.split == 'schema_fixture'",
+        "paper_reconstruction implies provenance.source_origin == 'paper_artifact' and identity.split in ['unassigned','schema_fixture']",
+        "controlled_fixture implies provenance.source_origin == 'controlled_fixture'",
+        "synthetic_schema_fixture and paper_reconstruction are ineligible for training and every empirical metric",
+        "controlled_fixture and real_app are assigned separate reporting cohorts"
+      ],
+      "on_fail": "reject_item"
+    },
+    {
+      "id": "ITEM-021",
+      "severity": "training_blocker",
+      "scope": "group_identifiers",
+      "when": "identity.split in ['train','validation','test']",
+      "assertions": [
+        "scenario_group_id is non-null",
+        "app_group_id is non-null",
+        "popup_template_group_id is non-null",
+        "sdk_or_cmp_group_id is non-null or explicitly encoded as no_sdk_or_cmp",
+        "os_family_group_id is non-null",
+        "near_duplicate_group_id is non-null or explicitly encoded as unique_after_audit"
+      ],
+      "on_fail": "set_split_unassigned_and_exclude_from_training_and_metrics"
+    },
+    {
+      "id": "ITEM-022",
+      "severity": "metric_blocker",
+      "scope": "user_experience_claim",
+      "when": "verification.eligibility.eligible_for_user_experience_claim == true",
+      "assertions": [
+        "identity.record_kind == 'real_app'",
+        "provenance.source_origin == 'real_device'",
+        "environment.device_kind == 'physical'",
+        "accessible_context_recovery.observability == 'human'",
+        "at least one adjudicated annotation has annotator_role == 'target_user'",
+        "consent, ethics, accessibility, compensation, and privacy evidence is referenced",
+        "verification.metrics.A_VTR is non-null",
+        "automated logs or fixture truth are not used as a substitute"
+      ],
+      "on_fail": "set_eligible_for_user_experience_claim_false"
+    },
+    {
+      "id": "ITEM-023",
+      "severity": "blocker",
+      "scope": "quality_attestation",
+      "when": "always",
+      "assertions": [
+        "item.quality booleans are recomputed by the QA run",
+        "collector-provided true values are not accepted as proof",
+        "review_status accepted is set only after every applicable blocker passes",
+        "review_notes include every warning and metric exclusion"
+      ],
+      "on_fail": "set_quality_review_status_rejected_or_provisional"
+    }
+  ],
+  "metric_derivations": {
+    "D": "tri_and(verification.dismissal.visual_popup_gone, verification.dismissal.semantic_popup_gone)",
+    "C_tech": "tri_and(verification.technical_context_recovery.owner_context_restored, verification.technical_context_recovery.blocked_target_operable)",
+    "C_a11y_when_utterance_observable": "tri_and(C_tech, verification.accessible_context_recovery.focus_restored_to_blocked_target_or_successor, verification.accessible_context_recovery.spoken_context_consistent)",
+    "C_a11y_when_utterance_not_observable_but_focus_observable": "tri_and(C_tech, verification.accessible_context_recovery.focus_restored_to_blocked_target_or_successor)",
+    "C_a11y_when_focus_not_observable": null,
+    "T": "verification.task.task_postcondition_satisfied if verification.task.postcondition_verifiable else null",
+    "VTR_tech": "tri_and(D, C_tech, T)",
+    "A_VTR": "tri_and(D, C_a11y, T)",
+    "weak_proxy_exclusion": [
+      "coordinate_hit",
+      "command_delivered",
+      "screen_changed",
+      "tree_changed",
+      "interface_similarity",
+      "destination_state_changed",
+      "app_stopped",
+      "network_state_changed"
+    ]
+  },
+  "cohort_policy": {
+    "real_app": {
+      "may_train": true,
+      "may_report_empirical_metrics": true,
+      "report_label": "real_app",
+      "pool_with": []
+    },
+    "controlled_fixture": {
+      "may_train": true,
+      "may_report_empirical_metrics": true,
+      "report_label": "controlled_fixture",
+      "pool_with": [],
+      "note": "Use for capability, causal exposure labels, and stress tests; never pool with real-app metrics."
+    },
+    "synthetic_schema_fixture": {
+      "may_train": false,
+      "may_report_empirical_metrics": false,
+      "required_split": "schema_fixture",
+      "pool_with": []
+    },
+    "paper_reconstruction": {
+      "may_train": false,
+      "may_report_empirical_metrics": false,
+      "allowed_splits": [
+        "unassigned",
+        "schema_fixture"
+      ],
+      "pool_with": []
+    }
+  },
+  "sampling_plan": {
+    "statistical_unit": "one_method_specific_popup_episode",
+    "never_independent_units": [
+      "frames",
+      "observations",
+      "candidates",
+      "action_attempts",
+      "relaunches",
+      "derived_artifacts"
+    ],
+    "primary_strata": [
+      "environment.platform",
+      "scenario.popup_owner_gt",
+      "scenario.popup_kind_gt",
+      "scenario.exposure_status_gt",
+      "scenario.action_topology_gt"
+    ],
+    "separate_safety_strata": [
+      "no_popup_visual_lookalike_for_false_intervention",
+      "abstain_only_sensitive_popup",
+      "out_of_scope"
+    ],
+    "paired_design": {
+      "pairing_key": "scenario_group_id + reset_snapshot_id + randomization_seed",
+      "requirements": [
+        "all methods start from the same registered state",
+        "method order is randomized independently of result",
+        "action and model budgets are equalized and frozen",
+        "all paired methods remain in the same split"
+      ]
+    },
+    "N_policy": {
+      "current_N": null,
+      "status": "must_be_frozen_after_capability_pilot_and_power_analysis",
+      "pilot_inputs": [
+        "platform-specific closed-loop observability",
+        "tree-only residual failure",
+        "paired effect variance",
+        "cluster size and intraclass correlation",
+        "harmful-action precision requirement"
+      ],
+      "anti_p_hacking": "Do not add favorable cells or repeats after observing final-test outcomes."
+    },
+    "group_dominance_control": "Before formal collection, preregister a maximum episode count or sampling weight per app, template, SDK/CMP, and OS family; report both raw and cluster-weighted results."
+  },
+  "split_plan": {
+    "assignable_splits": [
+      "train",
+      "validation",
+      "test"
+    ],
+    "leakage_group_fields": [
+      "identity.scenario_group_id",
+      "identity.app_group_id",
+      "identity.popup_template_group_id",
+      "identity.sdk_or_cmp_group_id",
+      "identity.os_family_group_id",
+      "identity.near_duplicate_group_id"
+    ],
+    "atomic_assignment_unit": "connected_component_over_all_non-null_leakage_group_equalities",
+    "algorithm": [
+      "finish near-duplicate audit and group-id assignment before splitting",
+      "build a graph connecting items that share any leakage group value",
+      "compute connected components",
+      "use a frozen seed to assign whole components while balancing primary strata",
+      "freeze train, validation, and test manifests with hashes before outcome-driven tuning",
+      "verify zero group overlap across split manifests"
+    ],
+    "paired_episode_rule": "All method variants, seeds, frames, attempts, relaunches, and artifacts for one scenario group follow the same split.",
+    "test_secrecy": "Test components are unavailable for scorer training, tau/delta calibration, prompt selection, policy tuning, and retry-budget selection.",
+    "pilot_rule": "Pilot items and groups never become formal test items.",
+    "special_records": {
+      "synthetic_schema_fixture": "schema_fixture only",
+      "paper_reconstruction": "unassigned or schema_fixture only"
+    },
+    "os_family_group_definition_gate": "Document OS major/build/OEM/framework-family granularity before splitting; platform-only values such as 'android' or 'ios' are too coarse unless intentionally holding out the entire platform."
+  },
+  "dataset_gates": [
+    {
+      "id": "DATASET-001",
+      "severity": "blocker",
+      "assertion": "No leakage group value appears in more than one of train, validation, and test.",
+      "on_fail": "invalidate_all_split_manifests"
+    },
+    {
+      "id": "DATASET-002",
+      "severity": "blocker",
+      "assertion": "Synthetic schema fixtures and paper reconstructions contribute zero training rows and zero empirical metric rows.",
+      "on_fail": "invalidate_dataset_release"
+    },
+    {
+      "id": "DATASET-003",
+      "severity": "blocker",
+      "assertion": "Real-app and controlled-fixture metrics are computed and published as separate cohorts.",
+      "on_fail": "invalidate_reported_aggregate"
+    },
+    {
+      "id": "DATASET-004",
+      "severity": "metric_blocker",
+      "assertion": "A-VTR coverage and capability-related exclusions are reported by platform and assistive technology; no outcome-based complete-case filtering is hidden.",
+      "on_fail": "withhold_A_VTR_claim"
+    },
+    {
+      "id": "DATASET-005",
+      "severity": "metric_blocker",
+      "assertion": "All primary results include platform, app/template cluster, exposure tier, popup kind, and safety-stratum breakdowns with cluster-aware uncertainty.",
+      "on_fail": "withhold_cross_platform_or_generalization_claim"
+    },
+    {
+      "id": "DATASET-006",
+      "severity": "blocker",
+      "assertion": "Every released artifact has permission, privacy/redaction status, hash, provenance, and an explicit public, withheld, or controlled-access disposition.",
+      "on_fail": "block_release"
+    }
+  ],
+  "known_schema_gaps": [
+    {
+      "id": "GAP-001",
+      "severity": "blocker_before_schema_freeze",
+      "gap": "No episode-wide observability.field_status covers nullable scenario, environment, decision, action, and verification fields.",
+      "temporary_control": "External per-pointer field-status audit required."
+    },
+    {
+      "id": "GAP-002",
+      "severity": "blocker_before_165_field_coverage_claim",
+      "gap": "No explicit crosswalk from all literature and method catalog paths to item.schema.json paths.",
+      "temporary_control": "Report conceptual coverage only; create and validate a crosswalk before freezing."
+    },
+    {
+      "id": "GAP-003",
+      "severity": "blocker_before_ios_or_A_VTR_claim",
+      "gap": "Capability profile and its evidence references are not represented as a dedicated object.",
+      "temporary_control": "Require platform capability evidence through external QA and keep A-VTR ineligible when absent."
+    },
+    {
+      "id": "GAP-004",
+      "severity": "training_and_reproducibility_blocker",
+      "gap": "Raw capture hashes, episode evidence level, complete collector/model registry, retry budget/exhausted, and delivered feedback are only partial or implicit.",
+      "temporary_control": "Require these values in a sidecar QA manifest or keep the affected item ineligible."
+    },
+    {
+      "id": "GAP-005",
+      "severity": "blocker_before_machine_only_validation_claim",
+      "gap": "Cross-field safety, metric formulas, record-kind isolation, and group leakage are not encoded as JSON Schema conditionals.",
+      "temporary_control": "Run every applicable rule in this file with a validator independent of collector-supplied quality flags."
+    }
+  ]
+}

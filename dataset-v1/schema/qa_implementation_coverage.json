@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0-provisional",
+  "qa_contract_version": "0.1.0-provisional",
+  "status": "explicit_conservative_coverage_map",
+  "classification_semantics": {
+    "automated_full": "The current dependency-free validator independently executes every assertion in the gate.",
+    "automated_partial": "The validator executes at least one core assertion, but one or more semantic assertions remain uncovered or trust an upstream value.",
+    "manual_release": "The current validator does not execute the gate's substantive semantic checks; an independent manual or release-time process is required."
+  },
+  "counts": {
+    "item": {
+      "automated_full": 4,
+      "automated_partial": 16,
+      "manual_release": 3,
+      "total": 23
+    },
+    "dataset": {
+      "automated_full": 1,
+      "automated_partial": 1,
+      "manual_release": 4,
+      "total": 6
+    },
+    "all": {
+      "automated_full": 5,
+      "automated_partial": 17,
+      "manual_release": 7,
+      "total": 29
+    }
+  },
+  "automated_full": [
+    "ITEM-001",
+    "ITEM-002",
+    "ITEM-018",
+    "ITEM-021",
+    "DATASET-001"
+  ],
+  "automated_partial": [
+    "ITEM-003",
+    "ITEM-004",
+    "ITEM-006",
+    "ITEM-007",
+    "ITEM-009",
+    "ITEM-010",
+    "ITEM-011",
+    "ITEM-012",
+    "ITEM-013",
+    "ITEM-014",
+    "ITEM-015",
+    "ITEM-016",
+    "ITEM-017",
+    "ITEM-020",
+    "ITEM-022",
+    "ITEM-023",
+    "DATASET-002"
+  ],
+  "manual_release": [
+    "ITEM-005",
+    "ITEM-008",
+    "ITEM-019",
+    "DATASET-003",
+    "DATASET-004",
+    "DATASET-005",
+    "DATASET-006"
+  ],
+  "detail_audit": "../work/qa_coverage_map.md",
+  "result_interpretation": "A validator pass means that the schema shape and the implemented automated assertions passed for the supplied records. It never means that all 29 QA gates passed, that release-time gates passed, or that an empirical dataset exists."
+}

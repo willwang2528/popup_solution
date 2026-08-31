@@ -1,0 +1,2153 @@
+{
+  "schema_version": "0.1.0-provisional",
+  "artifact_kind": "literature_method_field_union",
+  "generated_from": [
+    "popup-solution/data-collection/papers.jsonl",
+    "popup-solution/data-collection/FIELD_UNION.md",
+    "project-local source_evidence referenced by papers.jsonl"
+  ],
+  "scope": "Atomic field union extracted from the 14 PPT-listed methods only. This artifact intentionally excludes fields introduced solely by our proposed method.",
+  "field_contract": {
+    "requiredness": {
+      "required": "Every final dataset item should carry the field.",
+      "recommended": "Collect whenever the relevant channel is observable; absence must be explicit.",
+      "conditional": "Collect only when that method channel/stage is present.",
+      "optional": "Analysis, training, weak-proxy, or ground-truth-only feature."
+    },
+    "method_stage_enum": [
+      "discovery",
+      "action",
+      "verification",
+      "context"
+    ],
+    "evidence_status_enum": [
+      "reported",
+      "inferred_from_local_source",
+      "ppt_only_candidate",
+      "mixed"
+    ],
+    "paper_ids_rule": "Each field separates strict core experimental seeds from schema/method references."
+  },
+  "paper_roles": {
+    "core_experimental_seed": [
+      "abandon_all_hope_2024",
+      "cookieverse_bannerclick",
+      "hotmobile_ad_policy_2018",
+      "poker_sneaky_popups",
+      "tcf_aaid_2026",
+      "vlm_fuzz_2026"
+    ],
+    "schema_method_reference": [
+      "dios_2014",
+      "dynamic_ios_privacy_2021",
+      "freely_given_consent_2022",
+      "ios_applications_testing_2018",
+      "popsweeper_2024",
+      "ssldetecter_2019",
+      "the_ok_is_not_enough_2023",
+      "whispertest_2025"
+    ]
+  },
+  "counts": {
+    "papers_total": 14,
+    "core_experimental_seed": 6,
+    "schema_method_reference": 8,
+    "fields_total": 90,
+    "fields_by_method_stage": {
+      "discovery": 34,
+      "action": 17,
+      "verification": 19,
+      "context": 20
+    },
+    "fields_by_role_support": {
+      "core_only": 41,
+      "reference_only": 33,
+      "mixed_core_and_reference": 16
+    },
+    "fields_by_evidence_status": {
+      "mixed": 12,
+      "reported": 66,
+      "inferred_from_local_source": 10,
+      "ppt_only_candidate": 2
+    }
+  },
+  "fields": [
+    {
+      "field_path": "action.action_semantics",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024",
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": [
+          "freely_given_consent_2022",
+          "ssldetecter_2019",
+          "the_ok_is_not_enough_2023"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "cookieverse_bannerclick",
+          "freely_given_consent_2022",
+          "tcf_aaid_2026",
+          "the_ok_is_not_enough_2023"
+        ],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "来源包括 Accept/Reject/Settings、Close/Cancel 等；语义词表和协议动作需保留来源，不可合成无出处标签。"
+    },
+    {
+      "field_path": "verification.action_trace",
+      "type": "array<object>",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“action_trace”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.actionability",
+      "type": "object | boolean | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "VLM-Fuzz 的层级可交互性字段，不是本文拟训练 gate 的现成标签。"
+    },
+    {
+      "field_path": "context.activity",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ssldetecter_2019"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“activity”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.app_or_package",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024",
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“app_or_package”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.bounds",
+      "type": "object{x1:number,y1:number,x2:number,y2:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups",
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“bounds”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.candidate_bbox",
+      "type": "object{x1:number,y1:number,x2:number,y2:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": [
+          "popsweeper_2024",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups",
+          "popsweeper_2024",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "可能来自 OCR/OmniParser、YOLO 或 YOLO-World；生成模型/通道必须随 item 记录。"
+    },
+    {
+      "field_path": "action.candidate_label",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dynamic_ios_privacy_2021"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "dynamic_ios_privacy_2021"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“candidate_label”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.center",
+      "type": "object{x:number,y:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ios_applications_testing_2018"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "ios_applications_testing_2018"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "2018 iOS 测试工作的 element-to-center 证据来自本地筛选记录，且没有动作后验证。"
+    },
+    {
+      "field_path": "discovery.structured.checkable",
+      "type": "boolean | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“checkable”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.checked_or_toggle",
+      "type": "boolean | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": [
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "tcf_aaid_2026",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "可为 boolean 或平台状态字符串；Android/iOS 原始状态必须保留 provenance。"
+    },
+    {
+      "field_path": "discovery.structured.clickable",
+      "type": "boolean | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“clickable”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.cluster_id",
+      "type": "string | integer | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "freely_given_consent_2022"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "freely_given_consent_2022"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“cluster_id”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.cmp_id",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“cmp_id”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.color_emphasis",
+      "type": "object | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "the_ok_is_not_enough_2023"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "the_ok_is_not_enough_2023"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“color_emphasis”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.command_delivered",
+      "type": "boolean | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "Voice Control/syslog 仅证明命令被识别或送达，不证明目标正确、弹窗消失或任务恢复。"
+    },
+    {
+      "field_path": "action.confidence",
+      "type": "number | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups",
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "可能是语义相似度或视觉检测置信度；模型类型须由对应论文记录解释。"
+    },
+    {
+      "field_path": "context.window_or_page_context",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“context”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.dataset",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“dataset”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.destination_state",
+      "type": "object | string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“destination_state”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.device_context",
+      "type": "object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dios_2014",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "dios_2014",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“device_context”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.device_profile",
+      "type": "object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“device_profile”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.dom_raw",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“dom_raw”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.element_type",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dynamic_ios_privacy_2021"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "dynamic_ios_privacy_2021"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“element_type”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.evidence_uris",
+      "type": "array<string>",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "Cookieverse 的动作前/中/后截图 URI，回证依赖人工验证。"
+    },
+    {
+      "field_path": "action.execution_channel",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“execution_channel”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.exposure_status",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dios_2014"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "dios_2014"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "DiOS 支持标准或显式启用的可访问性暴露状态；不等于 VoiceOver 焦点顺序或朗读内容。"
+    },
+    {
+      "field_path": "context.foreground_owner",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“foreground_owner”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.frame",
+      "type": "object{x:number,y:number,width:number,height:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ios_applications_testing_2018"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "ios_applications_testing_2018"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“frame”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.frame_gate_score",
+      "type": "number | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "PopSweeper 的 RGB histogram 相似度门控，服务于帧筛选而非最终解除回证。"
+    },
+    {
+      "field_path": "context.frame_id",
+      "type": "string | integer | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“frame_id”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.geometry",
+      "type": "object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick",
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": [
+          "ssldetecter_2019"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "cookieverse_bannerclick",
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“geometry”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.hierarchy",
+      "type": "object | array<object> | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick",
+          "hotmobile_ad_policy_2018",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "dios_2014",
+          "ssldetecter_2019"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "cookieverse_bannerclick",
+          "dios_2014",
+          "hotmobile_ad_policy_2018",
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“hierarchy”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.label_first_token",
+      "type": "string | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dynamic_ios_privacy_2021"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "dynamic_ios_privacy_2021"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“label_first_token”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.locale",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“locale”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.method_id",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024"
+        ],
+        "schema_method_reference": [
+          "dios_2014",
+          "freely_given_consent_2022",
+          "the_ok_is_not_enough_2023"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "dios_2014",
+          "freely_given_consent_2022",
+          "the_ok_is_not_enough_2023"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“method_id”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.name_or_text",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024",
+          "cookieverse_bannerclick",
+          "poker_sneaky_popups",
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "dios_2014",
+          "freely_given_consent_2022",
+          "ssldetecter_2019",
+          "the_ok_is_not_enough_2023",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "cookieverse_bannerclick",
+          "dios_2014",
+          "freely_given_consent_2022",
+          "poker_sneaky_popups",
+          "tcf_aaid_2026",
+          "the_ok_is_not_enough_2023",
+          "vlm_fuzz_2026",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "跨平台公共语义别名；Android text/content-description、iOS label/value 与 DOM text 不得视为相同原始字段。"
+    },
+    {
+      "field_path": "verification.network_state",
+      "type": "object | string | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "freely_given_consent_2022"
+        ]
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "freely_given_consent_2022"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "Freely Given Consent 的下游网络状态，不是弹窗特异消失回证。"
+    },
+    {
+      "field_path": "discovery.visual.normalized_tokens",
+      "type": "array<string>",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "freely_given_consent_2022"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "freely_given_consent_2022"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“normalized_tokens”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.ocr_text",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": [
+          "freely_given_consent_2022",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "freely_given_consent_2022",
+          "poker_sneaky_popups",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“ocr_text”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.overlay_ratio",
+      "type": "number | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“overlay_ratio”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.owner",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018",
+          "poker_sneaky_popups",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "dios_2014"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "dios_2014",
+          "hotmobile_ad_policy_2018",
+          "poker_sneaky_popups",
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“owner”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.owner_after",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "Host package/owner 的动作后状态；论文记录明确提示其主要还用于另一项策略检查。"
+    },
+    {
+      "field_path": "verification.owner_context",
+      "type": "object | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "VLM-Fuzz 的 host hierarchy/context 恢复证据；仍未覆盖屏幕阅读器焦点与原任务后置条件。"
+    },
+    {
+      "field_path": "context.page_context",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“page_context”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.persisted_business_choice",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "TCF A(A)ID 的持久业务状态；属于任务后置条件证据，不单独证明 UI 弹窗解除。"
+    },
+    {
+      "field_path": "verification.persisted_dialog_state",
+      "type": "boolean | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "ppt_only_candidate",
+        "reported": [],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "来自 Abandon All Hope 的 PPT-only relaunch 候选字段；原文未在当前项目内复核。"
+    },
+    {
+      "field_path": "context.phase",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024"
+        ],
+        "schema_method_reference": [
+          "freely_given_consent_2022",
+          "the_ok_is_not_enough_2023"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "freely_given_consent_2022",
+          "the_ok_is_not_enough_2023"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“phase”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.platform",
+      "type": "string",
+      "requiredness": "required",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024",
+          "cookieverse_bannerclick",
+          "hotmobile_ad_policy_2018",
+          "poker_sneaky_popups",
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "dios_2014",
+          "dynamic_ios_privacy_2021",
+          "freely_given_consent_2022",
+          "ios_applications_testing_2018",
+          "popsweeper_2024",
+          "ssldetecter_2019",
+          "the_ok_is_not_enough_2023",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "cookieverse_bannerclick",
+          "dios_2014",
+          "freely_given_consent_2022",
+          "hotmobile_ad_policy_2018",
+          "poker_sneaky_popups",
+          "popsweeper_2024",
+          "tcf_aaid_2026",
+          "the_ok_is_not_enough_2023",
+          "vlm_fuzz_2026",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [
+          "dynamic_ios_privacy_2021",
+          "ios_applications_testing_2018",
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "来自每篇记录的 platforms 元数据；仅说明实验平台，不证明该平台具备闭环回证。"
+    },
+    {
+      "field_path": "action.policy_trace",
+      "type": "array<object> | object | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dios_2014"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "dios_2014"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“policy_trace”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.popup_bbox",
+      "type": "object{x1:number,y1:number,x2:number,y2:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“popup_bbox”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.popup_kind",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“popup_kind”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.popup_present_after",
+      "type": "boolean | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "HotMobile 的动作后广告/弹窗状态，可用于解除回证；owner_after 单独不足以构成关闭谓词。"
+    },
+    {
+      "field_path": "discovery.visual.popup_present_gt",
+      "type": "boolean | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "PopSweeper 模拟/训练数据中的真值标签，不是部署时可观测字段。"
+    },
+    {
+      "field_path": "discovery.visual.popup_score",
+      "type": "number | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "PopSweeper 两阶段视觉模型输出，受其模拟数据边界限制。"
+    },
+    {
+      "field_path": "action.protocol_event",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dios_2014"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "dios_2014"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "DiOS 的 alert callback/protocol 事件；属于协议所有权通道，不等于通用可访问性节点。"
+    },
+    {
+      "field_path": "action.rationale_trace",
+      "type": "array<object> | object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "可能来自 MiniLM 目标句、VLM 事件序列或 WhisperTest 行为历史；结构并不完全同构。"
+    },
+    {
+      "field_path": "discovery.structured.raw_element",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ios_applications_testing_2018"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "ios_applications_testing_2018"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "只保留 UIAElement identity/frame 支撑范围；PPT 第 5 页混标图不作为该论文证据。"
+    },
+    {
+      "field_path": "context.recording_id",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“recording_id”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.replay_path",
+      "type": "array<object | string>",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“replay_path”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.role_name_id_bundle",
+      "type": "object{role?:string,name?:string,id?:string} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "HotMobile 记录中的复合原始字段；按 object 保留，不能拆出论文未逐项验证的可用性结论。"
+    },
+    {
+      "field_path": "discovery.structured.role_or_class",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "ssldetecter_2019",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "保留平台原始 role/class/type provenance，不能宣称无损统一。"
+    },
+    {
+      "field_path": "discovery.visual.screenshot_uri",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick",
+          "poker_sneaky_popups",
+          "tcf_aaid_2026",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "freely_given_consent_2022",
+          "popsweeper_2024",
+          "the_ok_is_not_enough_2023",
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick",
+          "freely_given_consent_2022",
+          "poker_sneaky_popups",
+          "popsweeper_2024",
+          "tcf_aaid_2026",
+          "the_ok_is_not_enough_2023",
+          "vlm_fuzz_2026",
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "不同论文中既可能是自动输入，也可能仅用于人工设计分析或人工回证；必须结合 paper_ids 与原记录判断。"
+    },
+    {
+      "field_path": "discovery.visual.size_emphasis",
+      "type": "object | number | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "the_ok_is_not_enough_2023"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "the_ok_is_not_enough_2023"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“size_emphasis”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.source_channel",
+      "type": "string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "abandon_all_hope_2024"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "ppt_only_candidate",
+        "reported": [],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": [
+          "abandon_all_hope_2024"
+        ]
+      },
+      "notes": "仅 Abandon All Hope 的本地 PPT 候选直接使用该词项；当前不能扩写其未核对的原始元素字段。"
+    },
+    {
+      "field_path": "verification.state_signature",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "POKER 的界面签名，用于状态/回放；不是屏幕阅读器语义状态。"
+    },
+    {
+      "field_path": "verification.state_transition",
+      "type": "object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“state_transition”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.step_index",
+      "type": "integer | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dynamic_ios_privacy_2021"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "dynamic_ios_privacy_2021"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“step_index”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.supported_actions",
+      "type": "array<string>",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick",
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“supported_actions”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.tap_coordinate",
+      "type": "object{x:number,y:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ios_applications_testing_2018",
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [
+          "ios_applications_testing_2018"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "由 PopSweeper 视觉中心点或 iOS UIAElement frame/center 得出；坐标命中不等于闭环成功。"
+    },
+    {
+      "field_path": "action.target_candidate",
+      "type": "object | string | null",
+      "requiredness": "recommended",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups",
+          "tcf_aaid_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups",
+          "tcf_aaid_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“target_candidate”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.target_label",
+      "type": "string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "dios_2014"
+        ]
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "dios_2014"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“target_label”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.text_rule_match",
+      "type": "boolean | object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "freely_given_consent_2022",
+          "the_ok_is_not_enough_2023"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "freely_given_consent_2022",
+          "the_ok_is_not_enough_2023"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "文本词表/正则命中，仅支持候选发现或动作选择，不能独立证明意图与安全性。"
+    },
+    {
+      "field_path": "discovery.visual.tfidf_vector",
+      "type": "array<number>",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "freely_given_consent_2022"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "freely_given_consent_2022"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“tfidf_vector”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.timestamp",
+      "type": "string | number | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“timestamp”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.transition_graph",
+      "type": "object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“transition_graph”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.transition_path",
+      "type": "array<object | string>",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“transition_path”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.transition_stack",
+      "type": "array<object | string>",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“transition_stack”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.transition_trace",
+      "type": "array<object | string>",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups",
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups",
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“transition_trace”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.traversal_state",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ssldetecter_2019"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“traversal_state”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.tree_diff",
+      "type": "object | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "VLM-Fuzz 的前后交互元素/host hierarchy 差异；不自动等价于视障用户恢复。"
+    },
+    {
+      "field_path": "action.trigger_action",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "poker_sneaky_popups"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "poker_sneaky_popups"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“trigger_action”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "context.trigger_context",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "hotmobile_ad_policy_2018"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“trigger_context”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.visual.valid_close_target_gt",
+      "type": "boolean | object | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "popsweeper_2024"
+        ]
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "popsweeper_2024"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "PopSweeper 的关闭框真值，用于训练/评估；不是线上动作依据。"
+    },
+    {
+      "field_path": "context.viewport",
+      "type": "object{width:number,height:number} | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“viewport”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "discovery.structured.visible",
+      "type": "boolean | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "cookieverse_bannerclick"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "discovery",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "cookieverse_bannerclick"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“visible”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "action.visual_mark_id",
+      "type": "string | integer | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": []
+      },
+      "method_stage": "action",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“visual_mark_id”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    },
+    {
+      "field_path": "verification.visual_transition_proxy",
+      "type": "object | number | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "whispertest_2025"
+        ]
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "reported",
+        "reported": [
+          "whispertest_2025"
+        ],
+        "inferred_from_local_source": [],
+        "ppt_only_candidate": []
+      },
+      "notes": "WhisperTest 的 OCR Jaccard/平均哈希画面变化代理，只是弱回证，不能解释为弹窗已消失。"
+    },
+    {
+      "field_path": "verification.weak_state_similarity",
+      "type": "object | number | null",
+      "requiredness": "optional",
+      "paper_ids": {
+        "core_experimental_seed": [],
+        "schema_method_reference": [
+          "ssldetecter_2019"
+        ]
+      },
+      "method_stage": "verification",
+      "evidence_status": {
+        "overall": "inferred_from_local_source",
+        "reported": [],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "SSLDetecter 的界面相似度属于弱上下文证据，不能升级为弹窗特异回证。"
+    },
+    {
+      "field_path": "context.window_or_context",
+      "type": "object | string | null",
+      "requiredness": "conditional",
+      "paper_ids": {
+        "core_experimental_seed": [
+          "vlm_fuzz_2026"
+        ],
+        "schema_method_reference": [
+          "ssldetecter_2019"
+        ]
+      },
+      "method_stage": "context",
+      "evidence_status": {
+        "overall": "mixed",
+        "reported": [
+          "vlm_fuzz_2026"
+        ],
+        "inferred_from_local_source": [
+          "ssldetecter_2019"
+        ],
+        "ppt_only_candidate": []
+      },
+      "notes": "按 papers.jsonl 的 normalized_field 词项“window_or_context”保留；字段值必须附平台/通道 provenance，不能从词项外推未报告属性。"
+    }
+  ],
+  "known_absences_from_all_14": [
+    "TalkBack/VoiceOver focus before and after dismissal as a primary evaluation field",
+    "screen-reader utterance before and after dismissal as a primary evaluation field",
+    "accessible original-task recovery equivalent to D AND C_a11y AND T",
+    "a strict iOS detect-action-popup-specific-verification seed"
+  ],
+  "caveats": [
+    "The strict core 6 provide stronger popup-specific closure than the reference 8, but do not all provide accessible task recovery.",
+    "Android, iOS, and mobile-Web raw fields remain platform-specific; normalized aliases are not evidence of lossless equivalence.",
+    "The Abandon All Hope record is PPT-only in the current authorized local corpus.",
+    "PPT slide 5 mixed DiOS hierarchy imagery with a modern XCUITest example; those images are excluded from the 2018 iOS testing paper evidence."
+  ]
+}
