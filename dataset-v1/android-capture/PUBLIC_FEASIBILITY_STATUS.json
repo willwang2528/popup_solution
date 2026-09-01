@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-09-01T09:15:00+08:00",
+  "status": "blocked_no_real_android_captures",
+  "tooling_status": "offline_finalizer_tested",
+  "host_device_tooling": {
+    "adb_available": false,
+    "emulator_available": false,
+    "appium_available": false,
+    "checked_at": "2026-09-01"
+  },
+  "real_capture_count": 0,
+  "source_group_count": 0,
+  "popup_template_family_count": 0,
+  "covered_strata": [],
+  "minimum_gate": {
+    "source_groups": 5,
+    "popup_template_families": 3,
+    "required_strata": [
+      "popup_candidate",
+      "no_popup_candidate",
+      "boundary_candidate"
+    ]
+  },
+  "human_gold_count": 0,
+  "paper_result_eligible": false,
+  "benchmark_release_eligible": false,
+  "next_action": "collect authorized synchronized Android screenshots and AccessibilityService node snapshots on a real device or controlled emulator, then run the fail-closed finalizer and aggregate audit",
+  "non_substitution_rule": "PopSweeper, RICO, synthetic fixtures, UIAutomator dumps, OCR output, and model preannotations cannot satisfy CAP-001."
+}

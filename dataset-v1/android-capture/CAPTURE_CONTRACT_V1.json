@@ -1,0 +1,58 @@
+{
+  "contract_id": "PMAB-ANDROID-CAPTURE-V1",
+  "capture_schema_version": "1.0.0",
+  "scope": "capture feasibility for action-free popup presence and message research",
+  "formal_input_anchor": "synchronized Android screenshot plus AccessibilityService node snapshot",
+  "required_observation_phase": "pre_action",
+  "required_action_attempts": [],
+  "maximum_synchronization_delta_ms": 3000,
+  "stable_state_token_must_match": true,
+  "required_collector_mode": "accessibilityservice_node_snapshot",
+  "required_strata": [
+    "popup_candidate",
+    "no_popup_candidate",
+    "boundary_candidate"
+  ],
+  "minimum_source_groups": 5,
+  "minimum_popup_template_families": 3,
+  "duplicate_policy": {
+    "capture_id": "reject",
+    "screenshot_sha256": "reject",
+    "accessibility_snapshot_sha256": "reject"
+  },
+  "authorization_gate": {
+    "collection_authorized": true,
+    "privacy_review_status": "passed",
+    "allowed_redistribution_status": [
+      "public_media",
+      "adapter_only"
+    ]
+  },
+  "private_inputs": [
+    "capture metadata",
+    "screenshot",
+    "raw accessibility snapshot"
+  ],
+  "public_record_allowlist": [
+    "capture and item identifiers",
+    "group, template-family and intended-stratum identifiers",
+    "collector mode",
+    "authorization status",
+    "synchronization result",
+    "artifact SHA-256 and byte counts",
+    "window and node counts",
+    "negative eligibility assertions"
+  ],
+  "forbidden_at_this_gate": [
+    "dismissal or any other action",
+    "human-gold labels",
+    "method predictions",
+    "raw screenshot or accessibility text in the public record",
+    "paper metrics",
+    "user-experience or recovery claims"
+  ],
+  "success_status": "ready_for_real_g1_pilot",
+  "paper_result_eligible": false,
+  "human_gold_count": 0,
+  "next_gate": "independent_blinded_g1_annotation"
+}

@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "updated_at": "2026-09-01T08:58:32+08:00",
+  "version": "1.2.0",
+  "updated_at": "2026-09-01T09:18:00+08:00",
   "user_public_push_authorization": {
     "authorized": true,
     "scope": [
@@ -33,8 +33,8 @@
         "remote commit readback"
       ],
       "audit_result": {
-        "clean_clone_tests_run": 168,
-        "clean_clone_tests_passed": 166,
+        "clean_clone_tests_run": 177,
+        "clean_clone_tests_passed": 175,
         "tests_skipped_for_host_authorization": 2,
         "secret_scan_matches": 0,
         "private_or_raw_media_paths_staged": 0,
@@ -46,6 +46,9 @@
           "dataset-v1/annotation-pilot/private/",
           "dataset-v1/work/annotation-media/",
           "dataset-v1/empirical-pilot/private/",
+          "dataset-v1/android-capture/incoming/",
+          "dataset-v1/android-capture/private/",
+          "dataset-v1/android-capture/results/",
           "experiments/v1-message/features/private/",
           "experiments/v1-message/ocr/results/",
           "experiments/v1-message/pregold/private/",

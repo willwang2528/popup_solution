@@ -37,6 +37,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 29. [`experiments/v1-message/visual/README.md`](./experiments/v1-message/visual/README.md)：B1/C1/MG-PU 共用的 pre-gold 视觉证据冻结、popup ROI、模型身份和预算门。
 30. [`dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md`](./dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：独立于截图消息盲标的结构—视觉 exposure-gap 仲裁协议。
 31. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
+32. [`dataset-v1/android-capture/README.md`](./dataset-v1/android-capture/README.md)：正式 Android screenshot + AccessibilityService snapshot 的 fail-closed 采集可行性门；当前真实样本仍为 0。
 
 ## v1 闭环
 
@@ -128,3 +129,9 @@ always-on”基线。
 Android capture feasibility 与 G1/G2 pilot；这不是 empirical acceptance。正式数据锚
 仍是同步 Android screenshot + accessibility representation，PopSweeper/RICO 30-item
 bundle 只作协议和工程 pilot。
+
+CAP-001 的离线终结器和聚合 coverage gate 已按测试先行实现：它拒绝动作后数据、
+UIAutomator/RICO 替代物、状态漂移、超过 3000 ms 的不同步输入、空结构、金标／
+预测泄漏、未过隐私审查和重复媒体。当前主机没有 `adb`、Android emulator 或
+Appium，真实 capture 仍为 0，所以状态保持 `blocked_no_real_android_captures`；
+工具通过不等于正式数据可行性已经通过。

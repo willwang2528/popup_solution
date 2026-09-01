@@ -58,6 +58,10 @@
 | `dataset-v1/annotation-pilot/scripts/calculate_agreement.py` | κ、消息一致性、semantic-slot Jaccard 与分歧导出 | tested / no human values yet |
 | `dataset-v1/empirical-pilot/materialize_pending_union.py` | 30 条 pending item 物化为完整 union，保留稳定 pilot join key、186 个 raw pixel bounds 与 pending gap container | tested / private text-bearing output |
 | `dataset-v1/empirical-pilot/PUBLIC_PENDING_UNION_SUMMARY.json` | 30/22/8/186 聚合、hash 与负向声明 | current / unscored |
+| `dataset-v1/android-capture/CAPTURE_CONTRACT_V1.json` | 正式 Android 同步 screenshot + AccessibilityService snapshot 的 fail-closed CAP-001 合同 | current / real capture pending |
+| `dataset-v1/android-capture/finalize_android_capture.py` | 单条终结与 5-group/3-template/3-strata 聚合可行性门 | tested / tooling only |
+| `dataset-v1/android-capture/PUBLIC_FEASIBILITY_STATUS.json` | 不含私有内容的 CAP-001 当前状态 | blocked / real capture count 0 |
+| `dataset-v1/android-capture/tests/test_capture_finalizer.py` | 截图完整性、provenance、同步、稳定性、无动作、来源模式、隐私、泄漏、重复和聚合 coverage 回归 | 9 tests passing |
 | `dataset-v1/scripts/build_crosswalk.py` | 生成 255 条 source-field crosswalk | tested generator |
 | `dataset-v1/scripts/materialize_schema_fixture.py` | 生成 3 条非经验 fixture | tested generator |
 | `dataset-v1/scripts/build_popsweeper_candidate_manifest.py` | 只读 ZIP 元数据并分层抽取来源候选 | tested generator |

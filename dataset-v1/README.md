@@ -55,6 +55,7 @@ identity + provenance + scenario + environment
 - [`scripts/validate_dataset.py`](./scripts/validate_dataset.py)：验证器；
 - [`ANNOTATION_GUIDE.md`](./ANNOTATION_GUIDE.md)：v1 标注协议；
 - [`annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md`](./annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：message gold 后的结构暴露缺口 sidecar；
+- [`android-capture/README.md`](./android-capture/README.md)：正式 Android 同步截图 + AccessibilityService snapshot 的 CAP-001 合同、终结器和零样本公开状态；
 - [`VALIDATION_REPORT_V1_MESSAGE.md`](./VALIDATION_REPORT_V1_MESSAGE.md)：当前验证报告。
 
 ## 运行

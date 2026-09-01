@@ -12,6 +12,9 @@ dataset-v1/work/annotation-media/
 dataset-v1/work/model-preannotation-*.jsonl
 dataset-v1/annotation-pilot/private/
 dataset-v1/empirical-pilot/private/
+dataset-v1/android-capture/incoming/
+dataset-v1/android-capture/private/
+dataset-v1/android-capture/results/
 experiments/v1-message/features/private/
 experiments/v1-message/ocr/results/
 experiments/v1-message/ocr/.build/

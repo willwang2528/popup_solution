@@ -1,6 +1,6 @@
 # Experiment Tracker：PMAB + MG-PU
 
-> Updated：2026-09-01 08:50 +08:00
+> Updated：2026-09-01 09:15 +08:00
 >
 > Status vocabulary：`DONE` / `RUNNING` / `TODO` / `BLOCKED_EXTERNAL` / `INVALID`
 >
@@ -27,7 +27,8 @@
 | LIT-EXPAND | M0 | residual direct-neighbor queue | CHI 2026 + A11yScan + TIMESTUMP | source review | 13 candidate fields | SHOULD | DONE | candidate-only expansion queue；frozen 255 union unchanged pending adjudicated inclusion |
 | REVIEW-001 | M0 | independent design review | Claude Sonnet 5, 3 rounds | proposal/protocol/plan | fatal flaws=0; readiness=3.5/5 | MUST | DONE | PROCEED_WITH_CAUTION；review acceptance is not empirical acceptance；complete local trace saved |
 | DAT-002 | M1 | pilot union item materialization | union item builder | fixed 30-item pilot | 30 schema-valid pending observations | MUST | DONE | 255-field union materialized privately；22 structure / 8 missing / 186 nodes；all gold null and 0 metric eligible |
-| CAP-001 | M1 | formal Android capture feasibility | synchronized screenshot + accessibility representation | ≥5 groups / ≥3 template families | sync/provenance/license/privacy gate | MUST | TODO | formal PMAB anchor；PopSweeper/RICO cannot substitute |
+| INFRA-CAPTURE | M1 | Android capture finalization gate | fail-closed offline finalizer + coverage audit | synthetic test bundles only | 8 finalizer tests；private/raw-text isolation；5-group/3-template/3-strata contract | MUST | DONE | tooling only；current host has no adb/emulator/appium；paper_result_eligible=false |
+| CAP-001 | M1 | formal Android capture feasibility | synchronized screenshot + AccessibilityService representation | ≥5 groups / ≥3 template families / 3 strata | sync/provenance/license/privacy gate | MUST | TODO | tooling_ready_no_device；real capture=0；PopSweeper/RICO/UIAutomator cannot substitute |
 | ANN-001 | M1 | G1 annotation pilot | 2 human screenshot-only annotators | real synchronized Android pilot | κ/message/slot gates | MUST | TODO | starts only after CAP-001；current PopSweeper 30 is protocol pilot, not formal benchmark gold |
 | ANN-002 | M1 | adjudication | third reviewer | disputed items | final gold + ambiguity | MUST | TODO | depends ANN-001 |
 | ANN-003 | M1 | G2 structure-sufficiency audit | 2 method-blind auditors + third adjudicator | frozen G1 + raw structure | gap agreement / cannot_resolve | MUST | TODO | G2 cannot rewrite G1；substantive G1 error triggers versioned correction and full G2 restart |
@@ -50,5 +51,5 @@
 | GEN-003 | M5 | iOS evaluation | best systems | iOS test | VPMA breakdown | SHOULD | BLOCKED_EXTERNAL | depends GEN-002 |
 | QA-001 | M6 | dataset validator | schema + QA | release | 0 critical errors | MUST | TODO | empirical items only |
 | QA-002 | M6 | license/privacy audit | source ledger + PUBLIC_RELEASE_GATE | release | all items releasable/adapter-only | MUST | BLOCKED_EXTERNAL | docs/code may be pushed after clean-clone audit；empirical dataset blocked by 0 human gold, per-item redistribution/privacy review, and unresolved EXIF item |
-| QA-003 | M6 | reproduction | clean checkout | docs/code release | 168 run / 166 pass / 2 host-authorized skips | MUST | DONE | no private media、large files、secret scan matches or hidden cache staged |
+| QA-003 | M6 | reproduction | isolated public-repository checkout | docs/code release | 176 run / 174 pass / 2 host-authorized skips | MUST | DONE | new capture gate passes in publish checkout；no private media or large files copied；staged audit and remote readback remain PUB-001 checks |
 | PUB-001 | M6 | public research-material release | GitHub | docs/code/protocol | remote SHA/readback | MUST | DONE | authorized public push；empirical dataset remains separately blocked by QA-002 |
