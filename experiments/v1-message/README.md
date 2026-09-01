@@ -33,12 +33,14 @@ CLI 的 `--method` 支持：
 本地 macOS Vision OCR adapter 见 [`ocr/README.md`](./ocr/README.md)。其正式 30 图运行只证明 OCR 管线可执行：全屏 OCR 不能判断 popup presence，因此所有条目均安全弃答；逐图派生文本因隐私风险保持私有，公开仓库只保留无文本聚合摘要。
 
 [`visual/`](./visual/) 定义 B1、C1 与 MG-PU 可共用的 pre-gold visual bank
-契约。当前没有可复现 presence detector、合法 popup ROI 和完整视觉模型身份，
-所以协议状态为 blocked。finalizer 还要求 ready/formal-ready 状态、预冻结
+契约。当前固定参数 Apple Vision 强矩形提议器＋ROI OCR 已生成 30 项冻结启发式 bank：
+4 judged、26 abstain；同一固定主机的两次 replay，其 presence 决定、ROI 和消息一致。
+这不证明跨 OS／设备模型身份可复现，也不把未过 gold 的方法称为 canonical 或 validated
+baseline。finalizer 要求 ready/formal-ready 配置状态、预冻结
 item→截图 hash commitment、逐项图片 hash、policy ID、模型配置以及 judged
-request/response hash 全部一致；缺任一项即整批拒绝。现有 Model-B 预标注不能冒充
+request/response hash 全部一致；缺任一项即整批拒绝。现有 Model-B 预标注仍不能冒充
 该 bank。C1-AO 与 C1-BM 分别表示 always-on accuracy-cost control 和总调用预算匹配
-control。
+control；B2 PopSweeper exact 仍为 NO-GO。
 
 post-gold structure–visual gap sidecar 也不接收孤立占位 hash：finalizer 会重算
 完整 message-gold batch、私有 structured-feature bundle、每项 A/B 独立 audit
@@ -50,14 +52,20 @@ no-popup/complete/missing 等逻辑。当前没有任何真人 gap audit 行，�
 
 真实 pilot 的结构化输入由 [`features/`](./features/) 生成。原始本地 manifest 中的来源目录标签、source ID 和 archive path 均可能泄漏 `ads/no_ads`，因此 feature adapter 只投影 `pilot_item_id`，按固定本地目录读取 RICO 结构。逐节点文本、resource ID 和 bounds 写入 Git 忽略的私有 JSONL；公开文件只保留 30 items、22 available、8 missing、186 nodes 及 bundle hash。
 
-[`pregold/`](./pregold/) 在人工 A/B 标注和 adjudication 之前冻结 A1 structure-only、A2 The OK 与 MG-PU 的逐项输出。正式运行只接收私有结构特征和经隔离 adapter 转换的模型视觉候选，不读取 raw pilot manifest，不生成 metrics。当前聚合结果为：
+[`pregold/`](./pregold/) 在人工 A/B 标注和 adjudication 之前冻结 A1 structure-only、A2 The OK、C1-AO、C1-BM 与 MG-PU 的逐项输出。正式运行只接收私有结构特征和经完整 bank 重算投影的 visual prediction，不读取来源标签，不生成 metrics。当前 heuristic-bank 聚合结果为：
 
 - structure-only：15 judged、15 abstain、0 visual call；
 - The OK text rule：10 judged（均为 rule no-match）、20 raw-text-missing abstain、0 visual call；
-- MG-PU candidate：30 judged，其中 2 条使用显式 popup scope 内结构，28 条调用冻结视觉候选；
+- C1-AO：6 judged、24 abstain、30 visual calls；
+- C1-BM：6 judged、24 abstain、28 visual calls；K 取 MG-PU 冻结调用数并按固定 hash 选择；
+- MG-PU：6 judged、24 abstain，其中 2 条使用显式 popup scope 内结构；视觉 adapter 被调用 28 次，4 次形成视觉正判断，24 次由 adapter 弃答；
 - 所有结果均为 `no_action`、`human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
 
-这里的 Model-B 输出只用于证明预金标工作流可冻结；因为精确模型身份与执行复现信息不完整，它明确不是正式论文 baseline，也不能支持性能比较。
+旧 Model-B 输出只保留为工作流历史。新的 visual projection 已绑定 protocol、图片
+manifest、完整私有 bank、配置与引擎哈希，工程上只作为冻结的固定阈值启发式
+adaptation；但没有真人 gold，因此仍不能支持 accuracy 或性能比较。C1-BM 只匹配
+视觉调用成本，不匹配 item 集合或难度；未来比较必须同时披露它与 MG-PU 的视觉
+检查集合重叠。
 
 30-item pending-union 现保留稳定的 `identity.pilot_item_id`，因此最终人工
 gold、私有结构候选和预金标预测可以在不依赖显示顺序的前提下连接。

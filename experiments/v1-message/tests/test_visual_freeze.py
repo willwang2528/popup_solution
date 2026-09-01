@@ -87,7 +87,8 @@ def protocol(pilot_ids: list[str]) -> dict:
             "timeout_seconds": 30,
             "max_retries": 0,
             "environment_sha256": "7" * 64,
-            "model_identity_reproducible": True,
+            "repeat_execution_byte_identical_on_fixed_host": True,
+            "cross_os_or_device_model_identity_reproducible": "not_verified",
             "formal_ready": True,
         },
         "budget": {

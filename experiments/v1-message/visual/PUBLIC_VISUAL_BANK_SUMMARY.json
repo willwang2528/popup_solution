@@ -1,0 +1,57 @@
+{
+  "contract_version": "popup-visual-evidence-freeze-v1.0",
+  "status": "frozen_private_visual_evidence_bank",
+  "scope": "popup_message_judgment_v1",
+  "adapter_version": "pmj-vision-rectangle-roi-ocr/1.0.1",
+  "item_count": 30,
+  "judged_count": 4,
+  "abstain_count": 26,
+  "popup_roi_count": 4,
+  "abstain_reason_counts": {
+    "no_strong_popup_rectangle": 26
+  },
+  "input_image_manifest_sha256": "1ad93e1c0d55bca168d1cfd0078586d0ae75df9b54bcc96a46371953254c4f9a",
+  "item_set_sha256": "89907b2f20a4171b20e44ea0cd105428d996b6a24487a97008d8fec9b1a22471",
+  "protocol_sha256": "d2f5ffa10281453227d55c882ae97f5cf6261c38be0b44d7e4fdf3708887de61",
+  "visual_engine_config_sha256": "ee154bd36b6482061c3d7d65a542075c6a00c8fa348dfcb7342e3a768a097a5e",
+  "visual_bank_sha256": "fccc3b5fe924df0710492e9fa3b5820ee2ac68e2d59f91b80ebd4343c5a9baf3",
+  "implementation_sha256": "06875940ea0a7a595c13e761e8c914a7f4292a015abfd686c9c641abc057853c",
+  "swift_source_sha256": "021ec734d360d86fa99acf20a64536ecbe2cc6da906e09cc30166c60368b9a92",
+  "executed_engine_sha256": "d5945366310b3c3522589ffa98889e8822ae485d05da838604ec2362ff474af0",
+  "environment_sha256": "b7c6b13dda6adf186af50a2b57f29b239eb080b915eca2b692e2008205eb968c",
+  "replay_verification": {
+    "run_count": 2,
+    "protocol_equal": true,
+    "decision_roi_message_equal": true,
+    "excluded_runtime_fields": [
+      "latency_ms",
+      "response_sha256"
+    ]
+  },
+  "presence_semantics": {
+    "positive_requires_strong_rectangle_roi_and_roi_text": true,
+    "missing_rectangle_action": "abstain",
+    "no_popup_is_never_inferred_from_missing_rectangle": true
+  },
+  "method_identity": {
+    "name": "Vision strong-rectangle ROI OCR adaptation",
+    "fixed_threshold_heuristic_adaptation": true,
+    "not_popsweeper_exact": true,
+    "not_a_vlm": true,
+    "repeat_execution_byte_identical_on_fixed_host": true,
+    "cross_os_or_device_model_identity_reproducible": "not_verified"
+  },
+  "action_policy": "no_action",
+  "frozen_before_human_gold": true,
+  "gold_blind": true,
+  "human_gold_used": false,
+  "privacy_status": "private_rows_withheld_public_summary_only",
+  "scored": false,
+  "paper_result_eligible": false,
+  "claims": {
+    "empirical_performance": false,
+    "method_superiority": false,
+    "recovery_or_dismissal": false,
+    "user_experience_improvement": false
+  }
+}

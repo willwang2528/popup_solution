@@ -24,7 +24,14 @@ from popup_eval.the_ok_baseline import (  # noqa: E402 - direct-script import pa
 from popup_eval.metrics import normalize_text  # noqa: E402 - shared A1 contract
 
 CONTRACT_VERSION = "popup-message-pregold-v1.0"
-METHOD_IDS = ("structured-only-v1", "mg-pu-gated-union-v1", "the-ok-text-rule")
+METHOD_IDS = (
+    "structured-only-v1",
+    "the-ok-text-rule",
+    "c1-always-on-fusion-v1",
+    "c1-budget-matched-fusion-v1",
+    "mg-pu-gated-union-v1",
+)
+C1_BUDGET_MATCH_SEED = 17
 ITEM_ID_PATTERN = re.compile(r"PMJ-PILOT-\d{3}")
 GAP_REASONS = {
     "ambiguous",
@@ -446,6 +453,70 @@ def _structured_prediction(item_id: str, feature: dict[str, Any]) -> tuple[dict[
     )
 
 
+def _fusion_prediction(
+    item_id: str,
+    method_id: str,
+    scoped_message: str | None,
+    gaps: list[str],
+    visual: dict[str, Any] | None,
+    *,
+    visual_called: bool,
+) -> dict[str, Any]:
+    if visual_called and visual is not None and visual["status"] == "judged":
+        return _prediction(
+            item_id,
+            method_id,
+            status="judged",
+            popup_present=visual["popup_present_pred"],
+            message=visual["message_text_pred"],
+            facts=visual["critical_facts_pred"],
+            confidence=visual["confidence"],
+            visual_called=True,
+            route_reason="visual_frozen_prediction",
+        )
+    if not gaps and scoped_message is not None:
+        return _prediction(
+            item_id,
+            method_id,
+            status="judged",
+            popup_present=True,
+            message=scoped_message,
+            confidence=0.65,
+            visual_called=visual_called,
+            route_reason=(
+                "visual_abstain_structured_fallback"
+                if visual_called
+                else "budget_not_selected_structured_sufficient"
+            ),
+        )
+    return _prediction(
+        item_id,
+        method_id,
+        status="abstain",
+        popup_present=None,
+        message=None,
+        confidence=None,
+        visual_called=visual_called,
+        route_reason=(
+            "visual_evidence_missing_or_unstable"
+            if visual_called
+            else "budget_not_selected_structure_insufficient"
+        ),
+    )
+
+
+def _c1_budget_selection(item_ids: list[str], k: int) -> set[str]:
+    if not 0 <= k <= len(item_ids):
+        raise ContractError("C1 budget-match K is outside the item set")
+    ordered = sorted(
+        item_ids,
+        key=lambda item_id: hashlib.sha256(
+            f"c1-budget-matched-fusion-v1|{C1_BUDGET_MATCH_SEED}|{item_id}".encode()
+        ).hexdigest(),
+    )
+    return set(ordered[:k])
+
+
 def freeze_predictions(
     features_by_id: dict[str, dict[str, Any]],
     visual_by_id: dict[str, dict[str, Any]],
@@ -453,6 +524,7 @@ def freeze_predictions(
     structured_predictions: list[dict[str, Any]] = []
     gated_predictions: list[dict[str, Any]] = []
     the_ok_predictions: list[dict[str, Any]] = []
+    contexts: dict[str, tuple[str | None, list[str], dict[str, Any] | None]] = {}
     the_ok = TheOkTextBaseline()
     for item_id in sorted(features_by_id):
         feature = features_by_id[item_id]
@@ -472,6 +544,8 @@ def freeze_predictions(
             )
         )
         scoped_message, gaps = _popup_scoped_message(feature)
+        visual = visual_by_id.get(item_id)
+        contexts[item_id] = (scoped_message, gaps, visual)
         if not gaps:
             gated_predictions.append(
                 _prediction(
@@ -486,7 +560,6 @@ def freeze_predictions(
                 )
             )
             continue
-        visual = visual_by_id.get(item_id)
         if visual is not None and visual["status"] == "judged":
             gated_predictions.append(
                 _prediction(
@@ -514,7 +587,39 @@ def freeze_predictions(
                     route_reason="visual_evidence_missing_or_unstable",
                 )
             )
-    return structured_predictions + the_ok_predictions + gated_predictions
+    mg_pu_visual_calls = sum(row["visual_called"] for row in gated_predictions)
+    selected = _c1_budget_selection(sorted(features_by_id), mg_pu_visual_calls)
+    always_on_predictions: list[dict[str, Any]] = []
+    budget_matched_predictions: list[dict[str, Any]] = []
+    for item_id in sorted(features_by_id):
+        scoped_message, gaps, visual = contexts[item_id]
+        always_on_predictions.append(
+            _fusion_prediction(
+                item_id,
+                "c1-always-on-fusion-v1",
+                scoped_message,
+                gaps,
+                visual,
+                visual_called=True,
+            )
+        )
+        budget_matched_predictions.append(
+            _fusion_prediction(
+                item_id,
+                "c1-budget-matched-fusion-v1",
+                scoped_message,
+                gaps,
+                visual,
+                visual_called=item_id in selected,
+            )
+        )
+    return (
+        structured_predictions
+        + the_ok_predictions
+        + always_on_predictions
+        + budget_matched_predictions
+        + gated_predictions
+    )
 
 
 def _method_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -528,6 +633,16 @@ def _method_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "predictions_sha256": _sha256(payload),
         "route_counts": dict(sorted(route_counts.items())),
         "visual_call_count": sum(bool(row["visual_called"]) for row in rows),
+        "visual_adapter_invocation_count": sum(
+            bool(row["visual_called"]) for row in rows
+        ),
+        "visual_informed_positive_judgment_count": sum(
+            row["visual_called"]
+            and row["status"] == "judged"
+            and row["route_reason"] == "visual_frozen_prediction"
+            and row["popup_present_pred"] is True
+            for row in rows
+        ),
     }
 
 
@@ -543,21 +658,51 @@ def build_public_summary(
         )
         for method_id in METHOD_IDS
     }
+    budget_rows = [
+        row for row in predictions if row["method_id"] == "c1-budget-matched-fusion-v1"
+    ]
+    selected_ids = sorted(
+        row["pilot_item_id"] for row in budget_rows if row["visual_called"]
+    )
+    if methods["c1-budget-matched-fusion-v1"]["visual_call_count"] != methods[
+        "mg-pu-gated-union-v1"
+    ]["visual_call_count"]:
+        raise ContractError("C1-BM visual-call count does not match MG-PU K")
     model_workflow_candidate = bool(visual_rows) and all(
         row.get("evidence_kind") == "model_workflow_visual_candidate"
-        and row.get("formal_baseline") is False
-        and row.get("model_identity_reproducible") is False
+        and row.get("fixed_threshold_heuristic_adaptation") is False
+        and row.get("repeat_execution_byte_identical_on_fixed_host") is False
+        and row.get("cross_os_or_device_model_identity_reproducible")
+        == "not_verified"
         for row in visual_rows
     )
-    visual_role = (
-        "model-workflow-visual-candidate"
-        if model_workflow_candidate
-        else "visual-evidence-without-model-reproducibility-attestation"
-        if visual_rows
-        else "no-visual-evidence-provided"
+    frozen_heuristic_bank = bool(visual_rows) and all(
+        row.get("evidence_kind") == "frozen_private_visual_evidence_bank"
+        and row.get("fixed_threshold_heuristic_adaptation") is True
+        and row.get("repeat_execution_byte_identical_on_fixed_host") is True
+        and row.get("cross_os_or_device_model_identity_reproducible")
+        == "not_verified"
+        and row.get("human_gold_used") is False
+        and row.get("scored") is False
+        and row.get("paper_result_eligible") is False
+        for row in visual_rows
     )
+    if frozen_heuristic_bank:
+        visual_role = "frozen-private-fixed-threshold-heuristic-evidence-bank"
+    elif model_workflow_candidate:
+        visual_role = "model-workflow-visual-candidate"
+    elif visual_rows:
+        visual_role = "visual-evidence-without-model-reproducibility-attestation"
+    else:
+        visual_role = "no-visual-evidence-provided"
     feature_builder = Path(__file__).resolve().parent.parent / "features" / "build_pilot_features.py"
-    visual_adapter = Path(__file__).resolve().parent / "adapt_model_preannotation.py"
+    visual_adapter = (
+        Path(__file__).resolve().parent.parent
+        / "visual"
+        / "export_pregold_visual_bank.py"
+        if frozen_heuristic_bank
+        else Path(__file__).resolve().parent / "adapt_model_preannotation.py"
+    )
     the_ok_implementation = EXPERIMENT_ROOT / "popup_eval" / "the_ok_baseline.py"
     if (
         not feature_builder.is_file()
@@ -575,6 +720,20 @@ def build_public_summary(
         "input_item_count": len(feature_rows),
         "item_identity_sha256": _sha256(("\n".join(feature_ids) + "\n").encode()),
         "methods": methods,
+        "c1_budget_match": {
+            "selection_policy": "fixed_hash_top_k",
+            "matching_scope": "cost_only_not_item_set_or_difficulty",
+            "accuracy_comparison_caveat": (
+                "cost-matched only; report inspected-item-set overlap before any "
+                "accuracy comparison"
+            ),
+            "seed": C1_BUDGET_MATCH_SEED,
+            "k_source": "mg_pu_visual_call_count",
+            "k": len(selected_ids),
+            "selected_item_set_sha256": _sha256(
+                ("\n".join(selected_ids) + "\n").encode()
+            ),
+        },
         "paper_result_eligible": False,
         "predictions_sha256": _sha256(_canonical_jsonl(predictions)),
         "scored": False,
@@ -583,9 +742,14 @@ def build_public_summary(
         "visual_evidence_sha256": (
             _sha256(_canonical_jsonl(visual_rows)) if visual_rows else None
         ),
-        "visual_evidence_is_formal_baseline": False,
+        "visual_evidence_is_fixed_threshold_heuristic_adaptation": (
+            frozen_heuristic_bank
+        ),
         "visual_evidence_role": visual_role,
-        "visual_model_identity_reproducible": False,
+        "visual_repeat_execution_byte_identical_on_fixed_host": (
+            frozen_heuristic_bank
+        ),
+        "visual_cross_os_or_device_model_identity_reproducible": "not_verified",
         "visual_adapter_implementation_sha256": _sha256(visual_adapter.read_bytes()),
     }
 

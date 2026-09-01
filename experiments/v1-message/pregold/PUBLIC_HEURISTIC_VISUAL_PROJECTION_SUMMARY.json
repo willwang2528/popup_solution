@@ -1,0 +1,23 @@
+{
+  "abstain_count": 26,
+  "cross_os_or_device_model_identity_reproducible": "not_verified",
+  "fixed_threshold_heuristic_adaptation": true,
+  "human_gold_used": false,
+  "item_count": 30,
+  "judged_count": 4,
+  "other_known_manifest_fields_ignored": true,
+  "paper_result_eligible": false,
+  "projected_predictions_sha256": "dd8de190da7117979574b63dfee802eb5b98b21d1804dfd9f12c0bf300acd70e",
+  "projection_version": "pmj-heuristic-visual-pregold-projection/1.0.1",
+  "protocol_sha256": "d2f5ffa10281453227d55c882ae97f5cf6261c38be0b44d7e4fdf3708887de61",
+  "repeat_execution_byte_identical_on_fixed_host": true,
+  "scored": false,
+  "source_manifest_fields_used": [
+    "pilot_item_id",
+    "artifacts[].role",
+    "artifacts[].sha256"
+  ],
+  "status": "frozen_heuristic_visual_pregold_projection",
+  "unknown_manifest_fields_fail_closed": true,
+  "visual_bank_sha256": "fccc3b5fe924df0710492e9fa3b5820ee2ac68e2d59f91b80ebd4343c5a9baf3"
+}

@@ -232,7 +232,7 @@ class FreezePredictionsCliTest(unittest.TestCase):
             predictions = read_jsonl(private_output)
             self.assertEqual(stat.S_IMODE(private_output.parent.stat().st_mode), 0o700)
             self.assertEqual(stat.S_IMODE(private_output.stat().st_mode), 0o600)
-            self.assertEqual(len(predictions), 9)
+            self.assertEqual(len(predictions), 15)
             by_key = {(row["method_id"], row["pilot_item_id"]): row for row in predictions}
             self.assertEqual(
                 by_key[("structured-only-v1", "PMJ-PILOT-001")]["message_text_pred"],
@@ -268,6 +268,8 @@ class FreezePredictionsCliTest(unittest.TestCase):
                 set(summary["methods"]),
                 {
                     "structured-only-v1",
+                    "c1-always-on-fusion-v1",
+                    "c1-budget-matched-fusion-v1",
                     "mg-pu-gated-union-v1",
                     "the-ok-text-rule",
                 },
@@ -289,8 +291,20 @@ class FreezePredictionsCliTest(unittest.TestCase):
                 summary.get("visual_adapter_implementation_sha256"),
                 hashlib.sha256((PREGOLD_DIR / "adapt_model_preannotation.py").read_bytes()).hexdigest(),
             )
-            self.assertEqual(summary.get("visual_evidence_is_formal_baseline"), False)
-            self.assertEqual(summary.get("visual_model_identity_reproducible"), False)
+            self.assertEqual(
+                summary.get("visual_evidence_is_fixed_threshold_heuristic_adaptation"),
+                False,
+            )
+            self.assertEqual(
+                summary.get("visual_repeat_execution_byte_identical_on_fixed_host"),
+                False,
+            )
+            self.assertEqual(
+                summary.get(
+                    "visual_cross_os_or_device_model_identity_reproducible"
+                ),
+                "not_verified",
+            )
             self.assertEqual(
                 summary.get("visual_evidence_role"),
                 "visual-evidence-without-model-reproducibility-attestation",
@@ -362,6 +376,148 @@ class FreezePredictionsCliTest(unittest.TestCase):
             self.assertFalse(
                 rows[("mg-pu-gated-union-v1", "PMJ-PILOT-002")]["visual_called"]
             )
+
+    def test_frozen_heuristic_bank_reports_only_fixed_host_repeatability(self) -> None:
+        """Catches an OS-bound heuristic being mislabeled as a reproducible model."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            features = root / "features.jsonl"
+            visual = root / "visual.jsonl"
+            write_jsonl(
+                features,
+                [structured_feature("PMJ-PILOT-001", text=None)],
+            )
+            write_jsonl(
+                visual,
+                [
+                    {
+                        "action_policy": "no_action",
+                        "confidence": 0.91,
+                        "critical_facts_pred": [],
+                        "evidence_kind": "frozen_private_visual_evidence_bank",
+                        "fixed_threshold_heuristic_adaptation": True,
+                        "human_gold_used": False,
+                        "message_text_pred": "Visible offer",
+                        "model_config_sha256": "a" * 64,
+                        "repeat_execution_byte_identical_on_fixed_host": True,
+                        "cross_os_or_device_model_identity_reproducible": "not_verified",
+                        "paper_result_eligible": False,
+                        "pilot_item_id": "PMJ-PILOT-001",
+                        "popup_present_pred": True,
+                        "projection_version": "pmj-heuristic-visual-pregold-projection/1.0.1",
+                        "protocol_sha256": "b" * 64,
+                        "scored": False,
+                        "status": "judged",
+                        "visual_bank_sha256": "c" * 64,
+                    }
+                ],
+            )
+
+            result, private_output, public_summary = self.run_cli(
+                root,
+                features=features,
+                visual=visual,
+                expected_count=1,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            summary = json.loads(public_summary.read_text(encoding="utf-8"))
+            self.assertTrue(
+                summary["visual_evidence_is_fixed_threshold_heuristic_adaptation"]
+            )
+            self.assertTrue(
+                summary["visual_repeat_execution_byte_identical_on_fixed_host"]
+            )
+            self.assertEqual(
+                summary["visual_cross_os_or_device_model_identity_reproducible"],
+                "not_verified",
+            )
+            self.assertEqual(
+                summary["visual_evidence_role"],
+                "frozen-private-fixed-threshold-heuristic-evidence-bank",
+            )
+            self.assertEqual(
+                summary["visual_adapter_implementation_sha256"],
+                hashlib.sha256(
+                    (
+                        PREGOLD_DIR.parent
+                        / "visual"
+                        / "export_pregold_visual_bank.py"
+                    ).read_bytes()
+                ).hexdigest(),
+            )
+            rows = read_jsonl(private_output)
+            gated = next(row for row in rows if row["method_id"] == "mg-pu-gated-union-v1")
+            self.assertEqual(gated["message_text_pred"], "Visible offer")
+            self.assertTrue(gated["visual_called"])
+
+    def test_c1_always_on_and_budget_matched_have_distinct_frozen_call_contracts(self) -> None:
+        """Catches C1-AO being mislabeled as equal-budget or C1-BM exceeding MG-PU K."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            features = root / "features.jsonl"
+            visual = root / "visual.jsonl"
+            write_jsonl(
+                features,
+                [
+                    structured_feature("PMJ-PILOT-001", text="Dialog one"),
+                    structured_feature("PMJ-PILOT-002", text=None),
+                    structured_feature(
+                        "PMJ-PILOT-003", text="Host only", ancestors=[]
+                    ),
+                ],
+            )
+            write_jsonl(
+                visual,
+                [
+                    {
+                        "pilot_item_id": f"PMJ-PILOT-{index:03d}",
+                        "status": "judged" if index == 2 else "abstain",
+                        "popup_present_pred": True if index == 2 else None,
+                        "message_text_pred": "Visual two" if index == 2 else None,
+                        "critical_facts_pred": [],
+                        "confidence": 0.9 if index == 2 else None,
+                    }
+                    for index in range(1, 4)
+                ],
+            )
+
+            result, private_output, public_summary = self.run_cli(
+                root,
+                features=features,
+                visual=visual,
+                expected_count=3,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            summary = json.loads(public_summary.read_text(encoding="utf-8"))
+            self.assertEqual(summary["methods"]["c1-always-on-fusion-v1"]["visual_call_count"], 3)
+            self.assertEqual(summary["methods"]["mg-pu-gated-union-v1"]["visual_call_count"], 2)
+            self.assertEqual(summary["methods"]["c1-budget-matched-fusion-v1"]["visual_call_count"], 2)
+            self.assertEqual(summary["c1_budget_match"]["selection_policy"], "fixed_hash_top_k")
+            self.assertEqual(summary["c1_budget_match"]["k_source"], "mg_pu_visual_call_count")
+            self.assertEqual(
+                summary["c1_budget_match"]["matching_scope"],
+                "cost_only_not_item_set_or_difficulty",
+            )
+            self.assertEqual(
+                summary["methods"]["mg-pu-gated-union-v1"]["visual_call_count"],
+                summary["methods"]["mg-pu-gated-union-v1"][
+                    "visual_adapter_invocation_count"
+                ],
+            )
+            self.assertEqual(
+                summary["methods"]["mg-pu-gated-union-v1"][
+                    "visual_informed_positive_judgment_count"
+                ],
+                1,
+            )
+            rows = read_jsonl(private_output)
+            self.assertEqual(len(rows), 15)
+            ao = [row for row in rows if row["method_id"] == "c1-always-on-fusion-v1"]
+            bm = [row for row in rows if row["method_id"] == "c1-budget-matched-fusion-v1"]
+            self.assertTrue(all(row["visual_called"] for row in ao))
+            self.assertEqual(sum(row["visual_called"] for row in bm), 2)
 
     def test_rejects_gold_or_metric_keys_in_feature_and_visual_inputs(self) -> None:
         """Catches acceptance of adjudication, gold, or metric-eligibility leakage."""

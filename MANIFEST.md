@@ -96,9 +96,10 @@
 | `experiments/v1-message/statistics/README.md` | post-gold paired scorer、隐私 group-map 与统计边界 | current / exploratory only |
 | `experiments/v1-message/statistics/PUBLIC_GROUP_MAP_SUMMARY.json` | 30 singleton cluster 的无标识聚合与哈希 | current / formal leakage control false |
 | `experiments/v1-message/popup_eval/comparison_cli.py` | 同 gold/item 集、预声明 reference、确定性 cluster bootstrap CLI | tested / no empirical run |
-| `experiments/v1-message/visual/VISUAL_EVIDENCE_PROTOCOL_V1.json` | B1/C1/MG-PU 共用的 presence/ROI/model/budget freeze 状态 | blocked / no formal visual bank |
+| `experiments/v1-message/visual/VISUAL_EVIDENCE_PROTOCOL_V1.json` | B1/C1/MG-PU 共用的 presence/ROI/engine/budget freeze 状态 | frozen fixed-threshold heuristic / fixed-host replay only |
+| `experiments/v1-message/visual/PUBLIC_VISUAL_BANK_SUMMARY.json` | 30 项私有视觉 bank 的无文本聚合、哈希与重放边界 | 4 judged / 26 abstain / unscored |
 | `experiments/v1-message/visual/README.md` | 全屏/close-button box 非 popup ROI、C1-AO/C1-BM 命名与公私边界 | current |
-| `experiments/v1-message/popup_eval/visual_freeze.py` | 私有 visual bank ready-state、截图 commitment、exact-bijection、gold-blind、ROI/config/request/response 验证器 | tested / no formal bank rows |
+| `experiments/v1-message/popup_eval/visual_freeze.py` | 私有 visual bank ready-state、截图 commitment、exact-bijection、gold-blind、ROI/config/request/response 验证器 | tested / frozen private heuristic bank |
 | `experiments/v1-message/popup_eval/gap_adjudication.py` | 绑定真实 message gold、结构 bundle、两份独立 audit record 与最终裁决的 gap finalizer | tested / no human audit rows |
 | `experiments/v1-message/results/synthetic-smoke/` | 八种方法的管线 smoke | pass / synthetic / not paper eligible |
 | `experiments/v1-message/resources/the-ok/` | 官方 `b618948` 指示词快照、来源与 MIT notice | fixed upstream evidence |
@@ -112,10 +113,12 @@
 | `experiments/v1-message/features/build_pilot_features.py` | 只消费 pilot ID、冻结 RICO 结构特征并隔离来源标签 | tested / gold-blind |
 | `experiments/v1-message/features/tests/` | 标签翻转不变性、private ignore/permission、路径逃逸与文本语义测试 | 3 tests passing |
 | `experiments/v1-message/features/PUBLIC_FEATURE_SUMMARY.json` | 30-item 私有结构包的无文本计数、契约与哈希 | pass / unscored |
-| `experiments/v1-message/pregold/adapt_model_preannotation.py` | 将 AI-only、非金标记录隔离转换为私有视觉候选 | tested / not formal baseline |
-| `experiments/v1-message/pregold/freeze_predictions.py` | 在人工 gold 前冻结 A1、A2 与 MG-PU 逐项预测；不评分 | tested / gold-blind / no-action |
-| `experiments/v1-message/pregold/tests/` | gold/provenance/盲法拒绝、显式 popup scope、零动作、私有输出与公开摘要测试 | 9 tests passing |
+| `experiments/v1-message/pregold/adapt_model_preannotation.py` | 将 AI-only、非金标记录隔离转换为私有视觉候选 | tested / not a validated baseline |
+| `experiments/v1-message/pregold/freeze_predictions.py` | 在人工 gold 前冻结 A1、A2、C1-AO、C1-BM 与 MG-PU 逐项预测；不评分 | tested / gold-blind / no-action |
+| `experiments/v1-message/pregold/tests/` | gold/provenance/盲法拒绝、显式 popup scope、预算匹配、零动作、私有输出与公开摘要测试 | 11 tests passing |
 | `experiments/v1-message/pregold/PUBLIC_PREGOLD_SUMMARY.json` | 私有逐项预测的无文本聚合、实现/输入/输出哈希 | pass / unscored / not paper eligible |
+| `experiments/v1-message/pregold/PUBLIC_HEURISTIC_VISUAL_PROJECTION_SUMMARY.json` | 私有视觉 bank 的脱敏投影摘要 | fixed-threshold heuristic / fixed-host replay only |
+| `experiments/v1-message/pregold/PUBLIC_PREGOLD_HEURISTIC_VISUAL_C1_SUMMARY.json` | 五方法路由、调用成本与预测哈希聚合 | pass / unscored / no accuracy claim |
 | `refine-logs/FINAL_PROPOSAL.md` | 当前问题锚、benchmark 与 MG-PU proposal | provisional |
 | `refine-logs/NOVELTY_CHECK.md` | 查新与 contribution claim 边界 | proceed with caution |
 | `refine-logs/EXPERIMENT_PLAN.md` | 实验矩阵、统计与 kill criteria | planned |

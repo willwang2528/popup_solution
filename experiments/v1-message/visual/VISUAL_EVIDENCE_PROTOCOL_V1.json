@@ -1,138 +1,108 @@
 {
-  "contract_version": "popup-visual-evidence-freeze-v1.0",
-  "status": "blocked_missing_reproducible_presence_roi_visual_bank",
-  "scope": "popup_message_judgment_v1",
-  "pilot_batch_id": "popsweeper-message-pilot-30-v1",
-  "item_count": 30,
-  "item_set_sha256": "89907b2f20a4171b20e44ea0cd105428d996b6a24487a97008d8fec9b1a22471",
-  "input_image_manifest_sha256": "1ad93e1c0d55bca168d1cfd0078586d0ae75df9b54bcc96a46371953254c4f9a",
-  "frozen_before_human_gold": true,
   "action_policy": "no_action",
-  "gold_blind_attestation": {
-    "human_gold_used": false,
-    "source_sampling_label_used": false,
-    "folder_label_used": false,
-    "adjudication_used": false,
-    "post_action_evidence_used": false
-  },
-  "presence_policy": {
-    "policy_id": "unassigned",
-    "mode": "none",
-    "input_channels": [],
-    "implementation_sha256": null,
-    "model_or_rule_version": null,
-    "decision_threshold": null,
-    "abstain_band": null,
-    "missing_evidence_action": "abstain",
-    "formal_ready": false
-  },
-  "roi_policy": {
-    "policy_id": "unassigned",
-    "roi_kind": "none",
-    "coordinate_space": "normalized_xyxy",
-    "screenshot_size_required": true,
-    "detector_checkpoint_sha256": null,
-    "threshold": null,
-    "nms_threshold": null,
-    "multi_box_rule": null,
-    "expansion_fraction": null,
-    "clipping_rule": null,
-    "close_button_bbox_is_popup_roi": false,
-    "invalid_or_missing_roi_action": "abstain",
-    "formal_ready": false
-  },
-  "visual_engine": {
-    "provider": null,
-    "model": null,
-    "revision": null,
-    "checkpoint_sha256": null,
-    "license": null,
-    "api_version": null,
-    "preprocessing_sha256": null,
-    "prompt_template_sha256": null,
-    "config_sha256": null,
-    "image_resolution": null,
-    "temperature": null,
-    "top_p": null,
-    "seed": null,
-    "max_tokens": null,
-    "timeout_seconds": null,
-    "max_retries": 0,
-    "environment_sha256": null,
-    "model_identity_reproducible": false,
-    "formal_ready": false
-  },
   "budget": {
-    "unit": "per_item",
+    "formal_ready": true,
+    "image_resolution": "native_per_item",
+    "input_token_cap": 1,
+    "latency_cap_ms": 120000,
+    "output_token_cap": 1,
     "per_item_max_calls": 1,
-    "image_resolution": null,
-    "input_token_cap": null,
-    "output_token_cap": null,
-    "latency_cap_ms": null,
-    "price_snapshot_version": null,
+    "price_snapshot_version": "local-framework-zero-api-cost-v1",
     "shared_visual_bank_sha256": null,
-    "formal_ready": false
+    "unit": "per_item"
   },
-  "systems": {
-    "B1_ocr_popup_roi": {
-      "required_presence_mode": [
-        "frozen_text_rule",
-        "frozen_detector",
-        "frozen_vlm"
-      ],
-      "required_roi_kind": "predicted_popup_bbox",
-      "full_screen_ocr_is_popup_roi": false,
-      "missing_roi_action": "abstain",
-      "status": "blocked"
-    },
-    "B2_popsweeper_exact": {
-      "uses_this_visual_bank": false,
-      "status": "blocked_exact_no_go",
-      "reason": "official code weights thresholds temporal frames and close-button annotations remain unavailable"
-    },
-    "C1_AO_always_on_fusion": {
-      "visual_policy": "call_shared_bank_for_every_item",
-      "comparison_role": "accuracy_cost_frontier",
-      "equal_total_call_budget": false,
-      "status": "blocked"
-    },
-    "C1_BM_budget_matched_fusion": {
-      "visual_policy": "select_exactly_K_items_before_gold_by_frozen_hash_and_seed",
-      "comparison_role": "equal_total_call_budget_control",
-      "may_be_called_always_on": false,
-      "status": "blocked"
-    },
-    "C3_MG_PU": {
-      "visual_policy": "select_shared_bank_rows_only_by_the_pregold_structured_gap_gate",
-      "may_run_or_refreeze_after_gold": false,
-      "status": "blocked"
-    }
-  },
-  "private_bank_policy": {
-    "directory_mode": "0700",
-    "file_mode": "0600",
-    "git_ignored": true,
-    "public_fields": [
-      "protocol hashes",
-      "bank hash",
-      "aggregate status counts",
-      "aggregate calls tokens cost and latency"
-    ],
-    "private_fields": [
-      "pilot item ids",
-      "source or app mappings",
-      "images and crops",
-      "per-item ROI and bounding boxes",
-      "OCR or VLM message text and facts",
-      "requests responses rationales tokens cost and latency"
-    ]
-  },
-  "scored": false,
-  "paper_result_eligible": false,
   "claims": {
     "empirical_performance": false,
     "method_superiority": false,
-    "user_experience_improvement": false,
-    "recovery_or_dismissal": false
+    "recovery_or_dismissal": false,
+    "user_experience_improvement": false
+  },
+  "contract_version": "popup-visual-evidence-freeze-v1.0",
+  "frozen_before_human_gold": true,
+  "gold_blind_attestation": {
+    "adjudication_used": false,
+    "folder_label_used": false,
+    "human_gold_used": false,
+    "post_action_evidence_used": false,
+    "source_sampling_label_used": false
+  },
+  "input_image_manifest_sha256": "1ad93e1c0d55bca168d1cfd0078586d0ae75df9b54bcc96a46371953254c4f9a",
+  "item_count": 30,
+  "item_set_sha256": "89907b2f20a4171b20e44ea0cd105428d996b6a24487a97008d8fec9b1a22471",
+  "paper_result_eligible": false,
+  "pilot_batch_id": "popsweeper-message-pilot-30-v1",
+  "presence_policy": {
+    "abstain_band": [
+      0.0,
+      0.82
+    ],
+    "decision_threshold": 0.82,
+    "formal_ready": true,
+    "implementation_sha256": "06875940ea0a7a595c13e761e8c914a7f4292a015abfd686c9c641abc057853c",
+    "input_channels": [
+      "screenshot_pixels"
+    ],
+    "missing_evidence_action": "abstain",
+    "mode": "frozen_detector",
+    "model_or_rule_version": "pmj-vision-rectangle-roi-ocr/1.0.1",
+    "policy_id": "vision-strong-rectangle-presence-v1"
+  },
+  "roi_policy": {
+    "clipping_rule": "expand_then_clip_to_image",
+    "close_button_bbox_is_popup_roi": false,
+    "coordinate_space": "normalized_xyxy",
+    "detector_checkpoint_sha256": "d5945366310b3c3522589ffa98889e8822ae485d05da838604ec2362ff474af0",
+    "expansion_fraction": 0.02,
+    "formal_ready": true,
+    "invalid_or_missing_roi_action": "abstain",
+    "multi_box_rule": "highest_frozen_shape_score_then_reading_order",
+    "nms_threshold": 0.0,
+    "policy_id": "vision-strong-rectangle-roi-v1",
+    "roi_kind": "predicted_popup_bbox",
+    "screenshot_size_required": true,
+    "threshold": 0.82
+  },
+  "scope": "popup_message_judgment_v1",
+  "scored": false,
+  "status": "ready_for_visual_bank_freeze",
+  "systems": {
+    "B1_roi_ocr_adaptation": {
+      "status": "ready"
+    },
+    "B2_popsweeper_exact": {
+      "status": "blocked_exact_no_go",
+      "uses_this_visual_bank": false
+    },
+    "C1_AO_always_on_fusion": {
+      "status": "ready_for_frozen_bank"
+    },
+    "C1_BM_budget_matched_fusion": {
+      "status": "ready_for_frozen_bank"
+    },
+    "C3_MG_PU": {
+      "status": "ready_for_frozen_bank"
+    }
+  },
+  "visual_engine": {
+    "api_version": "Vision framework pinned request configuration",
+    "checkpoint_sha256": "d5945366310b3c3522589ffa98889e8822ae485d05da838604ec2362ff474af0",
+    "config_sha256": "ee154bd36b6482061c3d7d65a542075c6a00c8fa348dfcb7342e3a768a097a5e",
+    "cross_os_or_device_model_identity_reproducible": "not_verified",
+    "environment_sha256": "b7c6b13dda6adf186af50a2b57f29b239eb080b915eca2b692e2008205eb968c",
+    "formal_ready": true,
+    "image_resolution": "native_per_item",
+    "license": "Apple platform framework; source adapter in repository",
+    "max_retries": 0,
+    "max_tokens": 1,
+    "model": "VNDetectRectanglesRequest_plus_VNRecognizeTextRequest",
+    "preprocessing_sha256": "1138be3e30e6a9e2cb6356b73de9f9e2c85caa688ac1d612baf52c7d913de71b",
+    "prompt_template_sha256": "d31ef9aee06d1232970ae5c217bd154b311ac9a2a6b5bbf098b5a8f30514123e",
+    "provider": "local_apple_vision",
+    "repeat_execution_byte_identical_on_fixed_host": true,
+    "revision": "pmj-vision-rectangle-roi-ocr/1.0.1",
+    "seed": 17,
+    "temperature": 0.0,
+    "timeout_seconds": 120,
+    "top_p": 1.0
   }
 }

@@ -104,8 +104,14 @@ class AdaptModelPreannotationCliTest(unittest.TestCase):
             self.assertIsNone(adapted[2]["popup_present_pred"])
             for row in adapted:
                 self.assertEqual(row["evidence_kind"], "model_workflow_visual_candidate")
-                self.assertFalse(row["formal_baseline"])
-                self.assertFalse(row["model_identity_reproducible"])
+                self.assertFalse(row["fixed_threshold_heuristic_adaptation"])
+                self.assertFalse(
+                    row["repeat_execution_byte_identical_on_fixed_host"]
+                )
+                self.assertEqual(
+                    row["cross_os_or_device_model_identity_reproducible"],
+                    "not_verified",
+                )
                 self.assertFalse(row["human_gold_used"])
                 self.assertFalse(row["scored"])
                 self.assertFalse(row["paper_result_eligible"])

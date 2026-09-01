@@ -16,7 +16,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 8. [`data-collection/FIELD_UNION.md`](./data-collection/FIELD_UNION.md)：跨 Android、iOS、移动 Web 的字段并集与证据边界。
 9. [`refine-logs/FINAL_PROPOSAL.md`](./refine-logs/FINAL_PROPOSAL.md)：当前 proposal，状态为 `provisional`。
 10. [`dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md`](./dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md)：schema、fixture、QA 与负向变异验证。
-11. [`reviews/RESEARCH_REVIEW.md`](./reviews/RESEARCH_REVIEW.md)：初始三轮 Claude cross-family 研究评审加三轮 Android capture gate 增量复核；整体仍为 `PROCEED_WITH_CAUTION`，软件门增量结论为 `TOOLING_GATE_CONVERGED`，均不接受任何经验效果主张。
+11. [`reviews/RESEARCH_REVIEW.md`](./reviews/RESEARCH_REVIEW.md)：Claude cross-family 主审、Android capture gate 与视觉 bank/C1 增量复核；整体仍为 `PROCEED_WITH_CAUTION`，视觉增量结论为修正后可继续公开冻结工件，均不接受任何经验效果主张。
 12. [`sources/PPT_SLIDE_14_EVIDENCE.md`](./sources/PPT_SLIDE_14_EVIDENCE.md)：PPT 第 14 页“五级回证表”的可审计转录与 v1 分层解释。
 13. [`sources/SOURCE_LEDGER.md`](./sources/SOURCE_LEDGER.md)：PopSweeper/RICO 许可、校验、实际清点、数量差异与 adapter-only 发布策略。
 14. [`refine-logs/NOVELTY_CHECK.md`](./refine-logs/NOVELTY_CHECK.md)：当前查新结论与不可宣称的 broad-first 边界。
@@ -113,15 +113,26 @@ prediction 的直接评分、prediction-hash-bound 语义复核，以及显式 g
 paired cluster bootstrap。bootstrap 现在同时输出 VPMA、coverage、Presence
 Macro-F1、critical-information recall、critical-hallucination rate 与 visual-call
 rate 的 paired difference；零分母保持 `null`，不会改写为 0。当前 pilot
-group-map 是 30 个 singleton cluster，且 B1 popup-ROI、B2 exact、C1 与可复现
-视觉模型仍未解锁，所以该链即使
+group-map 是 30 个 singleton cluster；B1 的低覆盖 ROI-OCR adaptation 与
+C1-AO/C1-BM/C3 gold-blind prediction snapshot 已冻结，但 B2 exact 与真实
+group-disjoint map 仍未解锁，所以该链即使
 拿到 gold 也先标为 exploratory、`paper_result_eligible=false`。
 
-B1/C1/MG-PU 的共享视觉 freeze 已定义 fail-closed 协议，但当前状态仍是
-`blocked_missing_reproducible_presence_roi_visual_bank`：全屏 OCR 不是 popup ROI，
-close-button bbox 也不是 popup ROI；C1-AO（真正 always-on，比较 accuracy-cost
-frontier）与 C1-BM（总调用预算匹配）已分名，不能把二者混成一个“等预算
-always-on”基线。
+B1/C1/MG-PU 的共享视觉 freeze 已产生一份 gold-blind 私有 bank：固定参数 Apple
+Vision 强矩形提议器只在矩形达阈值且 ROI 内存在可读文本时输出 popup，30 项中
+4 judged、26 abstain；同一主机、同一二进制与同一 OS build 的两次 replay，其决定、
+ROI 与消息一致。它只是冻结的固定阈值、positive-or-abstain 启发式 adaptation，
+不是已验证或 canonical baseline，也不是 PopSweeper exact 或 VLM；跨 OS／设备模型
+身份可复现性为 `not_verified`。C1-AO（真正 always-on，比较
+accuracy-cost frontier）与 C1-BM（总调用预算匹配）已分名，不能把二者混成一个
+“等预算 always-on”基线。
+
+当前正式 pre-gold snapshot 覆盖五个系统：structure-only 15 judged / 15
+abstain；The OK text rule 10/20；C1-AO 6/24、视觉调用 30；C1-BM 6/24、
+视觉调用 28；MG-PU 6/24、视觉 adapter 调用 28，其中 4 次形成视觉正判断、24 次
+由视觉 adapter 弃答。C1-BM 的 K 直接取 MG-PU 的冻结调用数，并用固定哈希选择
+item；它只匹配调用成本，不匹配 item 集合或难度。任何未来准确率比较必须披露两者
+视觉检查 item 集合的重叠。这些只是路由、覆盖和成本承诺，不是 accuracy 或优越性结果。
 
 当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比指标或 iOS 数据。上述冻结只证明输入隔离、路由和预测持久化已经发生；仓库中的 3 条 fixture 和 synthetic smoke 也只验证数据／评测管线，均不构成论文效果或用户体验证据。
 
@@ -130,11 +141,12 @@ Android capture feasibility 与 G1/G2 pilot；这不是 empirical acceptance。�
 仍是同步 Android screenshot + accessibility representation，PopSweeper/RICO 30-item
 bundle 只作协议和工程 pilot。
 
-CAP-001 的离线终结器和聚合 coverage gate 已按测试先行实现：它拒绝动作后数据、
-UIAutomator/RICO 替代物、状态漂移、超过 3000 ms 的不同步输入、空结构、金标／
-预测泄漏、未过隐私审查和重复媒体。当前主机没有 `adb`、Android emulator 或
-Appium，真实 capture 仍为 0，所以状态保持 `blocked_no_real_android_captures`；
-工具通过不等于正式数据可行性已经通过。随后三轮 Claude 增量复核与 Codex 反向
+CAP-001 的离线终结器、聚合 coverage gate 和可编译 Android 30+ AccessibilityService
+collector 已按测试先行实现：它拒绝动作后数据、UIAutomator/RICO 替代物、状态漂移、
+超过 3000 ms 的不同步输入、空结构、金标／预测泄漏、未过隐私审查和重复媒体。
+当前主机已有 ADB/Android 35 构建工具，但没有连接真机或 emulator；真实 capture 仍为
+0，所以状态保持 `blocked_no_real_android_captures`。工具通过不等于正式数据可行性
+已经通过。随后三轮 Claude 增量复核与 Codex 反向
 审查关闭了 nested label 泄漏、手写 record 放行和随机哈希不绑定 artifact 三条绕过；
 最终正式 audit CLI 会逐 bundle 重新读取私有 artifact 并重算哈希，但仍不能替代
 collector 来源、授权和同步声明的过程审计。

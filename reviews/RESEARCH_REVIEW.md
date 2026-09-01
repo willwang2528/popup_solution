@@ -113,6 +113,14 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 
 经验主张变化仍为 `NONE`。真实 capture=0、human gold=0、method metrics=0；`PROCEED_TO_ONE_DRY_RUN` 只说明设计合同足以尝试一次安全、授权的真实采集。
 
+## 视觉 bank 与等预算基线增量审阅
+
+第 9 次调用只披露 V1 边界、固定阈值协议、聚合计数、哈希、重放结果和五方法路由／调用计数；没有发送截图、OCR 原文、逐项 ID、私有 prediction 或人工标签。Claude 给出 `PROCEED_WITH_MANDATORY_FIXES`：没有发现已证实的泄漏或正确性致命缺陷，但要求公开推送前去掉两个过强命名。
+
+修正后，Apple Vision 证据只声明 `repeat_execution_byte_identical_on_fixed_host=true`，跨 OS／设备模型身份保持 `not_verified`；方法只称为冻结的固定阈值、positive-or-abstain 启发式 adaptation，不再称为 formal/canonical/validated baseline。C1-BM 明确只匹配调用成本，不匹配 item 集或难度；MG-PU 的“28 次视觉调用”也拆成 4 次形成视觉正判断、24 次视觉 adapter 弃答。
+
+同时新增两类 fail-closed 回归：物理删除 `popup_present_gt`、stratum、source ID 后输出必须不变；新增未登记 manifest／artifact 字段则整批拒绝。修正后的 30 项本机重放仍为 4 judged、26 abstain，逐项决定／ROI／消息在排除运行时字段后相同。经验主张变化仍为 `NONE`。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
@@ -124,6 +132,7 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 - Artifact-binding final job：`9c58eb567dd9407b9e7aa10c4949d726`
 - Real collector source-reading job（timeout/provisional）：`48b3db97d19b433796ec20462c8a5ead`
 - Bounded collector review job：`5a97eb92f2c04a1fb9c682440950bca0`
+- Visual bank / C1 fatal-gate job：`762b47f9867245b18f082a33d2b16164`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。

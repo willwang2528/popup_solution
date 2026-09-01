@@ -187,10 +187,12 @@ def _validate_protocol(
             if not isinstance(roi.get(key), str) or not roi[key].strip():
                 raise ValueError(f"visual freeze ROI {key} is invalid")
     engine = protocol.get("visual_engine", {})
-    if engine.get("formal_ready") is not True or engine.get(
-        "model_identity_reproducible"
-    ) is not True:
-        raise ValueError("visual freeze engine identity is not formally ready")
+    if engine.get("formal_ready") is not True:
+        raise ValueError("visual freeze engine configuration is not ready")
+    if engine.get("repeat_execution_byte_identical_on_fixed_host") is not True:
+        raise ValueError("visual freeze fixed-host repeat execution is not verified")
+    if engine.get("cross_os_or_device_model_identity_reproducible") != "not_verified":
+        raise ValueError("visual freeze cross-host model identity must remain not_verified")
     for key in ("provider", "model", "revision", "license", "api_version"):
         if not isinstance(engine.get(key), str) or not engine[key].strip():
             raise ValueError(f"visual freeze engine {key} is invalid")
