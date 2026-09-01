@@ -136,6 +136,7 @@ def build_blank_template_rows(
                 "annotator_id_pseudonymous": None,
                 "record_status": "blank",
                 "presence_label": None,
+                "out_of_scope_reason": None,
                 "message_text": None,
                 "message_observability": None,
                 "semantic_slots": [],

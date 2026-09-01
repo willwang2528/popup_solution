@@ -1,0 +1,76 @@
+{
+  "version": "1.0.0",
+  "task_profile": "popup_presence_and_message_judgment_no_action",
+  "decision_basis": "screenshot_observable_only",
+  "definition": "A popup is a visually separable message surface that is not part of the primary screen scaffold, navigation, or inline host content and that visibly overlays, occludes, gates, or interrupts the current host context.",
+  "visual_separability_rule": "At least one screenshot-observable cue must distinguish the message surface from host content: a bounded container or edge, a different apparent z-layer or backdrop treatment, host-content occlusion, or a full-screen gate/interruption composition. Temporal persistence and inferred dismissibility are never required.",
+  "required_observable_criteria": [
+    "visually_separable_message_surface",
+    "not_primary_screen_scaffold_navigation_or_inline_host_content",
+    "overlay_occlusion_gate_or_interrupt_cue"
+  ],
+  "requires_dismissibility_observation": false,
+  "included_examples": [
+    "modal_dialog",
+    "alert",
+    "interstitial",
+    "blocking_banner",
+    "interruptive_bottom_sheet",
+    "full_screen_gate",
+    "age_gate",
+    "rating_or_update_prompt"
+  ],
+  "excluded_examples": [
+    "stable_screen_or_primary_page",
+    "stable_tab_or_toolbar",
+    "navigation_drawer",
+    "dropdown_or_context_menu",
+    "toast_or_snackbar",
+    "inline_form_error",
+    "autocomplete_suggestion",
+    "keyboard",
+    "media_controls_overlay"
+  ],
+  "out_of_scope_examples": [
+    "captcha",
+    "risk_control",
+    "identity_authentication",
+    "payment_confirmation",
+    "permission_security_control",
+    "manual_review"
+  ],
+  "edge_rules": {
+    "bottom_sheet": "popup only when visually separable and interruptive or gating; otherwise no_popup or uncertain",
+    "full_screen_surface": "popup only when the screen presents a distinct gate or interruption rather than the stable primary page",
+    "banner": "popup only when it is a persistent blocking or gating message surface; transient toast/snackbar is excluded",
+    "consent_notice": "in scope when it is an ordinary non-permission notice or choice; OS-level and app-internal permission or security controls are both out of scope in V1",
+    "permission_boundary": "all OS-level permission dialogs and all app-internal permission or security controls are out_of_scope in V1, even when they are visually paradigmatic popups; this is a study-boundary decision, not a claim that they are unimportant",
+    "actionability": "do not infer dismissibility, clickability, or available actions beyond explicitly visible labels"
+  },
+  "ambiguous_policy": "uncertain_with_reason_not_forced_binary",
+  "message_definition": {
+    "include_visible": [
+      "title",
+      "body",
+      "status_or_request",
+      "warning",
+      "explicit constraints",
+      "explicitly visible choice labels needed to understand the message"
+    ],
+    "exclude": [
+      "host page text",
+      "decorative text",
+      "inferred app intent",
+      "inferred action consequence",
+      "tap coordinates or action recommendation"
+    ],
+    "critical_fact_rule": "A visible fact is critical only if omitting or changing it could materially alter understanding of the message; retain negation, amount, date/time, object, condition, restriction, and explicit consequence."
+  },
+  "label_order": [
+    "out_of_scope_if_security_or_excluded_domain",
+    "no_popup_if_only_stable_navigation_or_inline_host_content",
+    "popup_if_all_required_observable_criteria_hold",
+    "uncertain_if_observable_evidence_cannot_resolve_boundary",
+    "unusable_if_media_cannot_be_inspected"
+  ]
+}

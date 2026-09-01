@@ -1,6 +1,50 @@
 {
-  "freeze_version": "1.0.0",
+  "freeze_version": "1.0.7",
   "freeze_timestamp_utc": "2026-08-31T21:52:05Z",
+  "amendments": [
+    {
+      "version": "1.0.1",
+      "timestamp_utc": "2026-08-31T23:59:00Z",
+      "reason": "Serve JPEG and PNG evidence with the media type detected from file signatures; reject unknown image formats. No annotation fields, media bytes, thresholds, or human outputs changed.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.2",
+      "timestamp_utc": "2026-09-01T00:28:00Z",
+      "reason": "Operationalize screenshot-only popup scope with observable include/exclude and edge-case rules. Dismissibility is explicitly not inferred. No annotation fields, media bytes, thresholds, or human outputs changed.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.3",
+      "timestamp_utc": "2026-09-01T00:37:00Z",
+      "reason": "Fail closed when G2 auditors detect a substantive error in frozen G1 screenshot-message gold. The item becomes cannot_resolve and must restart from a versioned G1 correction; no method output may influence the correction. No human outputs exist.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.4",
+      "timestamp_utc": "2026-09-01T00:43:11Z",
+      "reason": "Represent predefined scope exclusions explicitly as out_of_scope with a mandatory machine-readable reason, and operationalize visual separability without temporal or dismissibility inference. Out-of-scope items are resolved but never metric eligible. No human outputs exist.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.5",
+      "timestamp_utc": "2026-09-01T00:49:21Z",
+      "reason": "Clarify the user-specified V1 boundary: permission_security_control includes both OS-level permission dialogs and app-internal permission or security controls. This removes an annotation ambiguity without changing fields, media, thresholds, or human outputs.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.6",
+      "timestamp_utc": "2026-09-01T00:55:25Z",
+      "reason": "Expand Git ignore coverage for every private or text-bearing annotation, feature, OCR, pregold, statistics, and pending-union work root before public synchronization. No protocol field, media byte, threshold, or human output changed.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.7",
+      "timestamp_utc": "2026-09-01T00:57:05Z",
+      "reason": "Withhold item-level AI preannotation JSONL because it contains screenshot-derived third-party message text that has not passed privacy review. Aggregate non-text summaries remain publishable. No protocol field, media byte, threshold, or human output changed.",
+      "human_outputs_present_at_amendment": false
+    }
+  ],
   "protocol_version": "1.0.0",
   "batch_id": "popsweeper-message-pilot-30-v1",
   "batch_size": 30,
@@ -34,24 +78,29 @@
     "recovery_claim_eligible": false
   },
   "frozen_files_sha256": {
-    ".gitignore": "78b6533d5f1df1a117f0aeb68b6313a71bf6a091471a4ea890453b2ba5b8170c",
+    ".gitignore": "e9e6acefc853b8d0fa7ee3aec684d547c73d1ae582261b5f89fbfbdf7fc6ca0a",
     "RESEARCH_RULES_AMENDMENT_V1.md": "3c356241551c1f83389e93a2c7a8a00d113bb9082bed8d7c3afb5ccdc68f93bb",
     "sources/PPT_SLIDE_14_EVIDENCE.md": "31181c7422f9eec4eb2d688adaceb12f62706c6b503202a5bb2d8eb33d1b4816",
-    "dataset-v1/ANNOTATION_GUIDE.md": "deb9b6c2eed6b9493221db70c23922d096dac09bedf0a35f062ccd114e15ae38",
-    "dataset-v1/annotation-pilot/README.md": "3cfd6ac87eb9eaf31a6c39bf37f53c5b8d6e5a0d8dcd92bdedad403d1c384ea3",
+    "dataset-v1/ANNOTATION_GUIDE.md": "aebea0fbe47ec4be37d646bd6a84d8052cf2697a5cea6038c6b84b34c00de609",
+    "dataset-v1/annotation-pilot/README.md": "ce9389a4c2b1c295ae2c57c805d0ec46aa48d5382e5634bae4f79274f4b4daa4",
+    "dataset-v1/annotation-pilot/POPUP_SCOPE_V1.json": "06b2b94409dc071525fa294f86a3d3da7dea89e1f2e60a795a84570598646643",
     "dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md": "686b4f8a761d82160e106da48ac15e0b1dc55f70269a8ac19cf523d096ae9224",
     "dataset-v1/annotation-pilot/manifests/pilot_batch_30.jsonl": "b44f47596bf992a398a09ebf05603cda800625899803029473f97c753a7613a1",
-    "dataset-v1/annotation-pilot/schemas/annotation_record.schema.json": "7568afa58958eb5feac954da57c4fdc5df2c27288d1ee69624a48499e3a27719",
+    "dataset-v1/annotation-pilot/schemas/annotation_record.schema.json": "3acde623e699780acd23a23752c28744fe7fd9b290e16bfc37fcc052f02b6502",
     "dataset-v1/annotation-pilot/schemas/adjudication_input.schema.json": "79b379ea85b2580c64dd86f5a79080d280a348539c687590e134c02b5fdbf542",
-    "dataset-v1/annotation-pilot/schemas/adjudication_output.schema.json": "29853cebef58a1612b7a9ad8a73912959a3631055b76c5d5d0a9ed4e8ae96f99",
-    "dataset-v1/annotation-pilot/templates/annotator_a.jsonl": "1cbb2968fb40072f216ed3116d9eeb66a8c9ad83d8ec71988ee16d5c9b041f27",
-    "dataset-v1/annotation-pilot/templates/annotator_b.jsonl": "d2277c6d14c4e18ad46cf5513236cd202ad80273b8a71b8022d1beb4c0cc9495",
+    "dataset-v1/annotation-pilot/schemas/adjudication_output.schema.json": "6816285203ba61705069b8c7cfb1f19e7b46274d06ceaca4114b9d1c3bf1a3f2",
+    "dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md": "b22860881cca9c71bf837d77d54c336cd95eb10ae8c22e6da17c261c64c17bbf",
+    "dataset-v1/annotation-pilot/schemas/gap_independent_audit_record.schema.json": "3f7892f9d17f33fa5639e0d82084b3d91a5d0f1323f5e89262b38d3dd6f508c0",
+    "dataset-v1/annotation-pilot/schemas/gap_adjudication_output.schema.json": "da600de7006b3bad2d52db0b4af9eb13e0523214792986275079b3e4c1702461",
+    "dataset-v1/annotation-pilot/templates/annotator_a.jsonl": "d0ae109acdaf5b4017106b6c5227b9a65553bba27252d02b4e2605fe4a675f3f",
+    "dataset-v1/annotation-pilot/templates/annotator_b.jsonl": "bda38b54e9d37dff45323dd40baef6a66685a38728429cd79670b0009943f85e",
     "dataset-v1/annotation-pilot/templates/adjudication_input.template.json": "d1a0595dd0c4a8c557ea40cb05b782b3b7cefac375d8bede07c0fe73d314625a",
-    "dataset-v1/annotation-pilot/templates/adjudication_output.template.json": "a17ef26804a24e7604bdb10d57072d90cf8bbd018ac27ef4340e24526a5661fb",
-    "dataset-v1/annotation-pilot/scripts/build_pilot_bundle.py": "fc41275770cf275b3e8db187ad5a3fc6bbb7f5241e08c4ce70895a193f4e48d3",
-    "dataset-v1/annotation-pilot/scripts/calculate_agreement.py": "1a1ea8b1651a94379a6f9b3c93f44d457b83235672ebc4507fb449222832b810",
-    "dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py": "35048ee988532810393521176bacca71716b0e72e7022a85bece297756530cce",
-    "dataset-v1/annotation-pilot/scripts/check_human_annotation_readiness.py": "464c81cbdb1c7732691f82b974cc40644e0183d0353222d2da9cda35d47df29a"
+    "dataset-v1/annotation-pilot/templates/adjudication_output.template.json": "b6139318c48370fec137e6458fe16a46f08c780d36658277f51c7edffca670b0",
+    "dataset-v1/annotation-pilot/scripts/build_pilot_bundle.py": "4f066864a0eebf2c8d50f1e6cc2595cc79cf8b1f8e36dedde32177963e7b165c",
+    "dataset-v1/annotation-pilot/scripts/calculate_agreement.py": "be5cb31767dbc602710e59c3c39ab0d6ebee976000ae6fc013d9b8552c64ca63",
+    "dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py": "d96d2cb99925c317c24572e8abca66883fbb2781df175d0df9dbdedde93705d1",
+    "dataset-v1/annotation-pilot/scripts/check_human_annotation_readiness.py": "58188d9d7613b0a8fb110780b6f6358ab554e130f11eabd486b31c83ae9aa9bb",
+    "experiments/v1-message/popup_eval/gap_adjudication.py": "c9fb38f61e6d51814a8f9818e7d1e5ef2e640d93d176243c205d8cd42d330c01"
   },
   "media_files_sha256": {
     "export-summary.json": "4269f17c2833888a99edc135963f85d677eca2b0a678c41d4069a86ec889bc8d",

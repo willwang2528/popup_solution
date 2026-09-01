@@ -22,6 +22,7 @@
     "decision_rationale",
     "evidence_uris",
     "auditor_blind_to_method_outputs",
+    "g1_gold_discrepancy_detected",
     "message_gold_batch_sha256",
     "structured_bundle_sha256",
     "adjudicated_at"
@@ -63,11 +64,20 @@
       "items": {"type": "string", "minLength": 1}
     },
     "auditor_blind_to_method_outputs": {"const": true},
+    "g1_gold_discrepancy_detected": {"type": "boolean"},
     "message_gold_batch_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "structured_bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "adjudicated_at": {"type": "string", "format": "date-time"}
   },
   "allOf": [
+    {
+      "if": {"properties": {"g1_gold_discrepancy_detected": {"const": true}}},
+      "then": {
+        "properties": {
+          "audit_status": {"const": "cannot_resolve"}
+        }
+      }
+    },
     {
       "if": {"properties": {"audit_status": {"enum": ["cannot_resolve", "not_applicable"]}}},
       "then": {

@@ -73,6 +73,7 @@ def adjudication(index: int, *, popup: bool, message: str | None) -> dict:
         "adjudicator_id_pseudonymous": "adj-1",
         "adjudication_status": "resolved",
         "presence_label_final": "popup" if popup else "no_popup",
+        "out_of_scope_reason_final": None,
         "message_text_final": message,
         "message_observability_final": "complete" if popup else "not_applicable",
         "semantic_slots_final": [],

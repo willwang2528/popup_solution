@@ -64,6 +64,16 @@ def validate_bind_host(host: str) -> None:
         raise ViewerError("viewer bind host must be a loopback address")
 
 
+def sniff_image_content_type(body: bytes) -> str:
+    """Return the image media type from a minimal, explicit signature allowlist."""
+
+    if body.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if body.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    raise ViewerError("unsupported image format")
+
+
 def _regular_file_within(path: Path, root: Path) -> Path:
     if path.is_symlink():
         raise ViewerError(f"symlink evidence is forbidden: {path.name}")
@@ -222,7 +232,16 @@ def make_handler(*, items: list[dict[str, Any]], token: str, session_id: str):
                     self._send(404, b"not found\n", "text/plain; charset=utf-8")
                     return
                 body = items[number - 1]["image_path"].read_bytes()
-                self._send(200, body, "image/jpeg")
+                try:
+                    content_type = sniff_image_content_type(body)
+                except ViewerError:
+                    self._send(
+                        415,
+                        b"unsupported media type\n",
+                        "text/plain; charset=utf-8",
+                    )
+                    return
+                self._send(200, body, content_type)
                 return
             self._send(404, b"not found\n", "text/plain; charset=utf-8")
 

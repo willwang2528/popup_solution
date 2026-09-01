@@ -19,8 +19,25 @@
 - `critical_facts_missing_from_structure_final`：截图消息 gold 中在结构表达里缺失的金额、日期、对象、否定、限制或后果；
 - `host_text_contamination_final`：结构重建是否混入宿主页面文本；
 - `tree_screenshot_synchronized_final`：能否证明树与截图来自同一稳定状态。
+- `g1_gold_discrepancy_flag`：审计者是否发现冻结 screenshot-message gold 与截图存在实质矛盾；它不是改写 gold 的权限。
 
 `structured_message_complete_final=true` 时不得同时标 gap reason、缺失事实或 host contamination。结构不存在时必须标 `missing`。证据无法可靠对齐时用 `cannot_resolve`，不得猜测。
+
+## G1 gold 与 G2 分歧解决
+
+G1 的最终 screenshot-message gold 是当前 G2 batch 的唯一可见事实权威。G2 只判断“冻结结构是否表达了这些可见事实”，不得自行创建另一个 `M_gt` 覆盖 G1。
+
+若任一 G2 审计者认为 G1 gold 本身与截图存在实质矛盾：
+
+1. 设置 `g1_gold_discrepancy_flag=true` 并在私有 notes 中给出截图 evidence；
+2. 当前 item 的 G2 `audit_status` 必须为 `cannot_resolve`，不得继续产出 structure-sufficiency gold；
+3. gap adjudicator 必须把 `g1_gold_discrepancy_detected=true`，不能静默选择 G1 或审计者版本；
+4. coordinator 把 item 退回独立 G1 纠错流程，由原 G1 裁决角色重新核查并发布新的、版本化的 message-gold batch hash；
+5. 旧 G2 batch 保留为失败 trace；受影响 item 必须绑定新 G1 hash，从 A/B 独立 G2 审计重新开始。
+
+若 G2 A/B 对 completeness、gap reason、missing facts 或 contamination 分歧，但均未质疑 G1 gold，第三位 gap adjudicator重看冻结 screenshot、G1 gold、结构 bundle 和两条 rationale，逐字段给出最终值。无法凭相同冻结证据解决时标 `cannot_resolve`。任何 resolved row 都绑定两条独立记录的实算 hash。
+
+这条协议禁止两种循环：G2 不能为了让结构显得完整而修改 G1；G1 纠错也不能参考任何方法 prediction 或 score。
 
 程序可以验证两条记录具有不同 pseudonymous auditor、完整 attestation、独立内容和 hash 绑定，但不能仅凭 pseudonymous ID 证明背后一定是两个真人。coordinator 仍须在私有会话与账号审计中核对真人身份和独立操作；公开摘要只表述“已记录人工声明”，不得把声明本身写成已验证的人体实验事实。
 

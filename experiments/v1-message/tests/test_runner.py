@@ -72,6 +72,7 @@ def adjudication_row(**overrides):
         "adjudicator_id_pseudonymous": "adj-1",
         "adjudication_status": "resolved",
         "presence_label_final": "popup",
+        "out_of_scope_reason_final": None,
         "message_text_final": "Adjudicated label",
         "message_observability_final": "complete",
         "semantic_slots_final": [
@@ -178,6 +179,28 @@ class AnnotationTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "cannot_resolve"):
             popup_io.finalize_adjudication_batch(items, [invalid])
+
+    def test_out_of_scope_adjudication_is_resolved_but_never_metric_eligible(self):
+        item = frozen_item(item_id="i7")
+        item["identity"]["pilot_item_id"] = "PMJ-PILOT-007"
+        row = adjudication_row(
+            presence_label_final="out_of_scope",
+            out_of_scope_reason_final="permission_security_control",
+            message_text_final=None,
+            message_observability_final="not_applicable",
+            semantic_slots_final=[],
+        )
+
+        _, summary = popup_io.finalize_adjudication_batch([item], [row])
+        prepared, _ = popup_io.prepare_items([item], [row])
+
+        self.assertEqual(summary["resolved_count"], 1)
+        self.assertEqual(summary["out_of_scope_count"], 1)
+        self.assertEqual(summary["metric_eligible_count"], 0)
+        self.assertIn(
+            "out_of_scope:permission_security_control",
+            prepared[0]["evaluation_exclusion_reasons"],
+        )
 
     def test_finalized_gold_join_preserves_private_structured_features(self):
         # Break caught: human gold and archived UI structure cannot inhabit the same item.
@@ -668,6 +691,7 @@ class CliTests(unittest.TestCase):
                     "resolved_count",
                     "cannot_resolve_count",
                     "metric_eligible_count",
+                    "out_of_scope_count",
                     "batch_sha256",
                 },
             )

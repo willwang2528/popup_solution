@@ -9,4 +9,11 @@ refine-logs/FINAL_PROPOSAL_*.md
 refine-logs/REFINEMENT_REPORT_*.md
 refine-logs/REFINE_STATE_*.json
 dataset-v1/work/annotation-media/
+dataset-v1/work/model-preannotation-*.jsonl
 dataset-v1/annotation-pilot/private/
+dataset-v1/empirical-pilot/private/
+experiments/v1-message/features/private/
+experiments/v1-message/ocr/results/
+experiments/v1-message/ocr/.build/
+experiments/v1-message/pregold/private/
+experiments/v1-message/statistics/private/

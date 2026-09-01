@@ -42,6 +42,7 @@ def message_gold_row(index: int, *, popup: bool = True) -> dict:
         "adjudicator_id_pseudonymous": "message-adj-1",
         "adjudication_status": "resolved",
         "presence_label_final": "popup" if popup else "no_popup",
+        "out_of_scope_reason_final": None,
         "message_text_final": "Private visual message" if popup else None,
         "message_observability_final": "complete" if popup else "not_applicable",
         "semantic_slots_final": (
@@ -178,6 +179,8 @@ def independent_audit_row(
         "human_auditor_attestation": True,
         "independent_of_peer_attestation": True,
         "auditor_blind_to_method_outputs": True,
+        "g1_gold_discrepancy_flag": False,
+        "g1_gold_discrepancy_notes": None,
         "message_gold_batch_sha256": message_hash,
         "structured_bundle_sha256": structured_hash,
         "audit_status": "not_applicable" if not_applicable else "adjudicated",
@@ -254,6 +257,7 @@ def final_gap_row(
             "evidence://private/screenshot",
         ],
         "auditor_blind_to_method_outputs": True,
+        "g1_gold_discrepancy_detected": False,
         "message_gold_batch_sha256": message_hash,
         "structured_bundle_sha256": structured_hash,
         "adjudicated_at": "2026-09-01T00:00:00Z",
@@ -434,6 +438,17 @@ class StructureVisualGapAdjudicationTests(unittest.TestCase):
         inputs = valid_inputs(second_popup=False)
         _, summary = finalize_structure_visual_gap_audit(**inputs)
         self.assertEqual(summary["not_applicable_count"], 1)
+
+    def test_g1_gold_discrepancy_cannot_be_silently_adjudicated(self):
+        from popup_eval.gap_adjudication import finalize_structure_visual_gap_audit
+
+        inputs = valid_inputs()
+        row = inputs["adjudication_rows"][0]
+        row["g1_gold_discrepancy_detected"] = True
+        with self.assertRaisesRegex(
+            ValueError, "G1 gold discrepancy requires cannot_resolve"
+        ):
+            finalize_structure_visual_gap_audit(**inputs)
 
 
 if __name__ == "__main__":

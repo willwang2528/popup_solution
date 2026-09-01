@@ -14,6 +14,7 @@
     "annotator_id_pseudonymous",
     "record_status",
     "presence_label",
+    "out_of_scope_reason",
     "message_text",
     "message_observability",
     "semantic_slots",
@@ -33,7 +34,19 @@
     "annotator_role": {"enum": ["A", "B"]},
     "annotator_id_pseudonymous": {"type": ["string", "null"], "minLength": 1},
     "record_status": {"enum": ["blank", "completed"]},
-    "presence_label": {"enum": ["popup", "no_popup", "uncertain", "unusable", null]},
+    "presence_label": {"enum": ["popup", "no_popup", "uncertain", "unusable", "out_of_scope", null]},
+    "out_of_scope_reason": {
+      "enum": [
+        "captcha",
+        "risk_control",
+        "identity_authentication",
+        "payment_confirmation",
+        "permission_security_control",
+        "manual_review",
+        "other_predefined_exclusion",
+        null
+      ]
+    },
     "message_text": {"type": ["string", "null"], "minLength": 1},
     "message_observability": {"enum": ["complete", "partial", "not_observable", "not_applicable", null]},
     "semantic_slots": {
@@ -100,6 +113,7 @@
         "properties": {
           "annotator_id_pseudonymous": {"const": null},
           "presence_label": {"const": null},
+          "out_of_scope_reason": {"const": null},
           "message_text": {"const": null},
           "message_observability": {"const": null},
           "semantic_slots": {"maxItems": 0},
@@ -114,7 +128,7 @@
       "then": {
         "properties": {
           "annotator_id_pseudonymous": {"type": "string", "minLength": 1},
-          "presence_label": {"enum": ["popup", "no_popup", "uncertain", "unusable"]},
+          "presence_label": {"enum": ["popup", "no_popup", "uncertain", "unusable", "out_of_scope"]},
           "confidence": {"type": "integer", "minimum": 1, "maximum": 5},
           "evidence": {
             "properties": {"adapter_viewed": {"const": true}, "raw_image_copied": {"const": false}}
@@ -128,6 +142,31 @@
           },
           "annotation_started_at": {"type": "string", "format": "date-time"},
           "annotation_completed_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"presence_label": {"not": {"const": "out_of_scope"}}}},
+      "then": {"properties": {"out_of_scope_reason": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"presence_label": {"const": "out_of_scope"}}},
+      "then": {
+        "properties": {
+          "out_of_scope_reason": {
+            "enum": [
+              "captcha",
+              "risk_control",
+              "identity_authentication",
+              "payment_confirmation",
+              "permission_security_control",
+              "manual_review",
+              "other_predefined_exclusion"
+            ]
+          },
+          "message_text": {"const": null},
+          "message_observability": {"const": "not_applicable"},
+          "semantic_slots": {"maxItems": 0}
         }
       }
     },

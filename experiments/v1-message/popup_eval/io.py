@@ -23,6 +23,7 @@ ADJUDICATION_KEYS = {
     "adjudicator_id_pseudonymous",
     "adjudication_status",
     "presence_label_final",
+    "out_of_scope_reason_final",
     "message_text_final",
     "message_observability_final",
     "semantic_slots_final",
@@ -42,6 +43,15 @@ SLOT_TYPES = {
     "other_critical",
 }
 SLOT_POLARITIES = {"affirmed", "negated", "conditional", "unknown"}
+OUT_OF_SCOPE_REASONS = {
+    "captcha",
+    "risk_control",
+    "identity_authentication",
+    "payment_confirmation",
+    "permission_security_control",
+    "manual_review",
+    "other_predefined_exclusion",
+}
 
 
 def _strict_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -176,8 +186,18 @@ def _validate_adjudication_row(row: dict[str, Any]) -> None:
         raise _adjudication_error("resolved_at must include a timezone")
 
     presence = row["presence_label_final"]
-    if presence not in {"popup", "no_popup", "uncertain", "unusable", None}:
+    if presence not in {
+        "popup", "no_popup", "uncertain", "unusable", "out_of_scope", None
+    }:
         raise _adjudication_error("invalid presence_label_final")
+    out_of_scope_reason = row["out_of_scope_reason_final"]
+    if presence == "out_of_scope":
+        if out_of_scope_reason not in OUT_OF_SCOPE_REASONS:
+            raise _adjudication_error("out_of_scope_reason_final is required")
+    elif out_of_scope_reason is not None:
+        raise _adjudication_error(
+            "out_of_scope_reason_final is only valid for out_of_scope"
+        )
     observability = row["message_observability_final"]
     if observability not in {"complete", "partial", "not_observable", "not_applicable", None}:
         raise _adjudication_error("invalid message_observability_final")
@@ -201,7 +221,13 @@ def _validate_adjudication_row(row: dict[str, Any]) -> None:
         seen_slots.add(serialized)
 
     if row["adjudication_status"] == "cannot_resolve":
-        if presence is not None or message is not None or observability is not None or slots:
+        if (
+            presence is not None
+            or out_of_scope_reason is not None
+            or message is not None
+            or observability is not None
+            or slots
+        ):
             raise _adjudication_error(
                 "cannot_resolve row cannot carry final presence or message labels"
             )
@@ -217,6 +243,11 @@ def _validate_adjudication_row(row: dict[str, Any]) -> None:
         elif presence == "no_popup":
             if message is not None or observability != "not_applicable" or slots:
                 raise _adjudication_error("no_popup cannot carry message semantics")
+        elif presence == "out_of_scope":
+            if message is not None or observability != "not_applicable" or slots:
+                raise _adjudication_error(
+                    "out_of_scope cannot carry message semantics"
+                )
 
 
 def finalize_adjudication_batch(
@@ -278,6 +309,11 @@ def finalize_adjudication_batch(
         and row["presence_label_final"] in {"popup", "no_popup"}
         for row in finalized_rows
     )
+    out_of_scope_count = sum(
+        row["adjudication_status"] == "resolved"
+        and row["presence_label_final"] == "out_of_scope"
+        for row in finalized_rows
+    )
     summary = {
         "status": "finalized_human_adjudication_batch",
         "protocol_version": "1.0.0",
@@ -286,6 +322,7 @@ def finalize_adjudication_batch(
         "resolved_count": resolved_count,
         "cannot_resolve_count": len(finalized_rows) - resolved_count,
         "metric_eligible_count": metric_eligible_count,
+        "out_of_scope_count": out_of_scope_count,
         "batch_sha256": hashlib.sha256(canonical_payload).hexdigest(),
     }
     return finalized_rows, summary
@@ -298,6 +335,12 @@ def _apply_pilot_adjudication(item: dict[str, Any], row: dict[str, Any]) -> None
             reasons.append("adjudication_not_resolved")
         return
     presence = row.get("presence_label_final")
+    if presence == "out_of_scope":
+        reason = row["out_of_scope_reason_final"]
+        tag = f"out_of_scope:{reason}"
+        if tag not in reasons:
+            reasons.append(tag)
+        return
     if presence not in {"popup", "no_popup"}:
         if "presence_uncertain_or_unusable" not in reasons:
             reasons.append("presence_uncertain_or_unusable")

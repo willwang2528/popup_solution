@@ -16,7 +16,22 @@ from typing import Any, Iterable
 
 PROTOCOL_VERSION = "1.0.0"
 BATCH_ID = "popsweeper-message-pilot-30-v1"
-PRESENCE_CATEGORIES = ("popup", "no_popup", "uncertain", "unusable")
+PRESENCE_CATEGORIES = (
+    "popup",
+    "no_popup",
+    "uncertain",
+    "unusable",
+    "out_of_scope",
+)
+OUT_OF_SCOPE_REASONS = {
+    "captcha",
+    "risk_control",
+    "identity_authentication",
+    "payment_confirmation",
+    "permission_security_control",
+    "manual_review",
+    "other_predefined_exclusion",
+}
 MESSAGE_OBSERVABILITY = (
     "complete",
     "partial",
@@ -45,6 +60,7 @@ ANNOTATION_KEYS = {
     "annotator_id_pseudonymous",
     "record_status",
     "presence_label",
+    "out_of_scope_reason",
     "message_text",
     "message_observability",
     "semantic_slots",
@@ -154,6 +170,14 @@ def validate_completed_annotation(
     presence = record["presence_label"]
     if presence not in PRESENCE_CATEGORIES:
         raise ProtocolError(f"{item}: invalid presence_label")
+    out_of_scope_reason = record["out_of_scope_reason"]
+    if presence == "out_of_scope":
+        if out_of_scope_reason not in OUT_OF_SCOPE_REASONS:
+            raise ProtocolError(f"{item}: out_of_scope_reason is required")
+    elif out_of_scope_reason is not None:
+        raise ProtocolError(
+            f"{item}: out_of_scope_reason is only valid for out_of_scope"
+        )
     observability = record["message_observability"]
     if observability not in MESSAGE_OBSERVABILITY:
         raise ProtocolError(f"{item}: invalid message_observability")
@@ -172,9 +196,11 @@ def validate_completed_annotation(
             raise ProtocolError(
                 f"{item}: unobservable popup cannot carry message semantics"
             )
-    elif presence == "no_popup":
+    elif presence in {"no_popup", "out_of_scope"}:
         if message is not None or observability != "not_applicable" or slots:
-            raise ProtocolError(f"{item}: no_popup cannot carry message semantics")
+            raise ProtocolError(
+                f"{item}: no_popup/out_of_scope cannot carry message semantics"
+            )
     else:
         if message is not None or observability != "not_observable" or slots:
             raise ProtocolError(

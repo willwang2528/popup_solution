@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T10:55:00+08:00",
+  "generated_at": "2026-09-01T07:47:29+08:00",
   "status": "provisional",
   "target_population": "blind_and_low_vision_screen_reader_users",
   "source_ppt": "deliverables/ppt-format-2026-08-28/mobile弹窗问题调研-v1-formatted-v2.pptx",
@@ -13,6 +13,14 @@
     "full_text_verified": 10,
     "local_note_verified": 3,
     "ppt_only": 1
+  },
+  "public_source_coverage": {
+    "paper_count": 14,
+    "papers_with_source": 14,
+    "papers_without_source": 0,
+    "public_source_entries": 25,
+    "papers_with_persistent_id": 12,
+    "field_level_public_reaudit": "partial"
   },
   "strict_core_paper_ids": [
     "abandon_all_hope_2024",
@@ -39,8 +47,8 @@
   "quality_warnings": [
     "PPT slide 5 misattributes DiOS hierarchy and a modern XCUITest example to An Approach for iOS Applications' Testing; those images are excluded from that paper's evidence.",
     "Strict three-stage inclusion is weaker than the proposed A-VTR criterion and must not be described as full task recovery.",
-    "Abandon All Hope is currently ppt_only because its full text is not present in the authorized local source set.",
-    "The 29 source_evidence path entries (16 unique paths across all 14 records) point to authorized local provenance artifacts that are not redistributed in this public repository; until DOI or official source URLs are added, a public clone cannot independently reopen the field-level evidence from papers.jsonl."
+    "Abandon All Hope is currently ppt_only because its full text was not part of the frozen local extraction pass; the new official USENIX full-text link enables a future re-audit but does not silently upgrade the existing field labels.",
+    "All 14 records now expose public publisher, repository, project, preprint, author-manuscript, or dataset sources. These links prove identity and enable source reopening at their declared evidence_scope; detailed source_evidence locators remain the authoritative frozen provenance until each field is re-audited against the public source."
   ],
   "validation": {
     "jsonl_parse": "passed",
@@ -48,6 +56,7 @@
     "paper_count": "passed_14",
     "unique_ids": "passed_14",
     "strict_count": "passed_6",
-    "csv_jsonl_consistency": "passed"
+    "csv_jsonl_consistency": "passed",
+    "public_source_coverage": "passed_14_of_14"
   }
 }

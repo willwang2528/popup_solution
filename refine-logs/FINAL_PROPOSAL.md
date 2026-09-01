@@ -1,381 +1,195 @@
-# Research Proposal：When Pop-ups Go Silent
+# Final Proposal：PMAB-Android
 
-> 副标题：面向屏幕阅读器用户的移动弹窗消息可观测性评测与缺口门控补全
->
-> 当前版本：2026-09-01，ARIS refinement round 1
->
-> 状态：`REVISE / provisional`
->
-> 审阅状态：Codex 同族本地精炼；外部 Claude 调用因本课题披露授权边界被主机拒绝，不能标记为 cross-family accepted
->
-> 最重要范围依据：[`../sources/PPT_SLIDE_14_EVIDENCE.md`](../sources/PPT_SLIDE_14_EVIDENCE.md)
->
-> 查新：[`NOVELTY_CHECK.md`](./NOVELTY_CHECK.md)，当前建议 `PROCEED WITH CAUTION`
+> 版本：2026-09-01 08:44 CST
+> 状态：`PROCEED_WITH_CAUTION / pre-empirical`
+> V1 成功语义：只判断目标弹窗是否存在，以及弹窗表达的可见消息；不执行关闭，不证明 Recovery 或用户体验改善。
+> 独立评审：Claude Sonnet 5，cross-family accepted review trace；第三轮定向复核确认 G2 缺口已关闭、fatal flaws=0，最终 `PROCEED_WITH_CAUTION`、readiness=3.5/5。
 
-## 1. Problem Anchor
+## Problem Anchor
 
-### Bottom-line problem
+- **Bottom-line problem**：依赖 TalkBack 的视障人士遇到移动弹窗时，屏幕上可见的消息可能没有完整暴露在 Android 可访问性表示中；V1 只测“是否有目标弹窗、弹窗可见消息是什么”。
+- **Must-solve bottleneck**：结构非空仍可能缺失、合并、污染、错序、过期或与像素矛盾，因此 tree-only 不能保证重建可见消息。
+- **Non-goals**：点击、关闭、接受／拒绝、焦点／页面／任务 Recovery、CAPTCHA／风控／认证／支付／权限安全控制、用户体验改善主张、跨平台外推。
+- **Success condition**：在真实同步 Android screenshot + accessibility representation 上建立可审计 message gold 与 structure-sufficiency audit，并完成同 observation、同 backbone、同预算的强基线比较；结果允许为正、零或负。
 
-依赖 TalkBack、VoiceOver 等屏幕阅读器的盲人和低视力用户，在移动端遇到弹窗时，可能因为弹窗内容没有被完整暴露到平台可访问性树／UI 结构中，无法及时知道“出现了什么、要求什么、关键事实是什么”，从而长时间被阻断。
+## Anchor Check
 
-### Must-solve bottleneck
+- 原始瓶颈仍是“可见消息与辅助技术可获得结构之间的可观测缺口”，没有转成通用 popup detector、UI automation 或 Recovery。
+- 接受外部 reviewer 对 source mismatch、RICO 非 AccessibilityNodeInfo、popup 边界不足和零实证的批评。
+- 不接受把“可关闭性”作为截图 presence gold 的必要条件：单张截图无法可靠观察 dismissibility，强行要求会把隐藏动作推断污染 presence gold。
+- 不接受把 VPMA 改成可调权重的复合分数；VPMA 保持预注册布尔合取，分项指标单独报告。
+- 不接受“没有目标用户就无法做事实转录 gold”的绝对说法；但若论文声称消息对屏幕阅读器用户充分／有用，必须另做 BVI 用户验证。V1 默认不做 UX claim。
 
-屏幕上可见的 popup message 与平台暴露给辅助技术的结构化表示之间存在 **message observability gap**：
+## Simplicity Check
 
-- 弹窗节点完全缺失；
-- 系统或框架合并节点；
-- 标题、正文、金额、时间、对象、否定或后果缺失；
-- popup 与宿主页面文本混在一起；
-- reading order 不可靠；
-- screenshot 与结构树不同步或互相矛盾；
-- Android／iOS 对 role、name、label、text、value、hint 的暴露不一致。
+- **Dominant contribution**：PMAB-Android，一个 popup-message measurement benchmark。
+- **Supporting contribution**：三种输入族在匹配预算下的经验比较；gap gate 只是一种 engineering allocation policy。
+- **删除／降级**：iOS 主张、跨平台 benchmark、通用 taxonomy、视觉兜底新颖性、gate 算法新颖性、Recovery。
+- **冻结复用**：现有 OCR／VLM backbone；不训练新视觉模型。
+- **硬门**：PopSweeper／RICO 只做 annotation/infrastructure pilot；没有真实同步 Android accessibility capture 就不启动论文主实验。
 
-如果事实没有出现在结构化表示中，tree-only 方法原则上读不到；不能用更复杂的推理假装恢复不存在的证据。
+## Changes Made
 
-### Non-goals
+### 1. 数据锚从 PopSweeper/RICO 转为真实 Android accessibility observation
 
-V1 明确不做：
+- PopSweeper 的 `ads/no_ads` 不再视为 popup label，只用于盲标协议与来源适配 pilot。
+- RICO semantic hierarchy 不再被称为 AccessibilityNodeInfo 或 TalkBack 表示。
+- 正式 PMAB-Android item 必须来自受控开源 App／可重放 fixture／获授权真实 App，并同步保存 screenshot 与 Android accessibility representation。
+- 若无法获得至少 100 个跨 App／template 的真实同步 item，主 benchmark claim 停止；不能用 RICO 补位。
 
-- 统一解决所有移动弹窗；
-- 绕过 CAPTCHA、风控、认证、支付、权限安全控制或人工审核；
-- 自动点击、关闭、接受、拒绝或替用户做选择；
-- 从节点消失、截图变化或日志变化推导完整 Recovery；
-- 在没有盲人／低视力用户研究时声称真实体验已改善；
-- 把通用 OCR、VLM、accessibility metadata generation 或 UI grounding 冒充新贡献。
+### 2. 弹窗范围已机器可读化
 
-### Constraints
+`dataset-v1/annotation-pilot/POPUP_SCOPE_V1.json` 冻结以下截图可观察定义：
 
-- 移动端、普通弹窗、获授权的只读采集；
-- V1 输入只能是同一动作前状态的 screenshot 与结构化 UI／可访问性表示；
-- 所有方法在同一冻结 observation、同一 split 和等预算下评估；
-- 真实数据与 synthetic corruption 分层，不能混成一个结果；
-- App、popup template、SDK/CMP、UI framework、OS family 和 near duplicate 不跨 split；
-- 当前主机无 `adb`、Android emulator 或可用 `simctl`，所以设备采集仍是未满足门；
-- PopSweeper CC-BY-4.0 数据可作真实截图种子；RICO screenshot 的再分发必须遵守官方 copyright notice；
-- iOS 结论必须由真实 iOS capability／data 支持，不能由 Android 或文档外推。
+> 弹窗是与宿主内容视觉可分离、不是主屏幕骨架／导航或内联宿主内容，并且明显覆盖、遮挡、门控或打断当前宿主上下文的消息界面。
 
-### Success condition
+“视觉可分离”至少需要一个截图可观察线索：有界容器／边缘、不同表观 z 层或背景处理、宿主遮挡，或全屏 gate／interruption 构图。三个可观察条件必须同时成立。纳入 modal dialog、alert、interstitial、阻断式 banner、打断式 bottom sheet、全屏 gate；排除主页面骨架／导航、drawer、menu、toast/snackbar、内联错误、键盘和媒体控制 overlay。时间持续性和 dismissibility 均不推断。
 
-以下证据同时成立才算 V1 达成：
+CAPTCHA、风控、身份认证、支付确认、权限安全控制和人工审核使用显式 `out_of_scope` disposition，并必须记录预定义原因；它们不进入主指标，也不能藏进 `uncertain`。
 
-1. 发布含真实 item 的 popup-message benchmark，而不是只有 schema 或 synthetic fixture；
-2. 每个 item 可追溯到 screenshot、平台结构化表示、message gold、critical facts、observability gap 和 split group；
-3. 正式 validation/test 由双人独立标注与裁决；
-4. MG-PU 在冻结 test 上，以同预算相对最强 deployable baseline 提升预注册主指标，95% CI 支持正向差异；
-5. 增益不能由更多视觉调用、更多 tokens、数据泄漏、过度 abstain 或人工 corruption 单独解释；
-6. 论文只在已采集平台和已验证范围内做结论。
+### 3. Gold 与 gap audit 分离
 
-## 2. 第 14 页硬边界
+- Stage G1：A/B 仅看截图，独立标 presence、visible message、critical facts；第三人重查所有 item 后裁决。
+- Stage G2：G1 冻结后，另一组审计者只看结构 + 冻结 gold，标 `structured_message_complete_gt`、缺失事实、污染、错序、过期与矛盾。
+- G1 标注者看不到 source label、结构、OCR、模型输出；G2 审计者看不到方法预测。
+- 方法开发只用 train/dev，test gold 只在一次正式评分时解锁。
+- 这避免用 MG-PU 自己定义 gap，也避免让结构内容反向改写可见消息 gold。
 
-PPT 第 14 页把验证分为五层：
+### 3.1 G2 冲突处理闭环
 
-1. 弹窗标识消失——弱证据；
-2. 截图／日志变化——弱证据；
-3. 原目标与 Context 恢复——强证据；
-4. 业务选择与持久化状态——强证据；
-5. 原任务后置条件——强证据。
+- 两名 G2 审计者独立判断 structure 是否足以重建已冻结 G1 message，并绑定同一 G1 gold hash、结构 bundle hash 与 item ID。
+- 普通 G2 分歧由第三名审计者重新检查冻结证据；仍无法解决则该 item 的 gap disposition 为 `cannot_resolve`，不进入 gap-stratified 方法主张。
+- 若任一 G2 审计者认为 G1 的截图事实本身有实质错误，G2 不得直接改写 G1。该 item 立即 `cannot_resolve`，退回新的、版本化 G1 修正，生成新 gold hash，再从头重启 G2。
+- G1/G2 标注者都看不到方法 prediction；任何 prediction、gate reason 或模型错误都不能参与 gold 修正。
+- 这些规则已由 `STRUCTURE_VISUAL_GAP_AUDIT.md`、两个 schema 和 fail-closed finalizer 测试约束。
 
-这意味着：
+### 4. 用户证据口径收紧
 
-- V1 的 `VPMA` 只证明 popup presence + message judgment 的技术表现；
-- 它不证明 popup 已消失、焦点已恢复、业务选择已保存或原任务已完成；
-- 未来 `dismissal_recovery_advanced` 必须分别报告 `D`、`C_tech`、`C_a11y`、`B`、`T`，不能压成一个 success bit；
-- 任何论文结果都不得把 PopSweeper／WhisperTest 的截图变化或坐标命中改写为完整任务恢复。
+- sighted/method-blind annotators只能建立“截图可见事实”gold，不能证明消息对视障用户充分。
+- 技术 benchmark 的主张限定为 factual presence/message correctness，不写 user utility。
+- 若目标 venue 需要人本贡献，增加一个独立、非动作的 BVI message-adequacy validation 子研究；它只判断消息是否足以理解弹窗，不涉及点击或 Recovery。
+- 未做该子研究时，`eligible_for_user_experience_claim=false`。
 
-## 3. Technical Gap
+## Revised Proposal
 
-已有工作分别覆盖：
+### Title
 
-- RICO／MobileViews：大规模 screenshot + UI hierarchy；
-- Screen Recognition：从 pixels 生成或补充 accessibility metadata；
-- ScreenAudit：从 TalkBack transcript 发现通用 accessibility error；
-- PopSweeper：视觉识别 app-blocking popup 和 close target；
-- WhisperTest：iOS A11Y、OCR／OmniParser、VLM 与 Voice Control 自动化；
-- consent-dialog studies：文本／OCR 规则、Accept／Reject 交互和大规模应用测量。
+**PMAB-Android: A Benchmark for Popup Message Judgment from Accessibility Observations**
 
-尚未被当前检索证据覆盖的组合是：
+### Research question
 
-> 对 popup message 这一具体任务，把同一动作前状态的视觉事实、平台结构化暴露、屏幕阅读器可获得信息、message/critical-fact gold 和 exposure-gap taxonomy 放进同一个公开评测协议，并检验“只在结构证据不足时调用视觉”是否比 structure-only、vision-only 和 always-on fusion 更好。
+在真实、同步的 Android screenshot 与 accessibility representation 上：
 
-这个组合仍是待验证的 research gap，不是已经证明的 novelty。
+1. 有多少视觉上可见的 popup message 无法由结构完整重建？
+2. structure-only、vision-only 和 structure+vision 在 presence、critical-fact correctness、hallucination 与成本上如何比较？
+3. 一个只依据结构充分性分配视觉预算的简单 gate，是否比 always-on、empty-tree 和 random-K 更好；如果不好，何时 structure-only 或 vision-only 足够？
 
-## 4. Method Thesis
+### Item contract
 
-方法名：**Message-Gap-Gated Popup Understanding（MG-PU）**。
+每个正式 item 必须包含：
 
-> 在冻结的 popup observation 上，先以平台结构化表示重建消息；只有当 popup scope、主体消息、关键事实、reading order、owner/context、同步或通道一致性不满足可审计 sufficiency contract 时，才调用 popup ROI 的视觉补全；关键冲突仍无法解决时弃答。相较始终视觉或只看结构，这种选择性证据分配应在同预算下提高正确消息覆盖并降低关键编造与视觉成本。
+- immutable `item_id`、source/app/template group、license/release class；
+- Android device／OS／app／locale／capture tool version；
+- 同一稳定状态的 screenshot hash、capture timestamp、state fingerprint；
+- 原始 Android accessibility representation 与采集错误；
+- 公共规范字段，但保留 raw provenance；
+- G1 popup presence/message/critical-fact gold；
+- G2 structure-sufficiency/gap audit；
+- split/group、prediction、cost 与 eligibility；
+- `action_attempts=[]`，所有 Recovery 字段为 null/not-applicable。
 
-MG-PU 是后续可扩展到动作与恢复研究的 V1 perception/message 子层；V1 不包含 action，也不得使用 Recovery 命名其结果。
+### Minimum viable data
 
-## 5. Contribution Focus
+正式规模由 pilot 方差与 group structure 决定，不把 reviewer 的 200 当无依据常数。启动门：
 
-### Dominant contribution
+- 至少 100 个真实同步 Android item；
+- 至少 5 个 App/source groups 与 3 个 popup template families；
+- 正负样本和边界样本均存在；
+- 每个 test group 与 train/dev 在 App/template/near-duplicate 上隔离；
+- 先做 30-item 协议 pilot；presence κ、message／slot agreement 与 uncertain cap 通过后再扩展；
+- 真实 non-synthetic gap positives 至少 20 个且不由单一 group 贡献；
+- 许可／隐私／EXIF／redaction 与 public release class 逐 item 可审计。
 
-**Popup Message Accessibility Benchmark（PMAB）**：一个 popup-specific、证据可追溯的公开评测包，包含：
+若这些门未过，PMAB 只保留 capability pilot，不写 benchmark paper。
 
-- Android／iOS 原始平台字段与公共规范层；
-- screenshot、popup ROI、OCR／视觉候选；
-- platform hierarchy／accessibility snapshot；
-- 可选 TalkBack／VoiceOver utterance／focus observation；
-- popup presence、message text、critical facts、observability gap；
-- provenance、license、hash、redaction、group split；
-- prediction、abstention、latency、visual-call 和 VPMA evaluation。
+### Compared families
 
-公开包必须区分：
+核心只保留三族：
 
-- 可直接再分发的 CC-BY／自建 controlled item；
-- 只能发布 annotation、source ID、hash 和 downloader/adaptor 的受条款约束 item。
+1. **Structure-only**：规则 flatten + 同一冻结语言 backbone；
+2. **Vision-only**：OCR-only 与 screenshot-only frozen VLM；
+3. **Fusion/allocation**：always-on、empty-tree gate、random-K、message-sufficiency gate。
 
-### Supporting contribution
+同一 backbone 的比较共享系统 prompt、输出 schema、temperature、max tokens、retry policy、timeout、OCR version 与解析器。不同模态固有的输入适配单独公开，不伪称 prompt 字符串完全相同。
 
-MG-PU 及其等预算选择性视觉评估：证明或否定“message-gap gate”是否能在 PMAB 上获得更好的 accuracy–coverage–cost trade-off。
+### Budget parity
 
-### Explicit non-contributions
+每个预算点同时冻结并报告：
 
-- “首次发现移动无障碍问题”；
-- 通用 accessibility metadata generation；
-- 通用 popup detection／dismissal；
-- 新 OCR／VLM backbone；
-- 用户意图推断或授权决策；
-- 完整任务 Recovery；
-- 绝对安全或 100% 覆盖。
-
-## 6. Dataset Design
-
-### 6.1 Item unit
-
-一个 V1 item 是一个动作前、只读、冻结的 observation：
-
-```text
-source episode + license
-→ screenshot / popup ROI
-→ platform structured representation
-→ optional screen-reader transcript/focus
-→ normalized union fields
-→ popup/message/critical-fact gold
-→ observability-gap annotation
-→ group and split
-→ baseline/method predictions
-→ atomic metrics + VPMA
-```
-
-字段 contract 继续保存已有论文方法 90 个字段与我方 165 个字段的语义并集，共 255 条 crosswalk；`message_judgment` profile 单独计数。
-
-### 6.2 Data tiers
-
-| Tier | 来源 | 作用 | 是否可进入正式主结果 |
-|---|---|---|---|
-| P0 — synthetic schema fixture | 当前 3 条 positive/no-popup/abstain | 验证 schema 与 QA | 否 |
-| P1 — public-derived pilot | PopSweeper CC-BY-4.0 screenshot/annotation；可对齐时连接 RICO hierarchy | 验证 source join、标注协议、gap taxonomy 和 Android baseline | 仅在 provenance／许可／join 通过后 |
-| P2 — controlled open-source apps | 自建或 permissive F-Droid app 的 screenshot、hierarchy、TalkBack observation | 提供可重放、可公开的 ground truth | 是，Android 主数据 |
-| P3 — iOS capability/data | 真实 iPhone 的 screenshot、XCUI/A11Y snapshot、VoiceOver observation | 支持 iOS 分层结论 | 是；未采集前不得声称跨平台 |
-
-### 6.3 Pilot sample
-
-Android pilot 先冻结 `N=120` candidates：
-
-- 60 popup positives；
-- 60 visually similar no-popup／non-blocking negatives；
-- positives 按 tree-complete、partial/merged、visual-only 候选分层；
-- App/package/template group 隔离；
-- 先做 30-item 双人试标，通过协议门后再解锁余下 90。
-
-正式 N 不由任意整数决定。Pilot 后依据真实 gap prevalence、cluster size、配对 VPMA 差异和目标 CI 宽度做 power analysis 冻结。
-
-### 6.4 Gold
-
-最小 gold：
-
-- `popup_present_gt`；
-- `blocking_gt`；
-- `message_text_gt`；
-- `critical_facts_gt[]`；
-- `message_text_observability`；
-- gap type；
-- screenshot／structure／utterance evidence URI；
-- 标注者、裁决与不确定性。
-
-屏幕可见但被系统安全策略遮蔽、不可捕获或不可合法公开的内容不猜测，标为 unavailable/out-of-scope。
-
-## 7. MG-PU Mechanism
-
-```text
-frozen screenshot + structured UI snapshot
-                   │
-                   ▼
-          popup scope detector
-                   │
-                   ▼
-     structured message reconstructor
-                   │
-                   ▼
-      message sufficiency contract
-       ├─ sufficient ───────────────┐
-       ├─ gap → visual ROI completer│
-       └─ stale/unsafe → abstain    │
-                                   ▼
-                 evidence aligner + critical-fact guard
-                                   │
-                                   ▼
-        popup presence + message + facts + confidence
-```
-
-Sufficiency contract 至少检查：
-
-- popup owner／window／layer／context；
-- title/body/option coverage；
-- amount/date/object/negation/consequence；
-- reading order；
-- tree–screenshot timestamp/fingerprint；
-- host-text contamination；
-- cross-channel contradiction；
-- visual-only text cues。
-
-视觉模块只能返回带 ROI/span provenance 的候选文本和图标语义，不生成点击坐标。关键事实冲突时不多数投票，直接 abstain。
-
-## 8. Claims
-
-### C1 — Benchmark/measurement claim
-
-PMAB 能测量通用 UI 数据集或 popup detector 没有分离的 message observability gap，并报告其在 platform、owner、popup kind、framework、language 和 gap tier 上的分布。
-
-最低证据：
-
-- 真实 item，不是 synthetic；
-- provenance／license／hash 完整；
-- 两名标注者＋裁决；
-- inter-annotator agreement 与 ambiguity rate；
-- group-disjoint split；
-- 至少 Android 主数据；iOS 单独门控。
-
-### C2 — Method claim
-
-在同一 frozen observation 与等视觉／token／latency预算下，MG-PU 相对最强 deployable baseline 提高：
-
-```text
-VPMA = presence_correct
-       AND message_semantically_correct
-       AND NOT critical_hallucination
-```
-
-同时报告 coverage，避免靠大量 abstain 获得虚假准确率。
-
-### Anti-claims
-
-实验必须排除：
-
-- 收益只是更多视觉调用；
-- 收益只是 VLM 更大；
-- 数据集按 MG-PU 的 gate 人为定制；
-- synthetic corruption 驱动全部提升；
-- 同 App/template 泄漏；
-- 过度 abstain；
-- 人工 gold 泄漏进 prompt；
-- 把消息准确率升级为用户体验或任务恢复。
-
-## 9. Baseline Families
-
-最多三族，均 no-action：
-
-1. **Structure-first family**
-   - platform raw text／role flatten；
-   - Appium-text／regex 规则；
-   - ScreenAudit-style transcript analysis（有 transcript 的子集）。
-2. **Vision-first family**
-   - OCR-only；
-   - PopSweeper paper reconstruction popup classifier + full-screen OCR；若增加 popup ROI，单独标为本研究 B2A adaptation；
-   - screenshot-only VLM。
-3. **Fusion family**
-   - always-on structure + vision；
-   - WhisperTest-style fixed cascade；
-   - MG-PU gap-gated fusion。
-
-Human-readable-message oracle 只作上界，不是 deployable baseline。
-
-## 10. Primary Evaluation
-
-### Main metric
-
-- `VPMA` 与 coverage；
-- popup Presence Macro-F1；
-- Message Semantic Correctness；
-- Critical Information Recall；
-- Critical Hallucination Rate。
-
-### Cost and robustness
-
-- visual-call rate；
+- visual calls/item；
+- decoded pixels/item；
 - input/output tokens；
-- p50/p95 latency；
-- model/API cost；
-- platform／gap tier／owner／language 分组；
-- bootstrap 95% CI，以 App/template group 为 cluster。
+- retry count与失败处理；
+- wall-clock p50/p95；
+- API／compute cost；
+- abstention policy。
 
-### Pre-registered main comparison
+always-on 在其自然预算上报告；在 matched-K 分析中，所有条件视觉策略用同一 K 或同一像素／成本上限。主比较优先报告 quality–coverage–cost Pareto，而不是只匹配“调用次数”。
 
-`MG-PU vs dev-selected strongest deployable baseline`，在相同 frozen test、相同可用输入和相同预算下比较 VPMA。
+### Metrics
 
-继续 method claim 的最低门：
+- Presence Macro-F1；
+- Critical-fact precision／recall；
+- Critical hallucination rate；
+- message semantic correctness；
+- coverage／selective risk；
+- VPMA：positive item 上为 `presence_correct AND message_semantically_correct AND NOT critical_hallucination`；negative item 为 `presence_correct`；
+- visual-call／pixel／token／latency／cost。
 
-- absolute VPMA 提升至少 5 percentage points；
-- cluster bootstrap 95% CI 不跨 0；
-- critical hallucination 不恶化；
-- coverage 不低于 baseline 5 points 以上，或 risk–coverage 曲线严格占优；
-- 至少两个真实 gap tier 同方向；
-- 增益在排除 near duplicates 后仍存在。
+VPMA 不加可调权重。字符串 Exact／Character F1 只作辅助。
 
-## 11. Kill Criteria
+### Core experiment blocks
 
-满足任一项即降级或停止方法 claim：
+**B0 Data validity**：真实同步 capture、来源分布、许可、G1 IAA、G2 agreement、gap prevalence。
+**B1 Strong family comparison**：structure-only vs vision-only vs always-on，在冻结 test 上给出质量—成本基线。
+**B2 Allocation isolation**：message-sufficiency gate vs empty-tree vs random-K，在同预算点做配对比较。
+**B3 Failure/negative analysis**：按真实 gap tier、popup type、App/template、message complexity 分析，并预注册四种叙事出口。
 
-- structure-only 与 MG-PU 差异 <2 points 且前者更便宜；
-- always-on fusion 在等预算下稳定占优；
-- 提升只存在于 synthetic corruption；
-- 真实 message gap 稀少到无法支持独立任务；
-- 增益依赖更高 hallucination 或不可接受 abstention；
-- source screenshot 与 hierarchy 无法可靠 join；
-- 标注 agreement 未达门且两轮协议修订仍失败；
-- formal split 后增益消失；
-- iOS 无真实数据却试图声称跨平台；
-- 查新发现同构公开 benchmark／方法且本方案没有清晰增量。
+不为追逐正结果增加更多模型或模块。
 
-若方法 kill 但 benchmark 有效，可保留 measurement／dataset paper；不得继续堆叠新模块挽救方法。
+### Outcome-to-claim matrix
 
-## 12. Feasibility and Current Status
+| 结果 | 可主张 | 不可主张 |
+|---|---|---|
+| gate 在同预算显著优于 strongest baseline，hallucination/coverage 不恶化 | PMAB measurement + conditional allocation 的经验收益 | 新 VLM、UX 改善、Recovery |
+| null | PMAB + “在本数据范围内 gate 无额外收益” | 方法 superiority |
+| vision-only 胜 | PMAB + “当前结构不足，vision-first 更强” | structure-first/gate superiority |
+| structure-only 近 ceiling，gap <10% | PMAB/progress measurement 或短论文；何时结构足够 | 高影响方法贡献 |
+| gap 仅单一 source／synthetic | capability case study | 独立 benchmark |
+| G1/G2 agreement 失败 | 协议失败报告 | gold、benchmark、方法结果 |
 
-已完成：
+### Stop conditions
 
-- PPT 第 14 页证据锚与五级回证边界；
-- 14 篇现有文献方法字段采集；
-- 90 + 165 = 255 条 source-field crosswalk；
-- schema `1.1.0-provisional`；
-- 3 条不可进入经验指标的 synthetic fixtures；
-- PopSweeper 归档本地大小／MD5／安全清点与 2105 张真实图片目录标签审计；
-- RICO semantic 归档 66261 个 JSON/PNG 对安全清点；
-- 1923/1923 个去重 numeric 候选完成 RICO ID join；
-- 固定 seed 的 120 条 adapter-only 来源候选清单（消息标注 pending，不进入指标）；
-- 初步查新。
+- 无真实同步 AccessibilityNodeInfo/AccessibilityService capture：停止主实验；
+- G1 presence κ <0.70，经过两次预先编号的协议修订仍失败：停止 benchmark；
+- G2 structure-sufficiency agreement <0.70：不能把 gap 当 gold，只能做消息数据；
+- 真实 gap positives <20 或 gap prevalence <10%：停止方法贡献，转 structure-sufficiency measurement；
+- gate 相对 strongest baseline <2 VPMA points，或 CI 跨 0 且无 Pareto 优势：停止方法 superiority；
+- 增益来自额外像素／tokens／retries／更低 coverage：主比较无效；
+- 许可或隐私门未过：不公开对应 media／gold；
+- iOS 未就绪：标题、数据和结论保持 Android-only。
 
-未完成：
+### Current evidence status
 
-- 真实 pilot items；
-- 30-item 双人 message annotation pilot；
-- 可提供 text/content-desc 的详细 hierarchy 或等价结构化 observation；
-- 双人标注与 adjudication；
-- Android controlled capture；
-- iOS capability/data；
-- baseline 和 MG-PU 可执行实现；
-- 冻结 split 上的实验结果；
-- cross-family review；
-- 公开 benchmark release。
+- schema/crosswalk、source adaptation、annotation bundle、pre-gold code：工程基础；
+- PopSweeper/RICO 30-item：协议与媒体 QA pilot；
+- 正式 PMAB-Android empirical item：0；
+- 人工 gold：0；
+- 正式 baseline result：0；
+- 当前结论：`REVISE / pre-empirical`，任何“better/first/released benchmark”主张都未获得。
 
-因此当前状态是 **research-ready protocol + source audit complete + candidate manifest frozen**，不是可进入 VPMA 的数据集或论文实验已经完成。
+## Execution Decision
 
-## 13. Timeline
+当前允许继续的只有：真实同步 Android capture feasibility、真人 G1/G2 pilot、冻结基线与同预算实验准备。PopSweeper/RICO 的 30-item bundle 只验证来源适配、标注流程和工程契约，不是正式 PMAB-Android benchmark。
 
-1. **M0 source gate（1–2 天）**：下载、校验、解包 PopSweeper；检查 label、ID、RICO join 和许可。
-2. **M1 annotation pilot（2–4 天）**：30 items 双人试标；修订 message／gap 协议。
-3. **M2 Android pilot（3–7 天）**：冻结 120 candidates；跑 deterministic/OCR baselines。
-4. **M3 method gate（3–7 天）**：实现 always-on 与 MG-PU；运行主比较和 kill criteria。
-5. **M4 platform expansion**：获得设备后采集 controlled Android 和 iOS；未就绪时只发布 Android pilot，不虚称跨平台。
-6. **M5 release**：数据卡、许可、下载适配器、annotations、schema、evaluator、结果表和复现命令一起发布。
+论文主实验必须在真实同步 Android screenshot + accessibility representation 上启动；人工 gold、gap prevalence、正式方法比较和公开经验数据目前均为 0。若硬门未过，研究降级为 capability／protocol artifact，不把工程就绪写成效果结论。

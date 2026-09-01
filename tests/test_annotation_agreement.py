@@ -42,6 +42,7 @@ def completed_record(
     message_text: str | None = None,
     semantic_slots: list[dict] | None = None,
     message_observability: str | None = None,
+    out_of_scope_reason: str | None = None,
 ) -> dict:
     if message_observability is None:
         message_observability = (
@@ -57,6 +58,7 @@ def completed_record(
         "annotator_id_pseudonymous": f"annotator-{role.lower()}",
         "record_status": "completed",
         "presence_label": presence,
+        "out_of_scope_reason": out_of_scope_reason,
         "message_text": message_text,
         "message_observability": message_observability,
         "semantic_slots": semantic_slots or [],
@@ -220,6 +222,31 @@ class AgreementUnitTests(unittest.TestCase):
                     module.validate_completed_annotation(
                         mutation, expected_role="A"
                     )
+
+    def test_out_of_scope_requires_a_predefined_reason_and_has_no_message(self):
+        module = load_module()
+        valid = completed_record(
+            1,
+            "A",
+            "out_of_scope",
+            message_observability="not_applicable",
+            out_of_scope_reason="permission_security_control",
+        )
+        module.validate_completed_annotation(valid, expected_role="A")
+
+        missing_reason = json.loads(json.dumps(valid))
+        missing_reason["out_of_scope_reason"] = None
+        with self.assertRaisesRegex(module.ProtocolError, "out_of_scope_reason"):
+            module.validate_completed_annotation(missing_reason, expected_role="A")
+
+        reason_on_in_scope = completed_record(
+            2,
+            "A",
+            "no_popup",
+            out_of_scope_reason="captcha",
+        )
+        with self.assertRaisesRegex(module.ProtocolError, "out_of_scope_reason"):
+            module.validate_completed_annotation(reason_on_in_scope, expected_role="A")
 
     def test_pairing_rejects_mismatched_item_sets(self):
         module = load_module()

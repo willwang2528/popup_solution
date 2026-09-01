@@ -12,9 +12,34 @@
 
 ## 2. 范围判定
 
-纳入普通 App／系统／浏览器／WebView 弹窗。CAPTCHA、风控、身份认证、支付确认、权限安全控制、人工审核等标为 out-of-scope，不进入 v1 主指标。
+纳入普通 App／系统／浏览器／WebView 弹窗。CAPTCHA、风控、身份认证、支付确认、权限安全控制、人工审核等必须标为 `presence_label=out_of_scope`，并填写 `out_of_scope_reason`；它们不进入 v1 主指标，禁止用 `uncertain` 隐藏范围排除。这里的权限／安全控制同时包含 OS 级系统权限对话框和 App 内权限／安全控制；即使其视觉形式符合 popup，也因本研究边界排除，这不表示它们不重要。
 
-`popup_present_gt=true` 需要有独立于宿主内容、打断或覆盖当前交互上下文的界面证据。单一通道没找到不能直接标成 no-popup。
+V1 的可操作定义只依据截图中可观察证据：
+
+> 弹窗是一个与宿主内容在视觉上可分离、不是主屏幕骨架／导航或宿主内联内容，并且明显覆盖、遮挡、门控或打断当前宿主上下文的消息界面。
+
+“视觉可分离”至少需要一个截图可观察线索：有界容器／边缘、不同的表观 z 层或背景处理、遮挡宿主内容，或全屏 gate／interruption 构图。时间持续性和可关闭性均不是条件。
+
+三个条件必须同时满足：
+
+1. 存在视觉上可分离的消息界面；
+2. 它不是稳定页面、Tab／Toolbar、导航抽屉、菜单或宿主内联内容；
+3. 画面中存在 overlay／occlusion／gate／interrupt 线索。
+
+纳入 modal dialog、alert、interstitial、阻断式 banner、打断式 bottom sheet、全屏 gate、age gate、评分／更新提示。排除稳定主页面、稳定导航、drawer、dropdown/context menu、toast/snackbar、内联表单错误、自动补全、键盘和媒体控制 overlay。
+
+边界规则：
+
+- bottom sheet 只有在可分离且明显打断／门控宿主上下文时才标 popup；
+- 全屏界面只有在能看出是独立 gate／interruption 而不是稳定主页面时才标 popup；
+- banner 只有在持续阻断或门控时纳入；短暂 toast/snackbar 排除；
+- 普通 consent notice 可纳入，权限安全控制仍为 out-of-scope；
+- 截图盲标不得推断 dismissibility、clickability 或隐藏动作；可关闭性不是 presence 门槛；
+- 无法由可观察证据消除边界歧义时标 `uncertain` 并写原因，不强制二分。
+
+机器可读规则见 `annotation-pilot/POPUP_SCOPE_V1.json`。
+
+`popup_present_gt=true` 需要满足上述三个可观察条件。单一通道没找到不能直接标成 no-popup。
 
 无弹窗时：
 
@@ -27,13 +52,14 @@ message_text_observability = not_applicable
 
 ## 3. 消息转录
 
-按用户合理阅读顺序转录 title、body、list/option、警告和理解所需的按钮文案。遵守：
+按用户合理阅读顺序转录 title、body、list/option、警告，以及理解消息所需、在画面中明确可见的 choice label。choice label 只是消息内容，不是动作建议。遵守：
 
 - 忠实保留原语言，不翻译；
 - Unicode 与空白可规范化，但不改写语义；
 - 不删除否定词；
 - 不改写金额、日期、单位、对象、条件、后果；
 - 不补写截图／树中不可观察的应用意图；
+- 不推断隐藏动作、可关闭性或未明示的动作后果；
 - 宿主页面文本不得混入弹窗消息。
 
 `complete` 表示可观察内容足以重建完整消息；`partial` 表示有可读片段但明显缺失；`not_observable` 表示无法可靠转录。

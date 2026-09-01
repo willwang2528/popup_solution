@@ -61,6 +61,24 @@ def blind_template_row(item_id: str = "PMJ-PILOT-001") -> dict:
 
 
 class BlindAnnotationViewerTests(unittest.TestCase):
+    def test_image_content_type_uses_magic_bytes_not_filename_suffix(self) -> None:
+        module = load_module()
+
+        self.assertEqual(
+            module.sniff_image_content_type(b"\xff\xd8\xff\xe0jpeg-payload"),
+            "image/jpeg",
+        )
+        self.assertEqual(
+            module.sniff_image_content_type(b"\x89PNG\r\n\x1a\npng-payload"),
+            "image/png",
+        )
+
+    def test_unknown_image_content_is_rejected(self) -> None:
+        module = load_module()
+
+        with self.assertRaisesRegex(module.ViewerError, "unsupported image format"):
+            module.sniff_image_content_type(b"not-an-image")
+
     def test_view_model_never_reads_or_renders_coordinator_metadata(self) -> None:
         module = load_module()
         with tempfile.TemporaryDirectory() as directory:

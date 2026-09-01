@@ -6,6 +6,7 @@
   "adjudicator_id_pseudonymous": null,
   "adjudication_status": "pending",
   "presence_label_final": null,
+  "out_of_scope_reason_final": null,
   "message_text_final": null,
   "message_observability_final": null,
   "semantic_slots_final": [],

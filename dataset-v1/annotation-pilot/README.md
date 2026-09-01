@@ -83,21 +83,31 @@ Annotator A 与 B 必须独立工作，在两份 annotation 都冻结前不得�
 
 ### 4.2 Presence label
 
-- `popup`：动作前画面存在独立于宿主内容、打断或覆盖当前交互上下文的 popup message。
+- `popup`：动作前画面同时满足 `POPUP_SCOPE_V1.json` 的三个可观察条件：消息界面视觉可分离、不是稳定导航／内联宿主内容、且存在覆盖／遮挡／门控／打断线索。
 - `no_popup`：检查完整可见上下文后，没有符合上述定义的 popup。
 - `uncertain`：证据可查看，但无法可靠二分。
 - `unusable`：adapter/source 损坏、无法加载或证据不足以开展标注。
+- `out_of_scope`：画面落入预定义排除边界；必须填写 `out_of_scope_reason=captcha|risk_control|identity_authentication|payment_confirmation|permission_security_control|manual_review|other_predefined_exclusion`。该标签不进入主指标，不能用 `uncertain` 代替。
+
+`permission_security_control` 同时覆盖 OS 级系统权限对话框和 App 内权限／安全控制。即使其视觉形式是典型 popup，V1 也按用户指定范围排除；这是研究边界，不是对其可访问性重要性的判断。
 
 “树中没找到”“来源目录写了 no_ads”或模型没有检测到都不能单独生成 `no_popup`。
+
+边界例子：
+
+- modal dialog、alert、interstitial、阻断式 banner、打断式 bottom sheet 和全屏 gate 可纳入；
+- stable screen、Tab／Toolbar、navigation drawer、dropdown/context menu、toast/snackbar、内联错误、键盘和媒体控制 overlay 排除；
+- 不从单张截图推断可关闭性／clickability；无法消除歧义时必须标 `uncertain` 并说明原因。
 
 ### 4.3 Message transcription
 
 只有 `presence_label=popup` 时才标 message：
 
-- `message_observability=complete|partial`：逐字转录可见/可读主体消息；保留否定、金额、日期、期限、对象和关键按钮语义，不翻译、不补写。
+- `message_observability=complete|partial`：逐字转录可见/可读主体消息；保留否定、金额、日期、期限、对象和理解消息所需的可见 choice label，不翻译、不补写，也不把 choice label 写成动作建议。
 - `message_observability=not_observable`：`message_text=null`、`semantic_slots=[]`。
 - `no_popup`：`message_text=null`、`message_observability=not_applicable`、`semantic_slots=[]`。
 - `uncertain|unusable`：`message_text=null`、`message_observability=not_observable`、`semantic_slots=[]`。
+- `out_of_scope`：`message_text=null`、`message_observability=not_applicable`、`semantic_slots=[]`，且必须有范围外原因。
 
 ### 4.4 Semantic slots
 
@@ -136,7 +146,7 @@ slot_type + verbatim value + polarity
 
 `calculate_agreement.py` 只计算 annotator 间协议一致性，不产生 gold：
 
-1. **Presence Cohen's kappa**：对 `popup/no_popup/uncertain/unusable` 四类计算未加权 κ，同时保存 confusion matrix、observed agreement 与 expected agreement。若期望一致率为 1，κ 输出 `null` 并给 warning。
+1. **Presence/disposition Cohen's kappa**：对 `popup/no_popup/uncertain/unusable/out_of_scope` 五类计算未加权 κ，同时保存 confusion matrix、observed agreement 与 expected agreement。若期望一致率为 1，κ 输出 `null` 并给 warning；`out_of_scope` 只参与协议一致性，不进入主实验指标。
 2. **Message exact agreement**：只在 A/B 都标 `popup` 且都有 message text 的 item 上比较原始字符串完全一致。
 3. **Message normalized agreement**：只做 Unicode NFKC、casefold、空白折叠；不删除标点、数字、否定或任何 token。
 4. **Semantic-slot agreement**：将 `(slot_type, normalized value, polarity)` 视为集合，报告 exact-set rate 与 mean Jaccard。

@@ -1,0 +1,308 @@
+{
+  "status": "passed",
+  "batch_id": "popsweeper-message-pilot-30-v1",
+  "expected_item_count": 30,
+  "audited_item_count": 30,
+  "item_count_matches_freeze": true,
+  "format_counts": {
+    "jpeg": 27,
+    "png": 3
+  },
+  "extension_mismatches": [
+    {
+      "pilot_item_id": "PMJ-PILOT-015",
+      "extension": ".jpg",
+      "detected_format": "png"
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-016",
+      "extension": ".jpg",
+      "detected_format": "png"
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-024",
+      "extension": ".jpg",
+      "detected_format": "png"
+    }
+  ],
+  "exif_items": [
+    "PMJ-PILOT-026"
+  ],
+  "missing_items": [],
+  "symlink_items": [],
+  "hash_mismatches": [],
+  "unknown_format_items": [],
+  "items": [
+    {
+      "pilot_item_id": "PMJ-PILOT-001",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 224970,
+      "sha256": "4a2727261f30871db82a2c7687c45847d02fca70cd154d9b22519a067fea353a",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-002",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 72744,
+      "sha256": "01ccd3b545158004e678ffba31172371945112e4a552e619397e85de2dff1c46",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-003",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 23672,
+      "sha256": "2b146c18e7ed4da47c1370da5856e5ddc376c96d91632912a35b4bdec66b9237",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-004",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 56802,
+      "sha256": "1efa0c4985d924e49280db2b58d919e33938423b9ce8682eb662723f234f4877",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-005",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 174273,
+      "sha256": "cb91e43ba04927635003d47cfe5e7b2d3f7b85a86027d1184986976d8895268d",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-006",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 102814,
+      "sha256": "fb02aeed90aeed9a8df3b065c52d2c2a6be500bafd83b86fdbbd58918736b7e2",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-007",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 83662,
+      "sha256": "a5fa5f3a87ffa83aab5ca211a60282089e2b077a1cebf43f03a3c7d541669935",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-008",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 68955,
+      "sha256": "f79517a5374200f6d1968e5a4e58d749947fcacb0bd5d0a2f1d9cabd87cd0592",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-009",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 95513,
+      "sha256": "2f2230984d9cdc23b9d812e4174be79314c8f37b0e4a3386280f8c72940e8870",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-010",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 142907,
+      "sha256": "b1fcd880e898b509f73cad2ecb7921bf3512eab8efceeefb9a696425122b8856",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-011",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 155257,
+      "sha256": "c20c35084459d16810c47328dd3b4dee375c2b99d94355bed42102cdfaf54b32",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-012",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 49265,
+      "sha256": "46ed9fb906d0e42f6aeb54149d8f084a853c07895530c654de2e9abc24b4e1a1",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-013",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 173040,
+      "sha256": "299538d835db56fcf71889956aca6f28cdcfb35730d1005b33a117f41a83d4d9",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-014",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 138109,
+      "sha256": "0c1b0bcfd8975d720a790619b2870d18432cf792f3f62f4241e580916fe0137a",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-015",
+      "detected_format": "png",
+      "extension": ".jpg",
+      "bytes": 11572901,
+      "sha256": "86167a2fff1bfbf31a085e7e012184cce3dea1672315bae0d444d3b50dac0b50",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-016",
+      "detected_format": "png",
+      "extension": ".jpg",
+      "bytes": 346540,
+      "sha256": "c8ab62f17c430308133c4bb3d5e41941c70e90fbaa8c744c48c824a98b0b8d01",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-017",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 39403,
+      "sha256": "02340dd17af0ed7404afa292dbbd5650afb39e85fefd3a1b0f2f8ff4498c9f0b",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-018",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 64914,
+      "sha256": "a00a134e0ed297c8ef031380efed9779f4e838f5b50216530b0de4e57e47523d",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-019",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 119093,
+      "sha256": "52e62e02ab7e69b9b20fad74f71e70490e5dfffd2c2307ff887f38411575d8c7",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-020",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 59730,
+      "sha256": "f9b6e3cf6422d7149125b41f233778e6744fbd4c0566489b0ecdb7f1d345b813",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-021",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 173748,
+      "sha256": "d0b1ba64f59e3e5a071301314cc0b5b231f0de4642128b489d658181ecd1a0b1",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-022",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 39890,
+      "sha256": "a088f392411bc9e45e9f6e82246a26837093d5ec5c11a297b0e45b7ca8f7abd3",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-023",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 73636,
+      "sha256": "c3942f9c2af183ad0d60c8e36909313f9c0e5754ca4a24254859c8b71787288b",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-024",
+      "detected_format": "png",
+      "extension": ".jpg",
+      "bytes": 604630,
+      "sha256": "c55aac40207c38bfaca34b4d71023f35c4104c786cfd3c034e6088d0b080f743",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-025",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 86828,
+      "sha256": "2761d642e1ae24be1996cfc8e7e1de06dad5b5229942ceceb1f1f421193f4400",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-026",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 209496,
+      "sha256": "49adf897188bdaf1a3e73dccb5d5a0784f3f3056591a619c9f4af7683441ed0d",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": true
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-027",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 48445,
+      "sha256": "f4338e52ceaac4cec1b71bb89e1d3a0b5ac7ff744ddccfca6c24203847e4b027",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-028",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 74453,
+      "sha256": "4539c94773f740e4343cae0882a5525f74adbcad08b02520abf098972627a121",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-029",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 70777,
+      "sha256": "e96cf52157128bc4be0d276904fe6c0e67c6b77cea949acf65dbbbce63cf715e",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    },
+    {
+      "pilot_item_id": "PMJ-PILOT-030",
+      "detected_format": "jpeg",
+      "extension": ".jpg",
+      "bytes": 246242,
+      "sha256": "2d04b391f2a83ec33b11ad31f0823ce6217e50f3d1de2fc272934424f0ce65fc",
+      "frozen_hash_matches": true,
+      "contains_exif_segment": false
+    }
+  ],
+  "privacy_scope": "Technical media integrity only. This report does not approve privacy, copyright, licensing, or public release."
+}

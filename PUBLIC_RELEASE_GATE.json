@@ -1,0 +1,82 @@
+{
+  "version": "1.1.0",
+  "updated_at": "2026-09-01T08:58:32+08:00",
+  "user_public_push_authorization": {
+    "authorized": true,
+    "scope": [
+      "verbatim Feishu rule document",
+      "research materials"
+    ],
+    "note": "Authorization permits publication but does not waive third-party license, privacy, secret, or empirical-validity gates."
+  },
+  "release_classes": {
+    "research_docs_and_code": {
+      "status": "released_after_git_content_audit",
+      "allowed": [
+        "research Markdown/JSON/CSV",
+        "schemas",
+        "tests",
+        "scripts",
+        "verbatim authorized Feishu rule document"
+      ],
+      "prohibited": [
+        "secrets or credentials",
+        "private annotator working files",
+        "gitignored raw annotation media",
+        "unreviewed derived OCR or model text that may reproduce private content"
+      ],
+      "required_checks": [
+        "clean-clone diff audit",
+        "RESEARCH_RULES.md hash preserved",
+        "no private or ignored media staged",
+        "test suite passes",
+        "remote commit readback"
+      ],
+      "audit_result": {
+        "clean_clone_tests_passed": 168,
+        "tests_skipped_for_host_authorization": 2,
+        "secret_scan_matches": 0,
+        "private_or_raw_media_paths_staged": 0,
+        "files_with_size_over_5mb_staged": 0,
+        "research_rules_sha256": "cd5cbb25a8197b021a9f133c1c6c41495d94fd0555fba6cf0ce0a54a86916dd2",
+        "withheld_or_removed_paths": [
+          "dataset-v1/work/model-preannotation-a.jsonl",
+          "dataset-v1/work/model-preannotation-b.jsonl",
+          "dataset-v1/annotation-pilot/private/",
+          "dataset-v1/work/annotation-media/",
+          "dataset-v1/empirical-pilot/private/",
+          "experiments/v1-message/features/private/",
+          "experiments/v1-message/ocr/results/",
+          "experiments/v1-message/pregold/private/",
+          "experiments/v1-message/statistics/private/"
+        ]
+      }
+    },
+    "empirical_dataset": {
+      "status": "blocked",
+      "paper_result_eligible": false,
+      "human_gold_count": 0,
+      "blockers": [
+        "No real dual-annotator popup-message gold or third-human adjudication.",
+        "Screenshot privacy/PII review is incomplete.",
+        "Per-item redistribution/license decision is incomplete.",
+        "PMJ-PILOT-026 contains an EXIF segment that has not been reviewed or removed in a separately frozen derived release asset.",
+        "The 30-item bundle is an annotation pilot, not a public benchmark."
+      ]
+    }
+  },
+  "media_qa": {
+    "report": "dataset-v1/annotation-pilot/MEDIA_QA.json",
+    "technical_status": "passed",
+    "privacy_or_license_approval": false,
+    "exif_items": [
+      "PMJ-PILOT-026"
+    ],
+    "extension_mismatch_items": [
+      "PMJ-PILOT-015",
+      "PMJ-PILOT-016",
+      "PMJ-PILOT-024"
+    ]
+  },
+  "invariant": "A successful Git push may publish research docs/code while empirical_dataset remains blocked. Never label the pushed repository as a released benchmark until all empirical_dataset blockers are cleared."
+}

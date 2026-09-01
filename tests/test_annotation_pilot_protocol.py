@@ -35,6 +35,37 @@ def load_jsonl(path: Path) -> list[dict]:
 
 
 class AnnotationPilotProtocolArtifactTests(unittest.TestCase):
+    def test_popup_scope_is_observable_and_does_not_require_inferred_dismissibility(self):
+        scope_path = PILOT_ROOT / "POPUP_SCOPE_V1.json"
+        self.assertTrue(scope_path.is_file(), "machine-readable popup scope must exist")
+        scope = json.loads(scope_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(scope["decision_basis"], "screenshot_observable_only")
+        self.assertFalse(scope["requires_dismissibility_observation"])
+        self.assertIn("interruptive_bottom_sheet", scope["included_examples"])
+        self.assertIn("navigation_drawer", scope["excluded_examples"])
+        self.assertIn("toast_or_snackbar", scope["excluded_examples"])
+        self.assertIn("permission_security_control", scope["out_of_scope_examples"])
+        self.assertEqual(
+            scope["ambiguous_policy"],
+            "uncertain_with_reason_not_forced_binary",
+        )
+        self.assertIn("visual_separability_rule", scope)
+
+    def test_out_of_scope_is_explicit_and_cannot_be_hidden_as_uncertain(self):
+        schema_path = PILOT_ROOT / "schemas" / "annotation_record.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+        self.assertIn(
+            "out_of_scope",
+            schema["properties"]["presence_label"]["enum"],
+        )
+        self.assertIn("out_of_scope_reason", schema["required"])
+        self.assertIn("out_of_scope_reason", schema["properties"])
+        reason_values = set(schema["properties"]["out_of_scope_reason"]["enum"])
+        self.assertIn("captcha", reason_values)
+        self.assertIn("permission_security_control", reason_values)
+
     def test_fixed_manifest_is_a_balanced_candidate_subset_without_human_gold(self):
         manifest_path = PILOT_ROOT / "manifests" / "pilot_batch_30.jsonl"
         self.assertTrue(
@@ -98,6 +129,7 @@ class AnnotationPilotProtocolArtifactTests(unittest.TestCase):
             for row in rows:
                 self.assertEqual(row["record_status"], "blank")
                 self.assertIsNone(row["presence_label"])
+                self.assertIsNone(row["out_of_scope_reason"])
                 self.assertIsNone(row["message_text"])
                 self.assertIsNone(row["message_observability"])
                 self.assertEqual(row["semantic_slots"], [])

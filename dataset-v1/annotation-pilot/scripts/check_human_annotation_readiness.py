@@ -63,6 +63,7 @@ def _first_prefilled_field(row: dict[str, Any]) -> str | None:
     expected = {
         "annotator_id_pseudonymous": None,
         "presence_label": None,
+        "out_of_scope_reason": None,
         "message_text": None,
         "message_observability": None,
         "semantic_slots": [],

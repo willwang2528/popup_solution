@@ -1,0 +1,472 @@
+{
+  "generated_at": "2026-09-01T07:54:42+08:00",
+  "scope": "mobile_popup_presence_and_message_v1_no_action_no_recovery",
+  "dispatch": "three_read_only_codex_lenses",
+  "generator_judgment": "forbidden",
+  "deduplication": {
+    "metric": "normalized_dedup_key_exact_or_token_jaccard",
+    "near_match_threshold": 0.8,
+    "input_count": 24,
+    "output_count": 24,
+    "exact_duplicate_count": 0,
+    "near_duplicate_count": 0,
+    "note": "No pair crossed the declared threshold; potentially related but non-identical measurement, gate, and stress-test ideas remain for the classified jury."
+  },
+  "shards": [
+    {
+      "shard_id": "lens:benchmark-measurement",
+      "candidates": [
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "非空结构中的弹窗消息暴露缺口普查",
+            "method": [
+              "在方法预测前冻结候选、截图、平台结构和 App／模板分组",
+              "由两名盲标者独立标注弹窗存在、可见消息、关键事实与缺口类型，再由第三人裁决",
+              "按 App／模板聚类计算缺口率、置信区间及 missing／merged／ambiguous／contradictory／stale 分布"
+            ],
+            "hypothesis": "即使结构化表示非空，仍有跨多个 App／模板组出现的可见弹窗消息或关键事实缺失；若缺口只出现在单一组或接近零，则假设被否证。",
+            "mve": "使用冻结的 30-item pilot 完成双标与裁决；若没有跨组 gap positive，则停止扩展该测量。",
+            "contribution": "dataset",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "nonempty structure message gap census"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "关键事实保真度分层测量",
+            "method": [
+              "从裁决消息中按金额、日期、期限、对象、否定、权限和后果形成关键事实集合",
+              "分别用结构、截图 OCR 和结构视觉融合重建同一冻结观察的消息",
+              "按事实类型计算召回、遗漏和关键编造，并使用 App／模板聚类置信区间"
+            ],
+            "hypothesis": "结构表示对否定、后果和期限类事实的保真度低于普通对象文本；若各事实类型差异不稳定，则假设被否证。",
+            "mve": "在 30-item pilot 中仅纳入至少含一个可裁决关键事实的样本，生成事实类型混淆表和置信区间。",
+            "contribution": "diagnostic",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "critical fact fidelity stratification"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "树图不同步的消息失真压力基准",
+            "method": [
+              "在受控 fixture 中捕获同一状态的同步 screenshot 与结构快照",
+              "机械构造旧树配新图、旧图配新树和同步对照，并保存状态指纹",
+              "让各消息判断系统输出存在性、消息、置信度与弃答，测量错误融合和关键编造"
+            ],
+            "hypothesis": "不同步证据比结构缺失更容易产生高置信度错误消息；若错误率与同步对照无差异，则假设被否证。",
+            "mve": "构造 12 个普通弹窗场景，每个场景包含同步及两种错配状态，不执行任何点击或恢复动作。",
+            "contribution": "dataset",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "tree screenshot staleness benchmark"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "宿主页面文本污染测量",
+            "method": [
+              "固定弹窗消息与布局，将其叠加到多个文本密度和主题不同的受控宿主页面",
+              "分别运行结构展平、全屏 OCR 和结构视觉融合消息重建",
+              "计算宿主文本进入弹窗消息的比例、错误存在通知及跨宿主输出稳定性"
+            ],
+            "hypothesis": "缺少 owner/context 边界时，同一弹窗在不同宿主页面上会产生显著不同的消息污染；若输出保持稳定，则假设被否证。",
+            "mve": "使用 10 个弹窗模板与每个模板 3 个宿主页面形成配对受控集合。",
+            "contribution": "diagnostic",
+            "risk": "LOW",
+            "effort": "days"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "host text contamination measurement"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "相似非弹窗的错误通知基准",
+            "method": [
+              "为弹窗样本匹配文本、颜色或布局相似但不具模态阻断证据的普通页面、卡片和横幅",
+              "冻结正负样本的 App／模板组并阻止跨组近重复泄漏",
+              "报告 presence macro-F1、false-notification rate、coverage 和按相似度分层的选择性风险"
+            ],
+            "hypothesis": "高视觉或文本相似度会显著提高错误弹窗通知率，而明确的 owner／modal 证据能降低该错误；若相似度与错误率无关联，则假设被否证。",
+            "mve": "构建 20 对受控或公开来源的匹配正负观察，并用固定规则与一个视觉基线复算指标。",
+            "contribution": "dataset",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "matched nonpopup false notification benchmark"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "消息判断的弃答校准曲线",
+            "method": [
+              "要求每个系统同时输出 presence、message、confidence 和 abstain",
+              "只在 validation 上选择阈值，并在冻结测试观察上绘制 risk–coverage 曲线",
+              "分别测量 presence error、消息语义错误和已接受输出中的关键编造率"
+            ],
+            "hypothesis": "原始置信度不能稳定控制关键编造，而消息充分性分数可在相同 coverage 下获得更低选择性风险；若两者曲线重合或更差，则假设被否证。",
+            "mve": "先用 30-item pilot 检查置信度方向性和弃答协议，不据此确定正式阈值。",
+            "contribution": "diagnostic",
+            "risk": "LOW",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "selective message risk calibration"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "等视觉预算下的分配效率前沿",
+            "method": [
+              "对所有系统复用同一冻结观察、截图分辨率、视觉调用上限、token 和延迟上限",
+              "比较 structure-only、匹配调用率的随机视觉、受预算限制的 always-on 和 gap-gated 分配",
+              "在多个预算点联合报告 VPMA、coverage、关键编造、视觉调用率和延迟"
+            ],
+            "hypothesis": "gap-conditioned 分配至少在一个固定预算点优于匹配调用率的随机分配；若随机或 always-on 在全部预算点相等或更好，则假设被否证。",
+            "mve": "在 development 子集设置三个视觉调用预算，使用同一冻结 OCR／VLM 后端完成配对重放。",
+            "contribution": "empirical",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "equal visual budget allocation frontier"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "随机切分与分组隔离的模板记忆审计",
+            "method": [
+              "从同一候选池生成随机 item 切分与按 App／弹窗模板／SDK／UI framework 隔离的切分",
+              "冻结相同方法、参数和消息评测协议，在两种切分上独立运行",
+              "比较 presence、消息正确性、关键事实召回和近重复相似度造成的指标差值"
+            ],
+            "hypothesis": "随机 item 切分会因模板重复而高估消息判断性能；若分组隔离后的差值接近零且置信区间稳定，则假设被否证。",
+            "mve": "在可形成至少三个独立来源组的 pilot 扩展集上运行一个结构基线和一个视觉基线。",
+            "contribution": "diagnostic",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "benchmark_measurement",
+          "dedup_key": "group split template memorization audit"
+        }
+      ]
+    },
+    {
+      "shard_id": "lens:method-gating",
+      "candidates": [
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "四族同预算消息判断对照",
+            "method": [
+              "冻结每个 item 的结构树、截图和统一输出 schema",
+              "分别运行 structure-only、vision-only、always-on fusion 与 gap-gated fusion",
+              "按视觉调用数、输入像素、token、延迟三种口径分别匹配预算",
+              "在相同 item 上配对比较 VPMA、coverage、关键编造与成本"
+            ],
+            "hypothesis": "若 gap-gated fusion 的作用来自选择性调用而非额外预算，则它应在至少一种严格预算口径下改善 accuracy–coverage–cost；若 vision-only 或 always-on 在所有匹配口径下不劣，则该假设被否定。",
+            "mve": "在一个冻结的盲标 pilot 上运行四族系统及随机等调用控制，只做消息判断并输出配对差异和置信区间。",
+            "contribution": "empirical",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "four_family_budget_matched_comparison"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "消息槽覆盖门",
+            "method": [
+              "把结构化候选重建为标题、正文、后果、金额时间对象等消息槽",
+              "用预先冻结的槽缺失、合并和阅读顺序规则计算 sufficiency",
+              "仅在槽覆盖不足时调用同一冻结视觉模型",
+              "按证据来源对齐并去重后输出消息或弃答"
+            ],
+            "hypothesis": "消息槽覆盖比“树为空”更能定位需要视觉补全的 item；若它与 empty-tree gate 在同视觉调用预算下无差异，则该门控机制被否定。",
+            "mve": "在冻结 observation 上比较 slot gate、empty-tree gate、随机等调用 gate 和 always-on control。",
+            "contribution": "method",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "message_slot_coverage_gate"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "Owner 与宿主污染门",
+            "method": [
+              "利用 window、role、bounds、层级和 ancestor 信息划分弹窗候选与宿主页面候选",
+              "检测跨 owner 文本混入、弹窗范围不确定和宿主正文占比过高",
+              "仅对污染或 owner 不确定的 item 调用视觉补全",
+              "保留逐片段 owner 证据并在无法分离时弃答"
+            ],
+            "hypothesis": "宿主页面污染是 structure-only 消息错误的重要可观测来源；若移除 owner/context 特征后同预算性能不下降，则该门的作用被否定。",
+            "mve": "构造 owner-aware、no-owner 和随机等调用三个冻结版本，按 owner 与 popup kind 分层比较。",
+            "contribution": "diagnostic",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "owner_context_contamination_gate"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "树图新鲜度门",
+            "method": [
+              "为结构树与截图计算时间戳、状态指纹和稳定区间",
+              "将不同步、过期或状态漂移标记为 stale",
+              "只在截图较新且结构证据 stale 时改用视觉消息判断",
+              "无法确定当前状态时直接弃答并记录 stale 原因"
+            ],
+            "hypothesis": "显式同步检查能减少 stale fusion 和错误消息；若 no-sync 消融的关键编造率与错误率不增加，则新鲜度门没有独立价值。",
+            "mve": "用受控的同步、轻微错位和明显错位 observation 对运行 sync gate 与 no-sync gate，并保持视觉调用预算一致。",
+            "contribution": "diagnostic",
+            "risk": "LOW",
+            "effort": "days"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "tree_screenshot_freshness_gate"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "结构扰动稳定性门",
+            "method": [
+              "对同一结构观察生成不改变证据内容的节点顺序、字段遮蔽和重复节点扰动",
+              "多次运行结构消息重建并计算存在性、消息槽和关键事实的一致性",
+              "仅对不稳定 item 调用冻结视觉模型",
+              "用固定阈值或批次级固定 K 控制视觉预算"
+            ],
+            "hypothesis": "结构预测对轻微表示扰动的不稳定性可作为消息不足代理；若不稳定分数不能比随机排序更集中地识别后续错误，则该代理被否定。",
+            "mve": "先在 synthetic corruption 与真实冻结结构上计算稳定性，再与 random-K 和 empty-tree-K 进行等调用比较。",
+            "contribution": "method",
+            "risk": "HIGH",
+            "effort": "weeks"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "structural_perturbation_stability_gate"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "证据一致型 Always-on Fusion",
+            "method": [
+              "对每个 item 同时运行结构消息重建与固定视觉消息模型",
+              "把两路输出拆成 presence、消息片段和关键事实并绑定来源",
+              "一致内容直接合并，冲突内容触发事实级弃答或整项弃答",
+              "用低分辨率或较小视觉配置建立与门控系统总预算相同的版本"
+            ],
+            "hypothesis": "always-on 的主要风险可能来自冲突融合而非调用频率；若证据一致策略在同预算下仍不如 gap-gated fusion，则选择性调用而非仅冲突处理可能更关键。",
+            "mve": "比较原始 always-on、证据一致 always-on、预算匹配 always-on 和 gap-gated fusion 的 coverage、冲突率与关键编造率。",
+            "contribution": "method",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "evidence_consensus_always_on_fusion"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "固定三级感知级联",
+            "method": [
+              "先运行 structure-only 并按固定完整性规则决定是否继续",
+              "不足时调用 OCR 并用固定文本规则判断是否已形成消息",
+              "仍不足时调用截图 VLM，禁止任何动作输出",
+              "冻结每级阈值、最大调用数和弃答条件"
+            ],
+            "hypothesis": "简单固定级联可能获得与复杂 gap gate 相近的成本与覆盖；若其等预算结果追平 gap-gated fusion，则门控贡献应收窄为工程级联。",
+            "mve": "在相同视觉 bank 上比较 structure→OCR→VLM 级联、MG-PU、always-on 与 random-matched，逐级记录调用和延迟。",
+            "contribution": "empirical",
+            "risk": "LOW",
+            "effort": "weeks"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "fixed_three_stage_perception_cascade"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "批次级 Top-K 视觉分配门",
+            "method": [
+              "只用结构特征为批次内每个 item 计算视觉需求分数",
+              "按预先冻结的 K 选择最高分 item 调用视觉，其余保留结构输出或弃答",
+              "用稳定哈希生成 random-K 对照",
+              "将 K 从低到高扫描并绘制风险、coverage 与成本曲线"
+            ],
+            "hypothesis": "视觉调用的排序比单个固定阈值更能利用严格总预算；若 top-K 曲线不优于 random-K，结构需求分数没有分配价值。",
+            "mve": "在冻结批次上预注册多个 K，使用同一视觉 prediction bank 比较 top-K、random-K、empty-tree-K 和 always-on 上界。",
+            "contribution": "method",
+            "risk": "MEDIUM",
+            "effort": "days"
+          },
+          "provenance": "method_gating",
+          "dedup_key": "batch_topk_visual_allocation_gate"
+        }
+      ]
+    },
+    {
+      "shard_id": "lens:negative-result-generalization",
+      "candidates": [
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "跨平台消息缺口标签的可迁移性审计",
+            "method": [
+              "分别保存 Android、iOS 与移动 Web 的同步截图和平台原始结构，且全程不执行弹窗动作",
+              "由盲法标注者按 missing、merged、ambiguous、contradictory、stale 标注可观察缺口",
+              "在一个平台冻结缺口判定规则，再原样迁移到其他平台并报告混淆、弃答和关键事实遗漏"
+            ],
+            "hypothesis": "同名缺口在不同平台可能对应不同结构表现；若迁移失败，负结果将说明统一 gate 需要平台条件化而不能共享单一阈值。",
+            "mve": "每个平台至少 30 个独立标注样本，先做 Android 内部冻结，再在真实 iOS 或移动 Web 子集上零调参测试。",
+            "contribution": "diagnostic",
+            "risk": "HIGH",
+            "effort": "weeks"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "cross platform gap label transfer"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "App、模板与框架组隔离下的门控收益消失测试",
+            "method": [
+              "按 App、弹窗模板和 UI framework 建立严格 group-disjoint 切分",
+              "冻结 structure-only、always-on vision 与 gap-gated fusion 的模型、视觉 bank 和预算",
+              "分别比较同分布与 held-out group 上的 VPMA、coverage、关键编造和视觉调用率"
+            ],
+            "hypothesis": "若门控收益主要来自模板记忆，held-out group 上的增益会显著缩小或消失；该负结果可定位泄漏或过拟合边界。",
+            "mve": "用现有 30-item pilot 验证切分与运行链，再扩展到能形成至少三个独立 App 或模板组的只读样本。",
+            "contribution": "diagnostic",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "group disjoint gate generalization"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "结构缺口严重度与视觉增益的分层相图",
+            "method": [
+              "按结构完整、部分缺失、合并、冲突和完全不可见建立预声明 strata",
+              "在相同截图、模型和调用预算下运行 structure-only、vision-only 与 gated fusion",
+              "绘制各 strata 的正确覆盖、关键编造、弃答和单位视觉成本变化"
+            ],
+            "hypothesis": "视觉补全的收益可能集中在中等缺口，而在完全不可见或强冲突样本上因证据不足转为高弃答或高编造；若各层差异近零，则复杂 gate 缺乏分层依据。",
+            "mve": "对 30 个盲标 pilot 只做探索性分层，要求每层达到最小样本数后再冻结正式比较。",
+            "contribution": "empirical",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "gap severity visual benefit map"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "结构与视觉冲突下的关键编造—弃答前沿",
+            "method": [
+              "从真实不同步样本或受控只读 corruption 构造结构与截图互相冲突的观察对",
+              "比较信任结构、信任视觉、置信融合和冲突即弃答四种策略",
+              "按否定词、金额、日期、对象和条件统计关键编造率与 coverage"
+            ],
+            "hypothesis": "冲突即弃答可能显著降低关键编造但造成覆盖骤降；若无法降低编造，则现有置信度和冲突信号不足以支持安全融合。",
+            "mve": "选择 20 个不含安全控制的普通弹窗观察，每项生成一个同步版本和一个受控冲突版本，禁止任何点击或状态修改。",
+            "contribution": "method",
+            "risk": "MEDIUM",
+            "effort": "days"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "conflict abstention hallucination frontier"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "分布外条件下的固定视觉预算失配",
+            "method": [
+              "冻结同一视觉模型、分辨率、单次调用配置和总调用数 K",
+              "用随机选择、结构不确定性选择和 message-gap gate 分配相同 K 次视觉调用",
+              "在 held-out 语言、框架和消息复杂度上比较 VPMA、coverage、延迟与成本"
+            ],
+            "hypothesis": "在分布外条件下，gap gate 的排序可能失准并失去预算优势；该负结果可说明成本优化需要校准迁移或保守退化策略。",
+            "mve": "在一个开发域确定 K 和阈值，再对至少两个未参与调参的语言或框架分组零调参运行。",
+            "contribution": "empirical",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "ood fixed visual budget mismatch"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "关键事实类型与语言变化下的消息泛化",
+            "method": [
+              "把人工消息真值拆为否定、金额、日期、对象、条件和警告等关键事实槽位",
+              "按事实类型与语言建立 group-held-out 切分，不使用公开候选目录标签作为真值",
+              "比较 OCR、截图 VLM 和结构视觉融合的事实召回、关键编造与弃答"
+            ],
+            "hypothesis": "整体消息看似流畅时仍可能系统性遗漏否定、金额或期限；若槽位约束没有改善 held-out 类型，则其保护作用不具备泛化证据。",
+            "mve": "使用双人盲标的普通弹窗样本，为每类关键事实收集最少 10 个可比较实例并冻结一个未见事实类型。",
+            "contribution": "diagnostic",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "critical fact type language generalization"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "视觉相似非弹窗上的误通知压力集",
+            "method": [
+              "收集与弹窗视觉相似但不构成目标弹窗的页面卡片、固定横幅和宿主内容区域",
+              "由独立标注者仅依据 v1 定义确认 presence 与可读消息，不采用来源目录标签",
+              "测试 structure-only、vision-only 和 gated fusion 的 false-notification、abstention 与成本"
+            ],
+            "hypothesis": "视觉兜底可能在分布外相似界面上提高误通知率；若误通知保持稳定低水平，则可界定视觉 presence 判定的适用范围。",
+            "mve": "构建 30 个普通低风险 hard negatives，并与 30 个独立 popup positives 做配对的 presence 压力测试。",
+            "contribution": "dataset",
+            "risk": "MEDIUM",
+            "effort": "weeks"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "popup like hard negative stress set"
+        },
+        {
+          "kind": "idea",
+          "payload": {
+            "title": "树—图同步漂移对消息融合的敏感性曲线",
+            "method": [
+              "从只读录屏或连续捕获中配对不同时间偏移的结构快照与截图",
+              "用状态指纹和时间差建立同步、轻微漂移和明显漂移三个层级",
+              "比较无同步检查、硬阈值检查和不确定即弃答策略的消息错误与关键编造"
+            ],
+            "hypothesis": "较小的树—图时间偏移也可能造成跨状态消息拼接；若同步检查没有改善结果，则其复杂度可能不是 v1 必要条件。",
+            "mve": "对 15 个普通弹窗序列生成三个预声明时间偏移，只做离线消息判断并报告漂移层级曲线。",
+            "contribution": "diagnostic",
+            "risk": "LOW",
+            "effort": "days"
+          },
+          "provenance": "negative_result_generalization",
+          "dedup_key": "tree screenshot staleness sensitivity"
+        }
+      ]
+    }
+  ]
+}

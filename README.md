@@ -16,7 +16,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 8. [`data-collection/FIELD_UNION.md`](./data-collection/FIELD_UNION.md)：跨 Android、iOS、移动 Web 的字段并集与证据边界。
 9. [`refine-logs/FINAL_PROPOSAL.md`](./refine-logs/FINAL_PROPOSAL.md)：当前 proposal，状态为 `provisional`。
 10. [`dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md`](./dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md)：schema、fixture、QA 与负向变异验证。
-11. [`refine-logs/V1_SCOPE_LOCAL_REVIEW.md`](./refine-logs/V1_SCOPE_LOCAL_REVIEW.md)：同模型家族独立复核；状态 PASS/provisional，不是 cross-family acceptance。
+11. [`reviews/RESEARCH_REVIEW.md`](./reviews/RESEARCH_REVIEW.md)：三轮 Claude cross-family 独立评审；最终 `PROCEED_WITH_CAUTION`、fatal flaws=0、readiness=3.5/5，只接受进入 pilot 的设计，不接受任何经验效果主张。
 12. [`sources/PPT_SLIDE_14_EVIDENCE.md`](./sources/PPT_SLIDE_14_EVIDENCE.md)：PPT 第 14 页“五级回证表”的可审计转录与 v1 分层解释。
 13. [`sources/SOURCE_LEDGER.md`](./sources/SOURCE_LEDGER.md)：PopSweeper/RICO 许可、校验、实际清点、数量差异与 adapter-only 发布策略。
 14. [`refine-logs/NOVELTY_CHECK.md`](./refine-logs/NOVELTY_CHECK.md)：当前查新结论与不可宣称的 broad-first 边界。
@@ -63,7 +63,7 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 ## 研究边界
 
 - 包含：Android、iOS，以及扩展分析中的移动 Web／WebView 普通弹窗。
-- 排除：CAPTCHA、风控、身份认证、PIN／生物识别、支付确认、安装／删除、权限安全控制、人工审核及其他高风险流程。
+- 排除：CAPTCHA、风控、身份认证、PIN／生物识别、支付确认、安装／删除、权限安全控制、人工审核及其他高风险流程。OS 级系统权限对话框和 App 内权限／安全控制均显式 `out_of_scope`，不能混入 `uncertain`。
 - v1 只读观察并生成消息，不执行弹窗动作。
 - Appium、XCUI、UIAutomator 能读到元素，不等于 TalkBack／VoiceOver 用户一定可聚焦、可理解。
 - 没有真实目标用户研究时，只报告技术消息判断性能，不宣称已改善真实用户体验。
@@ -78,7 +78,7 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 字段并集、v1 schema、非经验 fixture、验证器、方法与实验协议已经形成；PopSweeper 归档已完成本地完整性/安全审计，并冻结 120 条 adapter-only 来源候选。90 条 numeric 候选已逐一连接到 RICO semantic JSON/PNG，但该语义层级不含 message text/content-desc。
 
-其中 30 条候选已冻结为首轮标注批次，并通过 fail-closed adapter 在 Git 忽略目录中真实导出 30 张截图及 44 份 RICO 结构化附件；双人盲标模板、agreement/adjudication 工具也已就绪。两个独立模型已完成 30+30 条盲式工作流预标注，但均明确为非人工、不可计分。
+其中 30 条候选已冻结为首轮标注批次，并通过 fail-closed adapter 在 Git 忽略目录中真实导出 30 张截图及 44 份 RICO 结构化附件；双人盲标模板、agreement/adjudication 工具也已就绪。两个独立模型已完成 30+30 条盲式工作流预标注，但均明确为非人工、不可计分；逐项 JSONL 含截图派生文本，未过隐私审查，因此从公开版本移除，只保留不含逐项消息的聚合摘要。
 
 八种零动作 baseline／MG-PU 路由已通过 synthetic smoke，但所有 smoke 输出都标明 `paper_result_eligible=false`。本地 macOS Vision OCR 也已在正式 30 图上运行；因为全屏 OCR 不能证明 popup presence，30 条全部安全弃答。原图和可能含第三方信息的 OCR 派生文本均不公开，仅发布不含文本的聚合摘要、配置与哈希。
 
@@ -102,6 +102,11 @@ prediction。
 表示真人 A/B 可以开始，不表示人工 gold、评分或体验证据已经存在。实际两位
 真人 A/B、第三位真人裁决和消息输出语义复核仍未完成。
 
+标注 contract 现已显式支持 `out_of_scope + predefined reason`，并把这类 item
+排除在主指标外；G2 若发现 G1 截图事实有实质错误，不能静默改写，而是触发
+`cannot_resolve → versioned G1 correction → new hash → full G2 restart`。这些路径
+由 schema、finalizer 和测试 fail closed。
+
 post-gold 工程链已补齐严格 batch finalizer、gold+结构特征连接、gold 前冻结
 prediction 的直接评分、prediction-hash-bound 语义复核，以及显式 group-map 的
 paired cluster bootstrap。bootstrap 现在同时输出 VPMA、coverage、Presence
@@ -118,3 +123,8 @@ frontier）与 C1-BM（总调用预算匹配）已分名，不能把二者混成
 always-on”基线。
 
 当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比指标或 iOS 数据。上述冻结只证明输入隔离、路由和预测持久化已经发生；仓库中的 3 条 fixture 和 synthetic smoke 也只验证数据／评测管线，均不构成论文效果或用户体验证据。
+
+三轮 Claude cross-family 评审已确认当前设计没有剩余 fatal flaw，可以进入真实
+Android capture feasibility 与 G1/G2 pilot；这不是 empirical acceptance。正式数据锚
+仍是同步 Android screenshot + accessibility representation，PopSweeper/RICO 30-item
+bundle 只作协议和工程 pilot。

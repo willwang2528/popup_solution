@@ -155,7 +155,7 @@
       "eight-method smoke results are synthetic pipeline checks and are not paper-result eligible",
       "structure-visual gap audit has a frozen contract but no human audit values",
       "the shared B1/C1/MG-PU visual evidence bank remains blocked on reproducible presence ROI and model identity",
-      "papers.jsonl has 29 local provenance pointers but no publicly resolvable field-level source links yet",
+      "papers.jsonl now has public source entries for all 14 papers, but frozen local field locators still require per-field re-audit before any evidence-level upgrade",
       "no empirical real-app episodes yet",
       "no iOS capability or episode record yet"
     ]

@@ -46,6 +46,7 @@ ROW_KEYS = {
     "decision_rationale",
     "evidence_uris",
     "auditor_blind_to_method_outputs",
+    "g1_gold_discrepancy_detected",
     "message_gold_batch_sha256",
     "structured_bundle_sha256",
     "adjudicated_at",
@@ -60,6 +61,8 @@ AUDIT_ROW_KEYS = {
     "human_auditor_attestation",
     "independent_of_peer_attestation",
     "auditor_blind_to_method_outputs",
+    "g1_gold_discrepancy_flag",
+    "g1_gold_discrepancy_notes",
     "message_gold_batch_sha256",
     "structured_bundle_sha256",
     "audit_status",
@@ -404,6 +407,17 @@ def _validate_audit_record(row: dict[str, Any]) -> None:
     ):
         if row[field] is not True:
             raise ValueError(f"independent gap audit {field} must be true")
+    discrepancy = row["g1_gold_discrepancy_flag"]
+    notes = row["g1_gold_discrepancy_notes"]
+    if not isinstance(discrepancy, bool):
+        raise ValueError("independent gap audit G1 gold discrepancy flag must be boolean")
+    if discrepancy:
+        if row["audit_status"] != "cannot_resolve":
+            raise ValueError("G1 gold discrepancy requires cannot_resolve")
+        if not isinstance(notes, str) or not notes.strip():
+            raise ValueError("G1 gold discrepancy requires private notes")
+    elif notes is not None:
+        raise ValueError("G1 gold discrepancy notes require a discrepancy flag")
     if not _is_sha256(row["message_gold_batch_sha256"]):
         raise ValueError("independent gap audit message gold hash is invalid")
     if not _is_sha256(row["structured_bundle_sha256"]):
@@ -433,6 +447,13 @@ def _validate_final_row(row: dict[str, Any]) -> None:
         raise ValueError("gap adjudication requires two independent audit hashes")
     if row["auditor_blind_to_method_outputs"] is not True:
         raise ValueError("gap adjudicator must be blind to method outputs")
+    if not isinstance(row["g1_gold_discrepancy_detected"], bool):
+        raise ValueError("gap adjudication G1 gold discrepancy flag must be boolean")
+    if (
+        row["g1_gold_discrepancy_detected"]
+        and row["audit_status"] != "cannot_resolve"
+    ):
+        raise ValueError("G1 gold discrepancy requires cannot_resolve")
     if not _is_sha256(row["message_gold_batch_sha256"]):
         raise ValueError("gap adjudication message gold batch hash is invalid")
     if not _is_sha256(row["structured_bundle_sha256"]):
@@ -544,6 +565,14 @@ def finalize_structure_visual_gap_audit(
         }
         if set(row["independent_audit_record_sha256"]) != expected_hashes:
             raise ValueError("gap adjudication independent audit hash mismatch")
+        independent_discrepancy = any(
+            audit_by_key[(pilot_id, slot)]["g1_gold_discrepancy_flag"]
+            for slot in ("A", "B")
+        )
+        if row["g1_gold_discrepancy_detected"] is not independent_discrepancy:
+            raise ValueError(
+                "gap adjudication G1 gold discrepancy disagrees with independent audits"
+            )
         if row["message_gold_batch_sha256"] != message_gold_hash:
             raise ValueError("gap adjudication message gold batch mismatch")
         if row["structured_bundle_sha256"] != structured_hash:

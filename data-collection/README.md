@@ -9,7 +9,7 @@
 
 来源 PPT 为 ARIS 工作区中的 `mobile弹窗问题调研-v1-formatted-v2.pptx`：论文总览位于第 2 页，方法与回证位于第 3–18 页。独立仓库不复制该 PPT；本目录保留其派生记录、来源定位与证据等级。
 
-当前首轮采集结果：14/14 篇完成；6 篇为 `core_experimental_seed`，8 篇为 `schema_method_reference`；证据等级为 10 篇 `full_text_verified`、3 篇 `local_note_verified`、1 篇 `ppt_only`。
+当前首轮采集结果：14/14 篇完成；6 篇为 `core_experimental_seed`，8 篇为 `schema_method_reference`；证据等级为 10 篇 `full_text_verified`、3 篇 `local_note_verified`、1 篇 `ppt_only`。14/14 条记录均已补充 DOI、arXiv、官方出版社／机构仓库、作者公开稿、官方项目或数据集链接，公开 clone 可以重新定位每篇来源。
 
 ## 文件
 
@@ -17,6 +17,7 @@
 - [`papers.jsonl`](./papers.jsonl)：14 篇论文的逐篇采集记录；一行一篇。
 - [`papers.csv`](./papers.csv)：便于浏览的核心字段摘要。
 - [`COLLECTION_SUMMARY.json`](./COLLECTION_SUMMARY.json)：计数、平台覆盖、证据等级、质量警告与校验状态。
+- [`backfill_public_sources.py`](./backfill_public_sources.py)：冻结 14 篇论文的公开来源身份，并保持 JSONL／CSV 主来源一致。
 - [`FIELD_UNION.md`](./FIELD_UNION.md)：论文字段并集、来源和能否进入我们数据集的判断。
 - [`../method/METHOD_SPEC.md`](../method/METHOD_SPEC.md)：由采集结果反推的方法规格。
 
@@ -54,6 +55,8 @@ ppt_only             当前只由 PPT 支撑，必须保留这一限制
 ## 采集纪律
 
 - 所有字段必须附项目内证据路径及页码或行号。
+- `public_sources.evidence_scope` 明确区分只证明论文身份、摘要、全文或实验资产；一个 DOI／落地页不能自动证明全部逐字段提取。
+- 新增公开来源只解锁第三方重开来源，不会自动把 `ppt_only` 或 `local_note_verified` 升级为 `full_text_verified`；升级必须逐字段重新核对并更新 locator。
 - `ppt_slides` 只表示论文在 PPT 中出现或被讨论的页，不代表该页所有图文都是可采信原始证据；实证等级以 `source_evidence` 和 `collection_notes` 为准。
 - 不把“clicked/command sent/画面变化”写成真实任务恢复。
 - 不把测试框架能读到的 XCUI/Appium page source 等同于视障人士使用 VoiceOver 时的真实焦点和朗读体验。

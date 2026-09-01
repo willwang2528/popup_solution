@@ -12,6 +12,7 @@
     "adjudicator_id_pseudonymous",
     "adjudication_status",
     "presence_label_final",
+    "out_of_scope_reason_final",
     "message_text_final",
     "message_observability_final",
     "semantic_slots_final",
@@ -26,7 +27,19 @@
     "record_status": {"enum": ["blank", "completed"]},
     "adjudicator_id_pseudonymous": {"type": ["string", "null"], "minLength": 1},
     "adjudication_status": {"enum": ["pending", "resolved", "cannot_resolve"]},
-    "presence_label_final": {"enum": ["popup", "no_popup", "uncertain", "unusable", null]},
+    "presence_label_final": {"enum": ["popup", "no_popup", "uncertain", "unusable", "out_of_scope", null]},
+    "out_of_scope_reason_final": {
+      "enum": [
+        "captcha",
+        "risk_control",
+        "identity_authentication",
+        "payment_confirmation",
+        "permission_security_control",
+        "manual_review",
+        "other_predefined_exclusion",
+        null
+      ]
+    },
     "message_text_final": {"type": ["string", "null"], "minLength": 1},
     "message_observability_final": {"enum": ["complete", "partial", "not_observable", "not_applicable", null]},
     "semantic_slots_final": {
@@ -47,6 +60,7 @@
           "adjudicator_id_pseudonymous": {"const": null},
           "adjudication_status": {"const": "pending"},
           "presence_label_final": {"const": null},
+          "out_of_scope_reason_final": {"const": null},
           "message_text_final": {"const": null},
           "message_observability_final": {"const": null},
           "semantic_slots_final": {"maxItems": 0},
@@ -66,6 +80,31 @@
           "decision_rationale": {"type": "string", "minLength": 1},
           "evidence_rechecked_via_adapter": {"const": true},
           "resolved_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"presence_label_final": {"not": {"const": "out_of_scope"}}}},
+      "then": {"properties": {"out_of_scope_reason_final": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"presence_label_final": {"const": "out_of_scope"}}},
+      "then": {
+        "properties": {
+          "out_of_scope_reason_final": {
+            "enum": [
+              "captcha",
+              "risk_control",
+              "identity_authentication",
+              "payment_confirmation",
+              "permission_security_control",
+              "manual_review",
+              "other_predefined_exclusion"
+            ]
+          },
+          "message_text_final": {"const": null},
+          "message_observability_final": {"const": "not_applicable"},
+          "semantic_slots_final": {"maxItems": 0}
         }
       }
     }

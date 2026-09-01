@@ -25,6 +25,7 @@
 | `data-collection/collection.schema.json` | 单篇文献记录 schema | current |
 | `data-collection/FIELD_UNION.md` | 文献方法与我方方法的字段并集说明 | current / provisional |
 | `data-collection/COLLECTION_SUMMARY.json` | 文献采集统计与边界 | current |
+| `data-collection/slr-expansion/EXPANSION_QUEUE.md` | CHI 2026、A11yScan、TIMESTUMP 的直接邻近扩展候选 | candidate only / frozen 255 union unchanged |
 | `DATASET_SCHEMA.md` | 跨平台 union schema 说明 | current / provisional |
 | `dataset-v1/README.md` | v1 数据结构、生成与验证入口 | current |
 | `dataset-v1/DATASET_CARD.md` | v1 数据集卡；明确 empirical collection pending | current / provisional |
@@ -51,6 +52,7 @@
 | `dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md` | 两人独立 gap audit、第三人仲裁与输入隔离协议 | current / audit pending |
 | `dataset-v1/annotation-pilot/PILOT_PROTOCOL_FREEZE.json` | 人工会话前阈值、全量第三人复核、媒体与协议哈希冻结 | frozen / no human outputs yet |
 | `dataset-v1/annotation-pilot/HUMAN_ANNOTATION_READINESS.json` | 路径脱敏的人工开标 readiness 结果 | ready for real human annotation only |
+| `dataset-v1/annotation-pilot/MEDIA_QA.json` | 30-item 媒体 magic/hash/EXIF 技术审计 | pass / not privacy or license approval |
 | `dataset-v1/annotation-pilot/scripts/check_human_annotation_readiness.py` | 协议、ID、blank、权限、Git ignore、媒体哈希 fail-closed 门 | tested / 21 readiness tests |
 | `dataset-v1/annotation-pilot/scripts/build_pilot_bundle.py` | 再现固定 pilot 与 A/B 盲标模板 | tested generator |
 | `dataset-v1/annotation-pilot/scripts/calculate_agreement.py` | κ、消息一致性、semantic-slot Jaccard 与分歧导出 | tested / no human values yet |
@@ -64,8 +66,8 @@
 | `dataset-v1/scripts/popsweeper_source_audit.py` | 下载归档完整性与安全清点器；不解压 | tested |
 | `tests/test_popsweeper_source_audit.py` | source auditor 单元测试 | 9 tests passing |
 | `tests/test_popsweeper_candidate_manifest.py` | 候选发现、去重、RICO join、分层抽样与 CLI 测试 | 7 tests passing |
-| `tests/test_annotation_pilot_protocol.py` | 固定批次、盲法与无金标泄漏测试 | 4 tests passing |
-| `tests/test_annotation_agreement.py` | agreement、配对、规范化与分歧导出测试 | 5 tests passing |
+| `tests/test_annotation_pilot_protocol.py` | 固定批次、盲法、显式范围排除与无金标泄漏测试 | 6 tests passing |
+| `tests/test_annotation_agreement.py` | agreement、配对、范围排除、规范化与分歧导出测试 | 6 tests passing |
 | `tests/test_export_annotation_media.py` | 归档/member/CRC/RICO join/gitignore/冻结 pilot 测试 | 8 tests passing |
 | `dataset-v1/validation-result.json` | 当前 synthetic fixture 验证结果 | pass / non-empirical |
 | `dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md` | v1 schema/fixture/negative mutation 验证说明 | pass / non-empirical |
@@ -78,16 +80,14 @@
 | `dataset-v1/work/final_dataset_audit.md` | v1 契约修复后复核 | same-family PASS / provisional |
 | `dataset-v1/work/v1_message_contract_proposal.md` | v1 no-action 契约变更设计记录 | implemented design record |
 | `dataset-v1/work/MODEL_PREANNOTATION_STATUS.md` | A/B 模型预标注范围、描述性一致和禁用口径 | current / non-human / not metric eligible |
-| `dataset-v1/work/model-preannotation-a.jsonl` | 模型 A 的 30 条独立截图预标注 | model-only / not human gold |
-| `dataset-v1/work/model-preannotation-a-summary.md` | 模型 A 范围、分布与资格说明 | current / non-human |
-| `dataset-v1/work/model-preannotation-b.jsonl` | 模型 B 的 30 条独立截图预标注 | model-only / not human gold |
-| `dataset-v1/work/model-preannotation-b-summary.md` | 模型 B 范围、分布与资格说明 | current / non-human |
+| `dataset-v1/work/model-preannotation-a-summary.md` | 模型 A 范围、聚合分布与资格说明 | current / non-human / item JSONL withheld |
+| `dataset-v1/work/model-preannotation-b-summary.md` | 模型 B 范围、聚合分布与资格说明 | current / non-human / item JSONL withheld |
 | `dataset-v1/work/popsweeper_source_audit.json` | 266,010,362-byte 归档的 MD5、安全与成员清点 | pass |
 | `dataset-v1/work/rico_semantic_source_audit.json` | 66,261 JSON/PNG 对的 RICO 归档安全清点 | pass |
 | `experiments/v1-message/README.md` | v1 输入、方法、指标、命令与证据边界 | current |
 | `experiments/v1-message/popup_eval/` | majority、A1/A2、MG-PU、整批 gold finalizer、冻结预测评分、语义复核、gap audit、visual-bank freeze 与 paired comparison | implemented / action-free / no human result |
 | `experiments/v1-message/run_eval.py` | 可复现 v1 evaluation CLI | tested / empirical gold required |
-| `experiments/v1-message/tests/` | 路由、A1/A2、gold batch、冻结预测、语义/gap hash、visual freeze、group-map 与 paired bootstrap 测试 | 65 tests passing |
+| `experiments/v1-message/tests/` | 路由、A1/A2、gold batch、冻结预测、语义/gap hash、visual freeze、group-map 与 paired bootstrap 测试 | 67 tests passing |
 | `experiments/v1-message/schemas/semantic_output_adjudication.schema.json` | 绑定逐项 prediction SHA-256 的盲式消息语义复核 | implemented / human values pending |
 | `experiments/v1-message/statistics/README.md` | post-gold paired scorer、隐私 group-map 与统计边界 | current / exploratory only |
 | `experiments/v1-message/statistics/PUBLIC_GROUP_MAP_SUMMARY.json` | 30 singleton cluster 的无标识聚合与哈希 | current / formal leakage control false |
@@ -116,9 +116,11 @@
 | `refine-logs/NOVELTY_CHECK.md` | 查新与 contribution claim 边界 | proceed with caution |
 | `refine-logs/EXPERIMENT_PLAN.md` | 实验矩阵、统计与 kill criteria | planned |
 | `refine-logs/EXPERIMENT_TRACKER.md` | source→pilot→baseline→release 状态 | active |
-| `refine-logs/REVIEW_SUMMARY.md` | 当前评审摘要 | same-family provisional |
+| `refine-logs/REVIEW_SUMMARY.md` | 三轮 cross-family 评审与处理摘要 | current / proceed with caution |
 | `refine-logs/PIPELINE_SUMMARY.md` | ARIS refinement→experiment-plan 汇总 | current |
 | `refine-logs/REFINE_STATE.json` | 机器可读 pipeline 状态 | current |
+| `reviews/RESEARCH_REVIEW.md` | Claude cross-family 独立评审自包含摘要与任务标识 | accepted review trace / not empirical acceptance |
+| `PUBLIC_RELEASE_GATE.json` | 研究文档/代码与经验数据的分离发布闸 | docs/code auditable；empirical dataset blocked |
 | `refine-logs/DATA_COLLECTION_LOCAL_AUDIT.md` | 早期文献采集一致性审计 | historical / provisional |
 | `refine-logs/PROVISIONAL_LOCAL_REVIEW.md` | 早期本地 proposal review | historical / provisional |
 | `refine-logs/REFINEMENT_REPORT.md` | 当前精炼报告 | current / provisional |
@@ -157,9 +159,9 @@
 - Android controlled capture 与 iOS capability records；
 - structure-only、OCR/VLM、always-on fusion 和 MG-PU 的 empirical 冻结 split 结果；
 - 目标用户研究；
-- cross-family accepted review；
+- 基于真实 empirical result 的独立复核与 acceptance（当前 cross-family review 只接受进入 pilot 的设计）；
 - 带稳定版本号或 DOI 的公开 benchmark release。
 
 在这些证据形成前，不得宣称已有公开 empirical dataset、跨平台验证、方法显著优于基线或真实用户体验已改善。
 
-另一个公开复核缺口是：`papers.jsonl` 的 29 个 `source_evidence.path`（16 个唯一路径，覆盖 14 篇记录）目前都指向未随仓库再分发的授权本地材料。字段并集与现有 provenance 可审计，但公开 clone 尚不能独立重开这些逐字段证据；后续需为每篇补 DOI 或官方可访问来源链接，且不得借此重新分发受版权约束的全文。
+`papers.jsonl` 现在为 14/14 篇补齐了 25 个公开主来源入口，覆盖 DOI、arXiv、出版社、机构仓库、作者公开稿、官方项目和数据集。公开 clone 已能重新定位每篇论文；但既有 29 个本地 `source_evidence.path` 仍是冻结的逐字段 locator，只有在公开全文上逐字段复核后才能升级证据等级，不能仅凭新增 URL 自动视为重审完成。

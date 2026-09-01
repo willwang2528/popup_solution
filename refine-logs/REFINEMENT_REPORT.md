@@ -1,66 +1,45 @@
-# Refinement Report：popup-solution
+# Refinement Report：PMAB-Android V1
 
-**Problem**：屏幕可见移动弹窗消息未完整暴露到屏幕阅读器可读的结构化表示
-**Initial Approach**：UI 结构 + 视觉兜底 + 完整 Recovery
 **Date**：2026-09-01
-**Rounds**：1 / 5
-**Final Score**：7.6 / 10
-**Final Verdict**：REVISE
-**Acceptance**：same-family provisional
+**Rounds**：3
+**Verdict**：`PROCEED_WITH_CAUTION / pre-empirical`
+**Cross-family review**：completed, accepted as review trace
+**Fatal design flaws remaining**：0
+**Execution readiness**：3.5/5
 
-## Problem Anchor
+## Problem anchor
 
-V1 只在动作前判断 popup presence 并提取屏幕可见 message。它承认结构化 UI 的硬可观测边界，不执行关闭动作，也不把节点／截图变化升级为任务恢复。
+面向使用 TalkBack 等屏幕阅读器的视障人士，V1 测量动作前 Android 状态中目标 popup 是否存在，以及截图可见消息能否从 accessibility representation 正确重建。V1 不点击、不关闭、不恢复焦点／页面／任务，也不声称真实体验改善。
 
-## Output Files
+## Main refinement
 
-- PPT evidence：`sources/PPT_SLIDE_14_EVIDENCE.md`
-- Novelty check：`refine-logs/NOVELTY_CHECK.md`
-- Review：`refine-logs/round-1-review.md`
-- Refinement：`refine-logs/round-1-refinement.md`
-- Review summary：`refine-logs/REVIEW_SUMMARY.md`
-- Final proposal：`refine-logs/FINAL_PROPOSAL.md`
-- Experiment plan：`refine-logs/EXPERIMENT_PLAN.md`
-- Experiment tracker：`refine-logs/EXPERIMENT_TRACKER.md`
-- Pipeline summary：`refine-logs/PIPELINE_SUMMARY.md`
+1. Dominant contribution 固定为 PMAB-Android factual measurement benchmark；MG-PU 只作 allocation policy。
+2. 正式输入改为真实同步 Android screenshot + accessibility representation；PopSweeper/RICO 只验证来源适配、标注与工程契约。
+3. Popup scope 使用截图可观察定义，不推断持续性或 dismissibility。
+4. CAPTCHA、风控、认证、支付、OS/App 权限与安全控制、人工审核显式 `out_of_scope`，不得混入 `uncertain`。
+5. G1 截图事实 gold 与 G2 structure sufficiency audit 分离；G2 发现 G1 错误只能触发 versioned correction/restart。
+6. 三族比较、K25/K50/K100、K50 主确认比较、cluster bootstrap、Holm/BH 控制和负／零结果出口已冻结。
+7. iOS、UX、Recovery 和 broad-first claim 全部移出 V1。
 
-## Score Evolution
+## Output files
 
-| Round | Problem Fidelity | Method Specificity | Contribution Quality | Frontier Leverage | Feasibility | Validation Focus | Venue Readiness | Overall | Verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| 1 | 9.5 | 8.0 | 7.0 | 7.0 | 6.0 | 8.5 | 6.5 | 7.6 | REVISE |
+- Final proposal：`FINAL_PROPOSAL.md`
+- Experiment plan：`EXPERIMENT_PLAN.md`
+- Review summary：`REVIEW_SUMMARY.md`
+- Independent review：`../reviews/RESEARCH_REVIEW.md`
+- Experiment tracker：`EXPERIMENT_TRACKER.md`
+- Pipeline state：`REFINE_STATE.json`
 
-CALIBRATION：none。
+## Current evidence
 
-## Main Changes
+- 255-field union contract：已生成并验证；
+- PopSweeper/RICO pilot：30 items，技术媒体 QA 已通过；
+- 真人 G1/G2 gold：0；
+- 正式同步 Android item：0；
+- 正式 empirical score：0；
+- public empirical dataset：blocked；
+- research docs/code：完成 clean-clone audit 后可公开。
 
-1. PPT 第 14 页成为最高优先范围锚：弱变化证据不能证明完整 Recovery。
-2. Dominant contribution 固定为 PMAB measurement/benchmark。
-3. MG-PU 变为唯一 supporting method；Actionability-Gap-Gated Recovery 仅作 V2+ umbrella。
-4. “首次提出背景”经查新降级：CHI 2024/2026 和 Screen Recognition 已覆盖更广问题。
-5. 数据被分为 synthetic、public-derived、controlled Android 和 iOS tiers。
-6. 主比较、equal-budget、group split、coverage 和 kill criteria 已预定义。
-7. PopSweeper Zenodo 许可核验为 CC-BY-4.0；RICO 再分发必须遵守 copyright notice。
+## Verdict meaning
 
-## External Review Record
-
-`mcp__claude_review__review_start` 被主机拒绝，因为 popup-solution 不在既有外部披露授权范围内。未重试或绕过。轨迹保存在：
-
-`.aris/traces/research-refine/2026-09-01_run01/`
-
-因此任何 `cross-family accepted` 标签均不成立。
-
-## Remaining Weaknesses
-
-- Empirical real-app items：0；
-- Android controlled capture：未就绪；
-- iOS capability/data：未就绪；
-- OCR runtime／VLM model：未冻结；
-- baseline implementation：未完成；
-- MG-PU implementation：未完成；
-- comparison result：不存在；
-- public benchmark release：不存在。
-
-## Verdict Meaning
-
-`REVISE` 不是否定研究方向，而是说明 proposal 已足以进入 source/data pilot，但没有资格进入 paper claim 阶段。下一步必须产生真实 item 和可审计 baseline，而不是继续扩写方法叙事。
+`PROCEED_WITH_CAUTION` 表示研究设计可以进入 feasibility/G1/G2 pilot，不表示 benchmark 或方法贡献已经成立。任何 empirical claim 必须等待真实 capture、人工 gold、gap census、matched-budget comparison 与 release gate。
