@@ -91,12 +91,25 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 
 停止／转向条件继续绑定：真实同步 capture 不可行则停止主实验；G1/G2 agreement 不过门则停止相应 gold；真实 gap <10% 或少于 20 个 non-synthetic positives 则转 structure-sufficiency measurement；方法比较不过门则撤销 superiority。
 
+## Android capture gate 增量审阅
+
+公开实现完成后，又在同一 Claude thread 中进行了三次最小化增量审阅。最终结论为 `TOOLING_GATE_CONVERGED`，但只针对 CAP-001 离线软件门，经验主张变化为 `NONE`。
+
+审阅过程保留了一次重要纠错：Claude 首轮认可工具门后，Codex 反向检查发现 nested node 中的 label/prediction key 可绕过顶层检查，且聚合器仅凭手写 `eligible` record 可放行。新增失败测试后，代码改为递归拒绝标签／预测键，并完整校验每条终结记录。Claude 随后给出 `VERIFIED_FIX`，但又过度声称“随机 SHA-256 无法伪造”；Codex 指出任意 64 位十六进制串都能通过形状检查。正式 CLI 因此再次收紧为只接受私有 metadata 路径清单、逐 bundle 重新读取 artifact bytes、重新终结并重算哈希，彻底移除 `--records` 入口。
+
+最终审阅确认：路径穿越、直接 symlink、目录 symlink escape、重复 resolved path、重复 capture ID、重复截图哈希和重复结构哈希均 fail closed；12 条 capture gate 测试通过。它同时明确软件门的能力边界：它能证明当前磁盘 artifact 存在、格式与声明一致，不能密码学证明 collector、授权、时间戳、稳定状态 token 或 AccessibilityService 来源声明真实。后者需要开源 collector、可复现构建、运行日志和人工／流程审计。
+
+因此当前状态仍是：真实 capture=0、human gold=0、paper result=0。增量审阅不允许提前宣称 capture feasibility 已实证通过。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
 - Round 1 job：`579cc0159bd8439486de5670c8fb2631`
 - Round 2 job：`d1015d7c106d4593a85be63da5d359e8`
 - Round 3 job：`1c4fe530e2c841fe9ce7a6505397ac9b`
+- Android gate review job：`8939bb2d516544ba9cebdd2126da555c`
+- Fail-closed recheck job：`5cc4019879de44d2a9b9b10b06c39fda`
+- Artifact-binding final job：`9c58eb567dd9407b9e7aa10c4949d726`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。

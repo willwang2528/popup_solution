@@ -15,6 +15,9 @@
   ],
   "minimum_source_groups": 5,
   "minimum_popup_template_families": 3,
+  "aggregate_input_must_be_complete_finalizer_output": true,
+  "aggregate_command_refinalizes_private_bundles": true,
+  "aggregate_command_accepts_record_only_input": false,
   "duplicate_policy": {
     "capture_id": "reject",
     "screenshot_sha256": "reject",

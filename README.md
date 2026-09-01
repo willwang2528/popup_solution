@@ -16,7 +16,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 8. [`data-collection/FIELD_UNION.md`](./data-collection/FIELD_UNION.md)：跨 Android、iOS、移动 Web 的字段并集与证据边界。
 9. [`refine-logs/FINAL_PROPOSAL.md`](./refine-logs/FINAL_PROPOSAL.md)：当前 proposal，状态为 `provisional`。
 10. [`dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md`](./dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md)：schema、fixture、QA 与负向变异验证。
-11. [`reviews/RESEARCH_REVIEW.md`](./reviews/RESEARCH_REVIEW.md)：三轮 Claude cross-family 独立评审；最终 `PROCEED_WITH_CAUTION`、fatal flaws=0、readiness=3.5/5，只接受进入 pilot 的设计，不接受任何经验效果主张。
+11. [`reviews/RESEARCH_REVIEW.md`](./reviews/RESEARCH_REVIEW.md)：初始三轮 Claude cross-family 研究评审加三轮 Android capture gate 增量复核；整体仍为 `PROCEED_WITH_CAUTION`，软件门增量结论为 `TOOLING_GATE_CONVERGED`，均不接受任何经验效果主张。
 12. [`sources/PPT_SLIDE_14_EVIDENCE.md`](./sources/PPT_SLIDE_14_EVIDENCE.md)：PPT 第 14 页“五级回证表”的可审计转录与 v1 分层解释。
 13. [`sources/SOURCE_LEDGER.md`](./sources/SOURCE_LEDGER.md)：PopSweeper/RICO 许可、校验、实际清点、数量差异与 adapter-only 发布策略。
 14. [`refine-logs/NOVELTY_CHECK.md`](./refine-logs/NOVELTY_CHECK.md)：当前查新结论与不可宣称的 broad-first 边界。
@@ -125,7 +125,7 @@ always-on”基线。
 
 当前仍没有真实双人消息金标、可进入 VPMA 的 empirical item、方法对比指标或 iOS 数据。上述冻结只证明输入隔离、路由和预测持久化已经发生；仓库中的 3 条 fixture 和 synthetic smoke 也只验证数据／评测管线，均不构成论文效果或用户体验证据。
 
-三轮 Claude cross-family 评审已确认当前设计没有剩余 fatal flaw，可以进入真实
+初始三轮 Claude cross-family 评审已确认当前设计没有剩余 fatal flaw，可以进入真实
 Android capture feasibility 与 G1/G2 pilot；这不是 empirical acceptance。正式数据锚
 仍是同步 Android screenshot + accessibility representation，PopSweeper/RICO 30-item
 bundle 只作协议和工程 pilot。
@@ -134,4 +134,7 @@ CAP-001 的离线终结器和聚合 coverage gate 已按测试先行实现：它
 UIAutomator/RICO 替代物、状态漂移、超过 3000 ms 的不同步输入、空结构、金标／
 预测泄漏、未过隐私审查和重复媒体。当前主机没有 `adb`、Android emulator 或
 Appium，真实 capture 仍为 0，所以状态保持 `blocked_no_real_android_captures`；
-工具通过不等于正式数据可行性已经通过。
+工具通过不等于正式数据可行性已经通过。随后三轮 Claude 增量复核与 Codex 反向
+审查关闭了 nested label 泄漏、手写 record 放行和随机哈希不绑定 artifact 三条绕过；
+最终正式 audit CLI 会逐 bundle 重新读取私有 artifact 并重算哈希，但仍不能替代
+collector 来源、授权和同步声明的过程审计。

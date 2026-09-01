@@ -174,7 +174,20 @@ def _validate_accessibility_snapshot(snapshot: dict[str, Any]) -> tuple[int, int
         _require(all(child in node_id_set for child in children), f"nodes[{index}] references an unknown child")
 
     forbidden = {"gold_label", "gold_labels", "prediction", "predictions", "method_prediction"}
-    _require(not forbidden.intersection(snapshot), "snapshot must not contain gold labels or predictions")
+
+    def contains_forbidden_key(value: Any) -> bool:
+        if isinstance(value, dict):
+            return bool(forbidden.intersection(value)) or any(
+                contains_forbidden_key(child) for child in value.values()
+            )
+        if isinstance(value, list):
+            return any(contains_forbidden_key(child) for child in value)
+        return False
+
+    _require(
+        not contains_forbidden_key(snapshot),
+        "snapshot must not contain gold labels or predictions",
+    )
     return len(nodes), len(windows)
 
 
@@ -290,6 +303,87 @@ def finalize_capture(metadata_path: Path) -> dict[str, Any]:
     }
 
 
+def _positive_integer(value: Any, name: str) -> int:
+    _require(
+        isinstance(value, int) and not isinstance(value, bool) and value > 0,
+        f"{name} must be a positive integer",
+    )
+    return value
+
+
+def _sha256_string(value: Any, name: str) -> str:
+    digest = _nonempty_string(value, name)
+    _require(
+        len(digest) == 64 and all(character in "0123456789abcdef" for character in digest),
+        f"{name} must be a lowercase SHA-256 digest",
+    )
+    return digest
+
+
+def _validate_finalized_record(record: dict[str, Any], index: int) -> None:
+    prefix = f"records[{index}]"
+    _require(
+        record.get("capture_schema_version") == CAPTURE_SCHEMA_VERSION,
+        f"{prefix} has an invalid capture schema version",
+    )
+    _require(
+        record.get("status") == "eligible_for_capture_feasibility",
+        f"{prefix} is not capture-feasibility eligible",
+    )
+    for field in (
+        "capture_id",
+        "item_id",
+        "source_group_id",
+        "popup_template_family_id",
+    ):
+        _nonempty_string(record.get(field), f"{prefix}.{field}")
+    _require(
+        record.get("intended_stratum") in ALLOWED_STRATA,
+        f"{prefix}.intended_stratum is outside the frozen V1 strata",
+    )
+    _require(
+        record.get("collector_mode") == "accessibilityservice_node_snapshot",
+        f"{prefix} must originate from an AccessibilityService snapshot",
+    )
+    _require(
+        record.get("paper_result_eligible") is False,
+        f"{prefix} must remain paper-result ineligible",
+    )
+    _require(record.get("human_gold_count") == 0, f"{prefix} must have zero human-gold labels")
+
+    authorization = _object(record.get("authorization_summary"), f"{prefix}.authorization_summary")
+    _require(
+        authorization.get("collection_authorized") is True
+        and authorization.get("privacy_review_status") == "passed"
+        and authorization.get("redistribution_status") in {"public_media", "adapter_only"},
+        f"{prefix} does not satisfy the authorization and privacy gate",
+    )
+    synchronization = _object(record.get("synchronization"), f"{prefix}.synchronization")
+    delta_ms = synchronization.get("delta_ms")
+    _require(
+        isinstance(delta_ms, int)
+        and not isinstance(delta_ms, bool)
+        and 0 <= delta_ms <= MAX_SYNCHRONIZATION_DELTA_MS
+        and synchronization.get("maximum_delta_ms") == MAX_SYNCHRONIZATION_DELTA_MS
+        and synchronization.get("stable_state_verified") is True,
+        f"{prefix} does not satisfy the synchronization gate",
+    )
+    artifacts = _object(record.get("artifacts"), f"{prefix}.artifacts")
+    _sha256_string(artifacts.get("screenshot_sha256"), f"{prefix}.screenshot_sha256")
+    _sha256_string(
+        artifacts.get("accessibility_snapshot_sha256"),
+        f"{prefix}.accessibility_snapshot_sha256",
+    )
+    _positive_integer(artifacts.get("screenshot_size_bytes"), f"{prefix}.screenshot_size_bytes")
+    _positive_integer(
+        artifacts.get("accessibility_snapshot_size_bytes"),
+        f"{prefix}.accessibility_snapshot_size_bytes",
+    )
+    summary = _object(record.get("accessibility_summary"), f"{prefix}.accessibility_summary")
+    _positive_integer(summary.get("node_count"), f"{prefix}.node_count")
+    _positive_integer(summary.get("window_count"), f"{prefix}.window_count")
+
+
 def audit_feasibility(records: list[dict[str, Any]]) -> dict[str, Any]:
     """Audit only capture coverage; this cannot unlock paper-result claims."""
 
@@ -297,10 +391,7 @@ def audit_feasibility(records: list[dict[str, Any]]) -> dict[str, Any]:
     _require(records, "at least one capture record is required")
     for index, record in enumerate(records):
         _require(isinstance(record, dict), f"records[{index}] must be an object")
-        _require(
-            record.get("status") == "eligible_for_capture_feasibility",
-            f"records[{index}] is not capture-feasibility eligible",
-        )
+        _validate_finalized_record(record, index)
 
     def values(key: str) -> list[str]:
         return [_nonempty_string(record.get(key), f"record.{key}") for record in records]
@@ -338,6 +429,25 @@ def audit_feasibility(records: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def audit_metadata_bundles(metadata_list_path: Path) -> dict[str, Any]:
+    """Re-finalize private bundles before applying the aggregate coverage gate."""
+
+    metadata_list_path = Path(metadata_list_path)
+    _require(metadata_list_path.is_file(), "metadata list does not exist")
+    try:
+        entries = json.loads(metadata_list_path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("metadata list must be valid UTF-8 JSON") from error
+    _require(isinstance(entries, list) and entries, "metadata list must be a non-empty JSON array")
+    root = metadata_list_path.resolve().parent
+    paths = [
+        _resolve_artifact(root, entry, f"metadata_list[{index}]")
+        for index, entry in enumerate(entries)
+    ]
+    _require(len(paths) == len(set(paths)), "metadata list contains duplicate bundle paths")
+    return audit_feasibility([finalize_capture(path) for path in paths])
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -355,8 +465,10 @@ def main(argv: list[str] | None = None) -> int:
     finalize_parser = subparsers.add_parser("finalize", help="finalize one private capture bundle")
     finalize_parser.add_argument("--metadata", required=True, type=Path)
     finalize_parser.add_argument("--output", required=True, type=Path)
-    audit_parser = subparsers.add_parser("audit", help="audit a JSON list of finalized records")
-    audit_parser.add_argument("--records", required=True, type=Path)
+    audit_parser = subparsers.add_parser(
+        "audit", help="re-finalize private bundles and audit aggregate coverage"
+    )
+    audit_parser.add_argument("--metadata-list", required=True, type=Path)
     audit_parser.add_argument("--output", required=True, type=Path)
     arguments = parser.parse_args(argv)
 
@@ -364,8 +476,7 @@ def main(argv: list[str] | None = None) -> int:
         if arguments.command == "finalize":
             result = finalize_capture(arguments.metadata)
         else:
-            raw_records = json.loads(arguments.records.read_text(encoding="utf-8"))
-            result = audit_feasibility(raw_records)
+            result = audit_metadata_bundles(arguments.metadata_list)
         _write_json(arguments.output, result)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
         parser.exit(2, f"capture finalization failed: {error}\n")

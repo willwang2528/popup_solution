@@ -50,7 +50,7 @@ def make_png(width: int = 2, height: int = 2) -> bytes:
 
 
 def write_capture_fixture(root: Path, *, suffix: str = "001") -> tuple[Path, bytes, bytes]:
-    screenshot = make_png(width=2 + int(suffix) % 2, height=2)
+    screenshot = make_png(width=2 + int(suffix), height=2)
     accessibility = {
         "snapshot_schema_version": "1.0.0",
         "windows": [
@@ -92,7 +92,7 @@ def write_capture_fixture(root: Path, *, suffix: str = "001") -> tuple[Path, byt
                 "window_id": 7,
                 "class_name": "android.widget.TextView",
                 "package_name": "org.example.fixture",
-                "text": "Private fixture message",
+                "text": f"Private fixture message {suffix}",
                 "content_description": None,
                 "hint_text": None,
                 "pane_title": None,
@@ -168,6 +168,38 @@ def write_capture_fixture(root: Path, *, suffix: str = "001") -> tuple[Path, byt
         encoding="utf-8",
     )
     return metadata_path, screenshot, accessibility_bytes
+
+
+def finalized_record(index: int, stratum: str) -> dict:
+    return {
+        "capture_schema_version": "1.0.0",
+        "status": "eligible_for_capture_feasibility",
+        "capture_id": f"PMAB-A-CAP-{index:03d}",
+        "item_id": f"PMAB-A-ITEM-{index:03d}",
+        "source_group_id": f"group-{index}",
+        "popup_template_family_id": f"template-{index % 3}",
+        "intended_stratum": stratum,
+        "collector_mode": "accessibilityservice_node_snapshot",
+        "authorization_summary": {
+            "collection_authorized": True,
+            "privacy_review_status": "passed",
+            "redistribution_status": "adapter_only",
+        },
+        "synchronization": {
+            "delta_ms": 400,
+            "maximum_delta_ms": 3000,
+            "stable_state_verified": True,
+        },
+        "artifacts": {
+            "screenshot_sha256": f"{index:064x}",
+            "screenshot_size_bytes": 100 + index,
+            "accessibility_snapshot_sha256": f"{index + 10:064x}",
+            "accessibility_snapshot_size_bytes": 200 + index,
+        },
+        "accessibility_summary": {"node_count": 2, "window_count": 1},
+        "paper_result_eligible": False,
+        "human_gold_count": 0,
+    }
 
 
 class AndroidCaptureFinalizerTests(unittest.TestCase):
@@ -300,6 +332,19 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "privacy review"):
                 module.finalize_capture(metadata_path)
 
+    def test_nested_label_or_prediction_key_is_rejected_from_snapshot(self):
+        # Break caught: labels hidden inside a node bypass the top-level leakage check.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata_path, _, _ = write_capture_fixture(root)
+            tree_path = root / "accessibility.json"
+            tree = json.loads(tree_path.read_text(encoding="utf-8"))
+            tree["nodes"][1]["prediction"] = {"popup_present": True}
+            tree_path.write_text(json.dumps(tree), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "gold labels or predictions"):
+                module.finalize_capture(metadata_path)
+
     def test_feasibility_gate_requires_five_groups_three_templates_and_all_strata(self):
         # Break caught: a narrow or one-sided capture set is declared formal-data ready.
         module = load_module()
@@ -312,19 +357,7 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
             "no_popup_candidate",
         ]
         for index, stratum in enumerate(strata, start=1):
-            records.append(
-                {
-                    "status": "eligible_for_capture_feasibility",
-                    "capture_id": f"PMAB-A-CAP-{index:03d}",
-                    "source_group_id": f"group-{index}",
-                    "popup_template_family_id": f"template-{index % 3}",
-                    "intended_stratum": stratum,
-                    "artifacts": {
-                        "screenshot_sha256": f"{index:064x}",
-                        "accessibility_snapshot_sha256": f"{index + 10:064x}",
-                    },
-                }
-            )
+            records.append(finalized_record(index, stratum))
 
         report = module.audit_feasibility(records)
 
@@ -344,23 +377,14 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
         records = []
         for index in range(1, 6):
             records.append(
-                {
-                    "status": "eligible_for_capture_feasibility",
-                    "capture_id": f"PMAB-A-CAP-{index:03d}",
-                    "source_group_id": f"group-{index}",
-                    "popup_template_family_id": f"template-{index % 3}",
-                    "intended_stratum": (
-                        "boundary_candidate"
-                        if index == 1
-                        else "popup_candidate"
-                        if index % 2
-                        else "no_popup_candidate"
-                    ),
-                    "artifacts": {
-                        "screenshot_sha256": f"{index:064x}",
-                        "accessibility_snapshot_sha256": f"{index + 10:064x}",
-                    },
-                }
+                finalized_record(
+                    index,
+                    "boundary_candidate"
+                    if index == 1
+                    else "popup_candidate"
+                    if index % 2
+                    else "no_popup_candidate",
+                )
             )
 
         duplicate_id = deepcopy(records)
@@ -374,6 +398,37 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
         ]["screenshot_sha256"]
         with self.assertRaisesRegex(ValueError, "duplicate screenshot"):
             module.audit_feasibility(duplicate_media)
+
+    def test_feasibility_gate_rejects_forged_or_incomplete_finalized_record(self):
+        # Break caught: hand-written status-only rows bypass finalization and unlock G1.
+        module = load_module()
+        records = [
+            finalized_record(
+                index,
+                "boundary_candidate"
+                if index == 1
+                else "popup_candidate"
+                if index % 2
+                else "no_popup_candidate",
+            )
+            for index in range(1, 6)
+        ]
+        mutations = (
+            ("paper_result_eligible", True, "paper-result"),
+            ("human_gold_count", 1, "human-gold"),
+            ("collector_mode", "uiautomator_dump", "AccessibilityService"),
+        )
+        for field, value, error_pattern in mutations:
+            forged = deepcopy(records)
+            forged[0][field] = value
+            with self.subTest(field=field):
+                with self.assertRaisesRegex(ValueError, error_pattern):
+                    module.audit_feasibility(forged)
+
+        incomplete = deepcopy(records)
+        incomplete[0].pop("authorization_summary")
+        with self.assertRaisesRegex(ValueError, "authorization"):
+            module.audit_feasibility(incomplete)
 
     def test_cli_writes_minimized_record_without_private_message_text(self):
         # Break caught: the documented capture finalization command is not reproducible.
@@ -402,6 +457,72 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
                 json.loads(record_text)["status"],
                 "eligible_for_capture_feasibility",
             )
+
+    def test_audit_cli_refinalizes_private_bundles_and_rejects_record_only_input(self):
+        # Break caught: a fake record with random hash strings unlocks G1 without artifacts.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata_relpaths = []
+            strata = [
+                "boundary_candidate",
+                "popup_candidate",
+                "no_popup_candidate",
+                "popup_candidate",
+                "no_popup_candidate",
+            ]
+            for index, stratum in enumerate(strata, start=1):
+                bundle = root / f"bundle-{index}"
+                bundle.mkdir()
+                metadata_path, _, _ = write_capture_fixture(bundle, suffix=f"{index:03d}")
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                metadata["intended_stratum"] = stratum
+                metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+                metadata_relpaths.append(str(metadata_path.relative_to(root)))
+
+            metadata_list = root / "metadata-list.json"
+            metadata_list.write_text(json.dumps(metadata_relpaths), encoding="utf-8")
+            output_path = root / "audit.json"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(MODULE_PATH),
+                    "audit",
+                    "--metadata-list",
+                    str(metadata_list),
+                    "--output",
+                    str(output_path),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                json.loads(output_path.read_text(encoding="utf-8"))["status"],
+                "ready_for_real_g1_pilot",
+            )
+
+            forged_records = root / "forged-records.json"
+            forged_records.write_text(
+                json.dumps([finalized_record(index, stratum) for index, stratum in enumerate(strata, 1)]),
+                encoding="utf-8",
+            )
+            rejected = subprocess.run(
+                [
+                    sys.executable,
+                    str(MODULE_PATH),
+                    "audit",
+                    "--records",
+                    str(forged_records),
+                    "--output",
+                    str(output_path),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("--metadata-list", rejected.stderr)
 
 
 if __name__ == "__main__":

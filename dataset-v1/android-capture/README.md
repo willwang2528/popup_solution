@@ -30,17 +30,17 @@
 
 ## 聚合门
 
-将终结记录组成 JSON array 后运行：
+创建一个 JSON array，元素为相对于该清单文件的私有 `capture.json` 路径。聚合命令会逐 bundle 重新读取截图和 accessibility snapshot、重新运行全部单条门并重算哈希；它不接受只含 record 的 JSON：
 
 ```bash
 .venv/bin/python3 \
   popup-solution/dataset-v1/android-capture/finalize_android_capture.py \
   audit \
-  --records popup-solution/dataset-v1/android-capture/results/finalized-records.json \
+  --metadata-list popup-solution/dataset-v1/android-capture/incoming/metadata-list.json \
   --output popup-solution/dataset-v1/android-capture/results/feasibility-audit.json
 ```
 
-聚合门要求：至少 5 个 source groups、3 个 popup template families，并覆盖 `popup_candidate`、`no_popup_candidate`、`boundary_candidate` 三层；capture ID、截图哈希和结构哈希均不得重复。通过后也只是 `ready_for_real_g1_pilot`，下一步仍须进行独立、盲式真人 G1 标注。
+聚合门以私有 bundle 为输入并现场生成完整终结记录，手工拼写一个 `eligible` 状态或随机哈希不能通过正式 CLI。它要求至少 5 个 source groups、3 个 popup template families，并覆盖 `popup_candidate`、`no_popup_candidate`、`boundary_candidate` 三层；capture ID、截图哈希和结构哈希均不得重复。通过后也只是 `ready_for_real_g1_pilot`，下一步仍须进行独立、盲式真人 G1 标注。
 
 ## 回归
 
