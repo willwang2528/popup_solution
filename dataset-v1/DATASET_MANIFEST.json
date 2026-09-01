@@ -69,20 +69,22 @@
       "eligible_for_metrics": false
     },
     {
-      "path": "work/model-preannotation-a.jsonl",
-      "record_kind": "model_preannotation_workflow_aid",
+      "path": "work/model-preannotation-a-summary.md",
+      "record_kind": "model_preannotation_workflow_aid_public_summary",
       "item_count": 30,
       "annotator_type": "AI model",
       "not_human_gold": true,
+      "private_item_rows_published": false,
       "eligible_for_training": false,
       "eligible_for_metrics": false
     },
     {
-      "path": "work/model-preannotation-b.jsonl",
-      "record_kind": "model_preannotation_workflow_aid",
+      "path": "work/model-preannotation-b-summary.md",
+      "record_kind": "model_preannotation_workflow_aid_public_summary",
       "item_count": 30,
       "annotator_type": "AI model",
       "not_human_gold": true,
+      "private_item_rows_published": false,
       "eligible_for_training": false,
       "eligible_for_metrics": false
     },
@@ -162,7 +164,7 @@
       "total": 6
     },
     "errors": 0,
-    "dataset_pipeline_tests_passing": 83,
+    "dataset_pipeline_tests_passing": 84,
     "evaluation_harness_tests_passing": 65,
     "synthetic_smoke_methods_passing": 8,
     "local_vision_ocr_tests_passing_authorized_host": 7,
@@ -236,9 +238,7 @@
     "annotation-pilot/scripts/serve_blind_viewer.py": "09fb4b10f6572469f695d27ab10825d1658e3fbd26119fb49d411954b2d8e166",
     "scripts/export_annotation_media.py": "8a6e6bd7d98467eaf0bb35a406669775b59223e31cbbd8d1ce23af3e9d3c1d0b",
     "work/MODEL_PREANNOTATION_STATUS.md": "682f687191e61a2764efe4b2f5b562c03a4da80cc33eeceb1007cb24ccc08fa5",
-    "work/model-preannotation-a.jsonl": "d22c88edd87a29699f3a17ff406352af3f8d0200e2d3f2b0d5afa5d1c2f49b1c",
     "work/model-preannotation-a-summary.md": "62a4363507d185da964fb4193f28243075e9cad272b3fb0a6d0d2793597b0d11",
-    "work/model-preannotation-b.jsonl": "8a71471a01ac6eb3a519f678a7573369378b5b61cafdd4c2aec4b67b549d6d3b",
     "work/model-preannotation-b-summary.md": "2ed9ae8ac1ea1b72461b1ce41e7abfbe2a6fb1b7c40f45ac2e9a2691c1dae19f",
     "../experiments/v1-message/README.md": "4b4dd43908548ee1e6b1b0e10a36838d60f677cdb50d6ac11d44c15ff8c0f261",
     "../experiments/v1-message/BASELINE_IMPLEMENTATION_MATRIX.md": "2c2fb9b19806157b70a1daa318d06ad7588f87b93e8fa2a1423bc849ded6fb8a",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import json
 import unittest
 from pathlib import Path
@@ -9,6 +10,30 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PublicReleaseGateTests(unittest.TestCase):
+    def test_public_manifest_never_hashes_withheld_private_artifacts(self):
+        """Break caught: public manifest references files intentionally not shipped."""
+        manifest = json.loads(
+            (ROOT / "dataset-v1" / "DATASET_MANIFEST.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        forbidden = {
+            "work/model-preannotation-*.jsonl",
+            "annotation-pilot/private/*",
+            "empirical-pilot/private/*",
+            "work/annotation-media/*",
+            "../experiments/v1-message/features/private/*",
+            "../experiments/v1-message/ocr/results/*",
+            "../experiments/v1-message/pregold/private/*",
+            "../experiments/v1-message/statistics/private/*",
+        }
+        leaked = sorted(
+            path
+            for path in manifest["artifact_sha256"]
+            if any(fnmatch.fnmatch(path, pattern) for pattern in forbidden)
+        )
+        self.assertEqual(leaked, [])
+
     def test_all_private_or_text_bearing_work_roots_are_git_ignored(self):
         patterns = {
             line.strip()
