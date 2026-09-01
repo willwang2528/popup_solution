@@ -50,5 +50,5 @@
 | GEN-003 | M5 | iOS evaluation | best systems | iOS test | VPMA breakdown | SHOULD | BLOCKED_EXTERNAL | depends GEN-002 |
 | QA-001 | M6 | dataset validator | schema + QA | release | 0 critical errors | MUST | TODO | empirical items only |
 | QA-002 | M6 | license/privacy audit | source ledger + PUBLIC_RELEASE_GATE | release | all items releasable/adapter-only | MUST | BLOCKED_EXTERNAL | docs/code may be pushed after clean-clone audit；empirical dataset blocked by 0 human gold, per-item redistribution/privacy review, and unresolved EXIF item |
-| QA-003 | M6 | reproduction | clean checkout | docs/code release | 168 tests pass; 2 host-authorized skips | MUST | DONE | no private media、large files、secret scan matches or hidden cache staged |
+| QA-003 | M6 | reproduction | clean checkout | docs/code release | 168 run / 166 pass / 2 host-authorized skips | MUST | DONE | no private media、large files、secret scan matches or hidden cache staged |
 | PUB-001 | M6 | public research-material release | GitHub | docs/code/protocol | remote SHA/readback | MUST | DONE | authorized public push；empirical dataset remains separately blocked by QA-002 |

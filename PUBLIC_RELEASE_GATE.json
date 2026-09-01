@@ -33,7 +33,8 @@
         "remote commit readback"
       ],
       "audit_result": {
-        "clean_clone_tests_passed": 168,
+        "clean_clone_tests_run": 168,
+        "clean_clone_tests_passed": 166,
         "tests_skipped_for_host_authorization": 2,
         "secret_scan_matches": 0,
         "private_or_raw_media_paths_staged": 0,
