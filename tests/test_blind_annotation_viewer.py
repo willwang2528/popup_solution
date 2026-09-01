@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import re
 import tempfile
+import threading
 import unittest
 from pathlib import Path
+from urllib import parse, request
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +43,7 @@ def blind_template_row(item_id: str = "PMJ-PILOT-001") -> dict:
         "annotator_id_pseudonymous": None,
         "record_status": "blank",
         "presence_label": None,
+        "out_of_scope_reason": None,
         "message_text": None,
         "message_observability": None,
         "semantic_slots": [],
@@ -61,6 +66,52 @@ def blind_template_row(item_id: str = "PMJ-PILOT-001") -> dict:
 
 
 class BlindAnnotationViewerTests(unittest.TestCase):
+    def test_rendered_form_fields_are_bound_to_shared_annotation_contract(self) -> None:
+        """Break caught: the HTML form becomes a third drifting field allowlist."""
+        module = load_module()
+        item = {
+            "pilot_item_id": "PMJ-PILOT-001",
+            "annotation_order": 1,
+            "annotator_role": "A",
+            "image_path": Path("unused.jpg"),
+        }
+        template_row = blind_template_row()
+        with tempfile.TemporaryDirectory() as directory:
+            store = module.AnnotationStore(
+                template_rows=[template_row],
+                output_path=Path(directory) / "private" / "annotator_a.working.jsonl",
+                session_id="view-session-123",
+                annotator_pseudonym="human-a",
+            )
+            page = module.render_item_page(
+                items=[item],
+                item_number=1,
+                token="viewer-token",
+                session_id="view-session-123",
+                annotation_store=store,
+            )
+
+        form_html = page.split("<form", 1)[1].split("</form>", 1)[0]
+        rendered_names = set(re.findall(r'name="([^"]+)"', form_html))
+        self.assertEqual(rendered_names, module.FORM_KEYS)
+        self.assertEqual(set(module.FORM_FIELD_TARGETS), module.FORM_KEYS)
+        self.assertTrue(
+            set(module.FORM_FIELD_TARGETS.values()).issubset(module.TEMPLATE_KEYS)
+        )
+
+    def test_committed_a_and_b_templates_are_consumable(self) -> None:
+        """Break caught: committed template schema drifts from the viewer consumer."""
+        module = load_module()
+        template_root = ROOT / "dataset-v1" / "annotation-pilot" / "templates"
+
+        rows_a = module._read_template_rows(template_root / "annotator_a.jsonl")
+        rows_b = module._read_template_rows(template_root / "annotator_b.jsonl")
+
+        self.assertEqual(len(rows_a), 30)
+        self.assertEqual(len(rows_b), 30)
+        self.assertEqual({row["annotator_role"] for row in rows_a}, {"A"})
+        self.assertEqual({row["annotator_role"] for row in rows_b}, {"B"})
+
     def test_image_content_type_uses_magic_bytes_not_filename_suffix(self) -> None:
         module = load_module()
 
@@ -120,6 +171,146 @@ class BlindAnnotationViewerTests(unittest.TestCase):
             self.assertNotIn("candidate.json", html)
             self.assertIn("view-session-123", html)
             self.assertIn("/viewer-token/media/1", html)
+
+    def test_real_template_shape_with_out_of_scope_field_is_accepted(self) -> None:
+        """Break caught: the viewer rejects the committed annotation template schema."""
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            adapter_root = root / "annotation-media"
+            item_root = adapter_root / "PMJ-PILOT-001"
+            item_root.mkdir(parents=True)
+            (item_root / "popsweeper-screenshot.jpg").write_bytes(
+                b"\xff\xd8\xff\xe0fixture"
+            )
+            template = root / "annotator-a.jsonl"
+            template.write_text(
+                json.dumps(blind_template_row()) + "\n", encoding="utf-8"
+            )
+
+            items = module.load_blind_items(template, adapter_root)
+
+            self.assertEqual(items[0]["pilot_item_id"], "PMJ-PILOT-001")
+            self.assertNotIn("out_of_scope_reason", items[0])
+
+    def test_loopback_form_writes_a_valid_private_completed_record(self) -> None:
+        """Break caught: annotators can view images but cannot safely persist labels."""
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            adapter_root = root / "annotation-media"
+            item_root = adapter_root / "PMJ-PILOT-001"
+            item_root.mkdir(parents=True)
+            (item_root / "popsweeper-screenshot.jpg").write_bytes(
+                b"\xff\xd8\xff\xe0fixture"
+            )
+            template_row = blind_template_row()
+            template = root / "annotator-a.jsonl"
+            template.write_text(json.dumps(template_row) + "\n", encoding="utf-8")
+            items = module.load_blind_items(template, adapter_root)
+            output = root / "private" / "annotator_a.working.jsonl"
+            store = module.AnnotationStore(
+                template_rows=[template_row],
+                output_path=output,
+                session_id="view-session-123",
+                annotator_pseudonym="human-a",
+            )
+            token = "viewer-token"
+            handler = module.make_handler(
+                items=items,
+                token=token,
+                session_id="view-session-123",
+                annotation_store=store,
+            )
+            server = module.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                body = parse.urlencode(
+                    {
+                        "presence_label": "popup",
+                        "out_of_scope_reason": "",
+                        "message_observability": "complete",
+                        "message_text": "Offer ends today",
+                        "semantic_slots_json": json.dumps(
+                            [
+                                {
+                                    "slot_type": "duration_deadline",
+                                    "value": "today",
+                                    "polarity": "affirmed",
+                                }
+                            ]
+                        ),
+                        "confidence": "4",
+                        "region_or_node_notes": "centered card",
+                        "notes": "",
+                        "peer_labels_unseen": "yes",
+                        "source_class_unseen": "yes",
+                        "model_output_unseen": "yes",
+                    }
+                ).encode("utf-8")
+                with request.urlopen(
+                    request.Request(
+                        f"http://127.0.0.1:{server.server_port}/{token}/item/1",
+                        data=body,
+                        method="POST",
+                        headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    )
+                ) as response:
+                    self.assertEqual(response.status, 200)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
+            rows = [
+                json.loads(line)
+                for line in output.read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual(len(rows), 1)
+            completed = rows[0]
+            self.assertEqual(completed["record_status"], "completed")
+            self.assertEqual(completed["annotator_id_pseudonymous"], "human-a")
+            self.assertEqual(completed["message_text"], "Offer ends today")
+            self.assertEqual(completed["evidence"]["view_session_id"], "view-session-123")
+            self.assertTrue(completed["blindness_attestation"]["peer_labels_unseen"])
+            self.assertEqual(os.stat(output).st_mode & 0o777, 0o600)
+            serialized = json.dumps(completed)
+            self.assertNotIn("source_sampling_label", serialized)
+            self.assertNotIn("model_prediction", serialized)
+
+    def test_completed_annotation_cannot_be_overwritten_by_replayed_post(self) -> None:
+        """Break caught: replaying a token can silently replace a human label."""
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "private" / "annotator_a.working.jsonl"
+            store = module.AnnotationStore(
+                template_rows=[blind_template_row()],
+                output_path=output,
+                session_id="view-session-123",
+                annotator_pseudonym="human-a",
+            )
+            fields = {
+                "presence_label": "popup",
+                "out_of_scope_reason": "",
+                "message_observability": "complete",
+                "message_text": "Offer ends today",
+                "semantic_slots_json": "[]",
+                "confidence": "4",
+                "region_or_node_notes": "centered card",
+                "notes": "",
+                "peer_labels_unseen": "yes",
+                "source_class_unseen": "yes",
+                "model_output_unseen": "yes",
+            }
+            store.submit("PMJ-PILOT-001", fields)
+            frozen_bytes = output.read_bytes()
+            replay = dict(fields, message_text="Replacement text")
+
+            with self.assertRaisesRegex(module.ViewerError, "immutable"):
+                store.submit("PMJ-PILOT-001", replay)
+
+            self.assertEqual(output.read_bytes(), frozen_bytes)
 
     def test_noncanonical_adapter_handle_is_rejected(self) -> None:
         module = load_module()

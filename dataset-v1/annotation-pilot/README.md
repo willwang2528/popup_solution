@@ -79,7 +79,7 @@ Annotator A 与 B 必须独立工作，在两份 annotation 都冻结前不得�
 
 完成记录必须将 `blindness_attestation` 三项均设为 `true`。任一项不成立，该记录不能进入协议一致性计算。
 
-`serve_blind_viewer.py` 是 loopback-only 的截图查看器。它从 A/B 盲模板解析规范化 `adapter_item_handle`，按 `pilot_item_id` 直接定位本地截图；不会读取或渲染 `candidate.json`、pilot manifest、source label、RICO metadata、OCR 或模型输出。Coordinator 启动后只把随机 token URL 与 `view_session_id` 交给对应 annotator；annotator 不获得 adapter 根目录或 repo 文件权限。
+`serve_blind_viewer.py` 是 loopback-only 的截图与表单查看器。它从 A/B 盲模板解析规范化 `adapter_item_handle`，按 `pilot_item_id` 直接定位本地截图；不会读取或渲染 `candidate.json`、pilot manifest、source label、RICO metadata、OCR 或模型输出。表单字段通过显式映射绑定到共享 `ANNOTATION_KEYS`，渲染字段集合由测试逐项核对。启用私有表单模式后，每项提交都会调用冻结的 completed-record 校验器，并以原子替换方式写入 `private/*.jsonl`；目录／文件权限固定为 `0700/0600`。一项首次成功提交后即不可变：重复 POST 返回 `400`，不能覆盖已有人工记录；如需纠错，必须停止会话并由 coordinator 按版本化流程处理。Coordinator 启动后只把随机 token URL 与 `view_session_id` 交给对应 annotator；annotator 不获得 adapter 根目录或 repo 文件权限。
 
 ### 4.2 Presence label
 
@@ -235,10 +235,12 @@ test -x "$ARIS_PYTHON"
 "$ARIS_PYTHON" \
   popup-solution/dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py \
   --annotations-template popup-solution/dataset-v1/annotation-pilot/templates/annotator_a.jsonl \
-  --adapter-root popup-solution/dataset-v1/work/annotation-media/pilot-batch-30
+  --adapter-root popup-solution/dataset-v1/work/annotation-media/pilot-batch-30 \
+  --working-output popup-solution/dataset-v1/annotation-pilot/private/annotator_a.working.jsonl \
+  --annotator-pseudonym human-a
 ```
 
-输出中的随机 URL 与 `view_session_id` 只用于该次人工会话；不要把它们提交到 Git。
+为 B 使用 `annotator_b.jsonl`、`annotator_b.working.jsonl` 和不同 pseudonym，在独立会话中启动。输出中的随机 URL 与 `view_session_id` 只用于该次人工会话；不要把它们提交到 Git。表单自动绑定 `adapter_viewed=true`、服务器会话 ID、开始／完成时间与三项盲法确认；缺字段、非法语义槽、逻辑矛盾或重复 form key 都会返回 4xx 且不写 completed record。详细交付步骤见 [`ANNOTATOR_RUNBOOK.md`](./ANNOTATOR_RUNBOOK.md)。
 
 当前 checkout 已在 Git-ignored 的 `annotation-pilot/private/` 下建立 `0700/0600` 工作副本。A/B 和 adjudicator 只填写这些私有副本；tracked `templates/` 永远保持空白。
 
@@ -247,7 +249,8 @@ test -x "$ARIS_PYTHON"
 ```bash
 "$ARIS_PYTHON" -m unittest \
   popup-solution/tests/test_annotation_pilot_protocol.py \
-  popup-solution/tests/test_annotation_agreement.py -v
+  popup-solution/tests/test_annotation_agreement.py \
+  popup-solution/tests/test_blind_annotation_viewer.py -v
 ```
 
 脚本会拒绝：空白记录、A/B item 集不一致、重复 item、同一 annotator 冒充 A/B、source/model/peer 未盲、no-popup 携带 message、不可观察记录携带语义、复制原图，以及不完整 evidence。

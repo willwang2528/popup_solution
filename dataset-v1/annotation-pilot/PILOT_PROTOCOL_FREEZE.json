@@ -1,5 +1,5 @@
 {
-  "freeze_version": "1.0.7",
+  "freeze_version": "1.0.9",
   "freeze_timestamp_utc": "2026-08-31T21:52:05Z",
   "amendments": [
     {
@@ -43,6 +43,18 @@
       "timestamp_utc": "2026-09-01T00:57:05Z",
       "reason": "Withhold item-level AI preannotation JSONL because it contains screenshot-derived third-party message text that has not passed privacy review. Aggregate non-text summaries remain publishable. No protocol field, media byte, threshold, or human output changed.",
       "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.8",
+      "timestamp_utc": "2026-09-01T04:50:00Z",
+      "reason": "Repair the loopback viewer to accept the already-frozen out_of_scope_reason field and add protocol-validated atomic private form persistence. Both A/B working files remain 30/30 blank. No annotation field, media byte, acceptance threshold, label, or human output changed.",
+      "human_outputs_present_at_amendment": false
+    },
+    {
+      "version": "1.0.9",
+      "timestamp_utc": "2026-09-01T04:11:43Z",
+      "reason": "Bind every rendered form field to the shared annotation contract and make each first successfully completed row immutable against repeated POST overwrite. Both A/B working files remain 30/30 blank. No annotation field, media byte, acceptance threshold, label, or human output changed.",
+      "human_outputs_present_at_amendment": false
     }
   ],
   "protocol_version": "1.0.0",
@@ -78,13 +90,14 @@
     "recovery_claim_eligible": false
   },
   "frozen_files_sha256": {
-    ".gitignore": "e9e6acefc853b8d0fa7ee3aec684d547c73d1ae582261b5f89fbfbdf7fc6ca0a",
+    ".gitignore": "b56b6fa39d896cfc48e2ee2e420223adf61add2c96bc3e66cdce89157de47012",
     "RESEARCH_RULES_AMENDMENT_V1.md": "3c356241551c1f83389e93a2c7a8a00d113bb9082bed8d7c3afb5ccdc68f93bb",
     "sources/PPT_SLIDE_14_EVIDENCE.md": "31181c7422f9eec4eb2d688adaceb12f62706c6b503202a5bb2d8eb33d1b4816",
     "dataset-v1/ANNOTATION_GUIDE.md": "aebea0fbe47ec4be37d646bd6a84d8052cf2697a5cea6038c6b84b34c00de609",
-    "dataset-v1/annotation-pilot/README.md": "ce9389a4c2b1c295ae2c57c805d0ec46aa48d5382e5634bae4f79274f4b4daa4",
+    "dataset-v1/annotation-pilot/README.md": "4c503056675817459acad9b71e1aa9112066ef32705d8da43deeff2d546686c8",
+    "dataset-v1/annotation-pilot/ANNOTATOR_RUNBOOK.md": "04e00b2ebb084bce3ce8dad80d1cd95f309072c3d2edaf750cc9bb5ecde35c7e",
     "dataset-v1/annotation-pilot/POPUP_SCOPE_V1.json": "06b2b94409dc071525fa294f86a3d3da7dea89e1f2e60a795a84570598646643",
-    "dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md": "686b4f8a761d82160e106da48ac15e0b1dc55f70269a8ac19cf523d096ae9224",
+    "dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md": "6cab671eb40aff4fd8036e02a1210c50530e2169ae6a1987e7647284be0ce2d8",
     "dataset-v1/annotation-pilot/manifests/pilot_batch_30.jsonl": "b44f47596bf992a398a09ebf05603cda800625899803029473f97c753a7613a1",
     "dataset-v1/annotation-pilot/schemas/annotation_record.schema.json": "3acde623e699780acd23a23752c28744fe7fd9b290e16bfc37fcc052f02b6502",
     "dataset-v1/annotation-pilot/schemas/adjudication_input.schema.json": "79b379ea85b2580c64dd86f5a79080d280a348539c687590e134c02b5fdbf542",
@@ -98,7 +111,8 @@
     "dataset-v1/annotation-pilot/templates/adjudication_output.template.json": "b6139318c48370fec137e6458fe16a46f08c780d36658277f51c7edffca670b0",
     "dataset-v1/annotation-pilot/scripts/build_pilot_bundle.py": "4f066864a0eebf2c8d50f1e6cc2595cc79cf8b1f8e36dedde32177963e7b165c",
     "dataset-v1/annotation-pilot/scripts/calculate_agreement.py": "be5cb31767dbc602710e59c3c39ab0d6ebee976000ae6fc013d9b8552c64ca63",
-    "dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py": "d96d2cb99925c317c24572e8abca66883fbb2781df175d0df9dbdedde93705d1",
+    "dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py": "09fb4b10f6572469f695d27ab10825d1658e3fbd26119fb49d411954b2d8e166",
+    "tests/test_blind_annotation_viewer.py": "10c5c8c432aa49687f4ff02c57679a3f52d7d3ee77c15995704c9d378485176d",
     "dataset-v1/annotation-pilot/scripts/check_human_annotation_readiness.py": "58188d9d7613b0a8fb110780b6f6358ab554e130f11eabd486b31c83ae9aa9bb",
     "experiments/v1-message/popup_eval/gap_adjudication.py": "c9fb38f61e6d51814a8f9818e7d1e5ef2e640d93d176243c205d8cd42d330c01"
   },

@@ -99,7 +99,10 @@ item contract，但 30/30 仍为 `pending_audit`。它只能在截图消息 gold
 prediction。
 
 人工标注协议、阈值、全部 30 项第三人 evidence recheck、私有目录权限和媒体
-哈希已预冻结，readiness checker 当前为 `ready_for_real_human_annotation`；这只
+哈希已预冻结；loopback viewer 已能消费真实 A/B 模板，表单字段绑定共享协议
+契约，并把逐项表单经同一校验器原子写入 `0600` 私有工作副本；首次成功提交后
+不可由重复 POST 覆盖。readiness checker 当前为
+`ready_for_real_human_annotation`；这只
 表示真人 A/B 可以开始，不表示人工 gold、评分或体验证据已经存在。实际两位
 真人 A/B、第三位真人裁决和消息输出语义复核仍未完成。
 

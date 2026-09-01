@@ -42,7 +42,9 @@
 | `dataset-v1/data/items.schema-fixture.jsonl` | 3 条非经验 schema fixture | synthetic / not for metrics |
 | `dataset-v1/candidates/popsweeper_candidates_n120.jsonl` | 120 条真实来源候选；按来源目录分层为 60 `ads` / 60 `no_ads`，不是人工 presence gold | frozen / message annotation pending |
 | `dataset-v1/candidates/popsweeper_candidates_n120.summary.json` | 2105 张来源图清点与抽样配额 | generated / verified |
-| `dataset-v1/annotation-pilot/README.md` | 30 条 pilot、双人盲标、一致性与裁决协议 | current / human labels pending |
+| `dataset-v1/annotation-pilot/README.md` | 30 条 pilot、双人盲标、一致性与裁决协议 | frozen / human labels pending |
+| `dataset-v1/annotation-pilot/ANNOTATOR_RUNBOOK.md` | A/B loopback 私有表单交付、盲法与收尾步骤 | ready / human execution pending |
+| `dataset-v1/annotation-pilot/scripts/serve_blind_viewer.py` | 真实冻结模板消费、共享表单契约、截图隔离、协议校验、完成后不可覆盖与 `0600` 私有原子写入 | tested / no human labels generated |
 | `dataset-v1/annotation-pilot/manifests/pilot_batch_30.jsonl` | 按来源目录分层为 15 `ads` / 15 `no_ads` 的固定 adapter-only pilot | frozen / no human presence/message gold |
 | `dataset-v1/annotation-pilot/schemas/annotation_record.schema.json` | A/B 盲标记录 schema | current / tested |
 | `dataset-v1/annotation-pilot/schemas/adjudication_input.schema.json` | 分歧裁决输入 schema | current / tested |

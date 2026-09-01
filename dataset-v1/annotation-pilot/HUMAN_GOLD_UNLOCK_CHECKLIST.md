@@ -5,6 +5,7 @@
 ## 开标前门槛
 
 - [x] loopback-only 隔离 viewer 已实现并通过反泄漏测试：只接受规范化 `adapter_item_handle`，只展示授权截图，不读取或渲染 coordinator metadata。
+- [x] 私有表单写入已实现：真实模板字段可加载；渲染字段映射绑定共享 `ANNOTATION_KEYS`；completed row 由冻结协议校验器验证后原子写入 `0600` 工作副本；未知字段、逻辑矛盾和对 completed row 的重复 POST 覆盖均 fail closed。
 - [ ] Coordinator 在隔离权限下分别启动 A/B viewer，并只交付随机 URL 与 `view_session_id`；A/B 不获得 repo 或 adapter 根目录文件权限。
 - [x] 私有目录 `dataset-v1/annotation-pilot/private/` 已进入 Git ignore。
 - [x] 已创建本地私有工作副本：目录权限 `0700`、A/B 与 adjudication 工作文件权限 `0600`；这些文件均被 Git ignore，不会原地填写 tracked templates。
