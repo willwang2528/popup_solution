@@ -18,12 +18,15 @@ class SwiftRoiOcrEngineTests(unittest.TestCase):
         """Break caught: detector/OCR source or its positive ROI path is not runnable."""
         with tempfile.TemporaryDirectory() as directory:
             binary = Path(directory) / "vision-popup-roi-ocr"
+            module_cache = Path(directory) / "module-cache"
             build = subprocess.run(
                 [
                     "xcrun",
                     "--sdk",
-                    "macosx15.4",
+                    "macosx",
                     "swiftc",
+                    "-module-cache-path",
+                    str(module_cache),
                     "-O",
                     str(SOURCE),
                     "-o",

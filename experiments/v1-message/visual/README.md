@@ -19,7 +19,9 @@
 在 macOS 上编译冻结的本地引擎：
 
 ```bash
-xcrun --sdk macosx15.4 swiftc -O \
+xcrun --sdk macosx swiftc \
+  -module-cache-path /private/tmp/pmab-visual-module-cache \
+  -O \
   experiments/v1-message/visual/vision_popup_roi_ocr.swift \
   -o experiments/v1-message/visual/.build/vision-popup-roi-ocr
 ```

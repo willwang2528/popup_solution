@@ -213,7 +213,39 @@ def write_collector_bundle_fixture(root: Path) -> tuple[Path, dict, dict]:
         "expected_target_package": "org.example.fixture",
         "request_nonce": "bd33d879debc4c38",
     }
-    canonical_hash = "1" * 64
+    canonical_hash = "9053372116a0bb6ae09ec860dbcfcc58744ce4ffc55e9d45c838ec9b8e0c9867"
+
+    def node(node_id: str, *, text: str | None, children: list[dict]) -> dict:
+        return {
+            "id": node_id,
+            "window_id": "7",
+            "package": "org.example.fixture",
+            "class": "android.widget.TextView",
+            "view_id": "org.example.fixture:id/message",
+            "text": text,
+            "content_description": None,
+            "hint_text": None,
+            "state_description": None,
+            "pane_title": None,
+            "tooltip_text": None,
+            "bounds_in_screen": "[0,0][3,2]",
+            "visible_to_user": "true",
+            "enabled": "true",
+            "clickable": "false",
+            "long_clickable": "false",
+            "focusable": "true",
+            "focused": "false",
+            "accessibility_focused": "true" if text is not None else "false",
+            "checkable": "false",
+            "checked": "false",
+            "selected": "false",
+            "scrollable": "false",
+            "dismissable": "false",
+            "heading": "false",
+            "password": "false",
+            "actions": "1" if text is not None else "",
+            "children": children,
+        }
 
     def tree(start: int, end: int) -> dict:
         return {
@@ -230,18 +262,26 @@ def write_collector_bundle_fixture(root: Path) -> tuple[Path, dict, dict]:
             "windows": [
                 {
                     "id": "w:0:7",
+                    "display_id": 0,
                     "window_id": 7,
-                    "root": {
-                        "id": "w:0:7/n:0",
-                        "text": None,
-                        "children": [
-                            {
-                                "id": "w:0:7/n:0.0",
-                                "text": "Private collector fixture message",
-                                "children": [],
-                            }
+                    "type": 1,
+                    "layer": 0,
+                    "title": None,
+                    "active": True,
+                    "focused": True,
+                    "accessibility_focused": True,
+                    "bounds_in_screen": "[0,0][3,2]",
+                    "root": node(
+                        "w:0:7/n:0",
+                        text=None,
+                        children=[
+                            node(
+                                "w:0:7/n:0.0",
+                                text="Private collector fixture message",
+                                children=[],
+                            )
                         ],
-                    },
+                    ),
                 }
             ],
         }
@@ -361,7 +401,17 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
         # Break caught: tooling readiness is published as empirical-data readiness.
         contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
         status = json.loads(PUBLIC_STATUS_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(contract["contract_revision"], "1.1.2")
         self.assertEqual(contract["capture_schema_version"], "1.1.0")
+        self.assertTrue(
+            contract["stable_state_requirements"][
+                "offline_finalizer_must_recompute_canonical_tree_hash"
+            ]
+        )
+        self.assertEqual(
+            contract["stable_state_requirements"]["canonical_value_encoding"],
+            "explicit_null_or_utf8_string_type_tag",
+        )
         self.assertEqual(contract["minimum_source_groups"], 5)
         self.assertEqual(contract["minimum_popup_template_families"], 3)
         self.assertEqual(status["status"], "blocked_no_real_android_captures")
@@ -382,9 +432,117 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
         self.assertTrue(record["synchronization"]["event_sequence_verified"])
         self.assertTrue(record["synchronization"]["focus_verified"])
         self.assertEqual(
-            record["artifacts"]["accessibility_snapshot_sha256"], "1" * 64
+            record["artifacts"]["accessibility_snapshot_sha256"],
+            "9053372116a0bb6ae09ec860dbcfcc58744ce4ffc55e9d45c838ec9b8e0c9867",
         )
         self.assertNotIn("Private collector fixture", json.dumps(record))
+
+    def test_python_canonical_hash_matches_java_golden_vector(self):
+        # Break caught: the offline finalizer and Android collector commit different states.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _ = write_collector_bundle_fixture(Path(directory))
+            tree = json.loads((root / "tree-before.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            module._canonical_collector_tree_sha256(tree),
+            "9053372116a0bb6ae09ec860dbcfcc58744ce4ffc55e9d45c838ec9b8e0c9867",
+        )
+
+    def test_python_canonical_hash_distinguishes_null_from_literal_sentinel(self):
+        # Break caught: null can be replaced by visible "<null>" without changing the hash.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _ = write_collector_bundle_fixture(Path(directory))
+            missing = json.loads((root / "tree-before.json").read_text(encoding="utf-8"))
+            literal = deepcopy(missing)
+            literal["windows"][0]["root"]["text"] = "<null>"
+
+        self.assertNotEqual(
+            module._canonical_collector_tree_sha256(missing),
+            module._canonical_collector_tree_sha256(literal),
+        )
+
+    def test_collector_bundle_rejects_null_sentinel_substitution(self):
+        # Break caught: artifact hashes can be refreshed after a null-to-string semantic change.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, machine, _ = write_collector_bundle_fixture(Path(directory))
+            tree_path = root / "tree-before.json"
+            tree = json.loads(tree_path.read_text(encoding="utf-8"))
+            tree["windows"][0]["root"]["text"] = "<null>"
+            tree_bytes = json.dumps(tree, sort_keys=True).encode()
+            tree_path.write_bytes(tree_bytes)
+            machine["artifacts"]["tree_before"]["bytes"] = len(tree_bytes)
+            machine["artifacts"]["tree_before"]["sha256"] = hashlib.sha256(
+                tree_bytes
+            ).hexdigest()
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+
+            with self.assertRaisesRegex(ValueError, "recomputed canonical tree hash"):
+                module.finalize_collector_bundle(root)
+
+    def test_collector_bundle_recomputes_tree_hash_from_node_content(self):
+        # Break caught: a modified tree can pass by preserving both self-reported hashes.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, machine, _ = write_collector_bundle_fixture(Path(directory))
+            tree_path = root / "tree-before.json"
+            tree = json.loads(tree_path.read_text(encoding="utf-8"))
+            tree["windows"][0]["root"]["children"][0]["text"] = "tampered message"
+            tree_bytes = json.dumps(tree, sort_keys=True).encode()
+            tree_path.write_bytes(tree_bytes)
+            machine["artifacts"]["tree_before"]["bytes"] = len(tree_bytes)
+            machine["artifacts"]["tree_before"]["sha256"] = hashlib.sha256(
+                tree_bytes
+            ).hexdigest()
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+
+            with self.assertRaisesRegex(ValueError, "recomputed canonical tree hash"):
+                module.finalize_collector_bundle(root)
+
+    def test_collector_canonicalization_rejects_impossible_values_and_ids(self):
+        # Break caught: a self-consistent tree that the Java collector cannot emit is accepted.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _ = write_collector_bundle_fixture(Path(directory))
+            tree = json.loads((root / "tree-before.json").read_text(encoding="utf-8"))
+
+        invalid_boolean = deepcopy(tree)
+        invalid_boolean["windows"][0]["root"]["visible_to_user"] = "TRUE"
+        with self.assertRaisesRegex(ValueError, "visible_to_user"):
+            module._canonical_collector_tree_sha256(invalid_boolean)
+
+        invalid_child_id = deepcopy(tree)
+        invalid_child_id["windows"][0]["root"]["children"][0]["id"] = "snowman-☃"
+        with self.assertRaisesRegex(ValueError, "collector path"):
+            module._canonical_collector_tree_sha256(invalid_child_id)
+
+    def test_collector_bundle_recomputes_package_and_focus_summaries(self):
+        # Break caught: unhashed package/focus summaries are accepted only because they self-agree.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, machine, _ = write_collector_bundle_fixture(Path(directory))
+            for filename, artifact_key in (
+                ("tree-before.json", "tree_before"),
+                ("tree-after.json", "tree_after"),
+            ):
+                tree_path = root / filename
+                tree = json.loads(tree_path.read_text(encoding="utf-8"))
+                tree["target_packages"].append("org.injected.package")
+                tree["focus_token"] = "forged-focus-token"
+                tree_bytes = json.dumps(tree, sort_keys=True).encode()
+                tree_path.write_bytes(tree_bytes)
+                machine["artifacts"][artifact_key]["bytes"] = len(tree_bytes)
+                machine["artifacts"][artifact_key]["sha256"] = hashlib.sha256(
+                    tree_bytes
+                ).hexdigest()
+            machine["timing"]["focus_token_before"] = "forged-focus-token"
+            machine["timing"]["focus_token_after"] = "forged-focus-token"
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+
+            with self.assertRaisesRegex(ValueError, "target_packages|focus token"):
+                module.finalize_collector_bundle(root)
 
     def test_collector_bundle_fails_on_drift_or_machine_injected_review(self):
         # Break caught: arbitrary tokens, drift, or self-approved privacy bypass finalization.

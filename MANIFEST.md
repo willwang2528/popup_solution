@@ -19,6 +19,10 @@
 | `sources/PPT_SLIDE_14_EVIDENCE.md` | PPT 五级回证证据锚与 v1/进阶分层 | verified source note |
 | `sources/SOURCE_LEDGER.md` | PopSweeper/RICO 校验、join、许可与发布边界 | verified source ledger |
 | `method/METHOD_SPEC.md` | MG-PU 方法规格；v1 无动作 | current / provisional |
+| `refine-logs/EXPERIMENT_PLAN.md` | 当前 claim-driven Android 正式实验计划 | current / pre-empirical |
+| `refine-logs/EXPERIMENT_PLAN_20260901_130000.md` | 2026-09-01 13:00 实验计划不可变快照 | archived version |
+| `refine-logs/EXPERIMENT_TRACKER.md` | 当前运行、门禁、外部阻塞与负向状态 | current |
+| `refine-logs/EXPERIMENT_TRACKER_20260901_130000.md` | 2026-09-01 13:00 tracker 不可变快照 | archived version |
 | `data-collection/papers.jsonl` | 14 篇 PPT 论文的机器可读方法证据 | collected / source-bounded |
 | `data-collection/papers.csv` | 上述证据的表格视图 | derived |
 | `data-collection/README.md` | 文献纳入边界与复核规则 | current |
@@ -63,7 +67,12 @@
 | `dataset-v1/android-capture/CAPTURE_CONTRACT_V1.json` | 正式 Android 同步 screenshot + AccessibilityService snapshot 的 fail-closed CAP-001 合同 | current / real capture pending |
 | `dataset-v1/android-capture/finalize_android_capture.py` | 单条终结与 5-group/3-template/3-strata 聚合可行性门 | tested / tooling only |
 | `dataset-v1/android-capture/PUBLIC_FEASIBILITY_STATUS.json` | 不含私有内容的 CAP-001 当前状态 | blocked / real capture count 0 |
-| `dataset-v1/android-capture/tests/test_capture_finalizer.py` | 截图完整性、provenance、同步、稳定性、无动作、递归标签泄漏、artifact-refinalizing 聚合、重复和 coverage 回归 | 12 tests passing |
+| `dataset-v1/android-capture/tests/test_capture_finalizer.py` | 截图完整性、provenance、同步、Java/Python typed canonical hash golden vector、null 碰撞与节点篡改拒绝、collector 值域／路径／package／focus 重算、无动作、递归标签泄漏、artifact-refinalizing 聚合、重复和 coverage 回归 | 24 tests passing |
+| `experiments/v1-message/pregold/freeze_operating_points.py` | gold-blind K25/K50/K100 MG-PU proposed-policy 与 seeded-random selected-ID ledger 冻结器 | tested / no formal ledger generated |
+| `experiments/v1-message/pregold/OPERATING_POINT_FREEZE.md` | operating-point 排序、hash、时间与私有输出合同 | current / pre-empirical |
+| `experiments/v1-message/pregold/tests/test_freeze_operating_points.py` | exact-K、排序、泄漏拒绝、覆盖、权限与不可覆盖回归 | 8 tests passing |
+| `experiments/v1-message/popup_eval/formal_k50.py` | 主 K50 对、formal group、adjudicated VPMA、cluster CI、coverage／hallucination／实际预算继续门 | tested finalizer / no formal result |
+| `experiments/v1-message/tests/test_formal_k50.py` | 正式 hash／group／K／prediction／CI／预算与撤销主张门 | 11 tests passing |
 | `dataset-v1/scripts/build_crosswalk.py` | 生成 255 条 source-field crosswalk | tested generator |
 | `dataset-v1/scripts/materialize_schema_fixture.py` | 生成 3 条非经验 fixture | tested generator |
 | `dataset-v1/scripts/build_popsweeper_candidate_manifest.py` | 只读 ZIP 元数据并分层抽取来源候选 | tested generator |

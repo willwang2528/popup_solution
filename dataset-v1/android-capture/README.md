@@ -2,7 +2,7 @@
 
 这里定义 PMAB v1 正式 Android 数据锚的采集、人工复核和离线终结入口。每条候选必须来自同一稳定状态下的 `tree-before → screenshot → tree-after` 回证；三者使用 `SystemClock.uptimeMillis()` 同一时基，截图与两侧树的距离均不超过 3000 ms，并且全程只读、`pre_action`、无点击/手势/返回键/弹窗消除动作。
 
-本目录当前已有可编译的 Android 30+ `AccessibilityService` 采集器、主机触发/回读工具和经过测试的 V1.1 终结器，但没有连接过真实设备，也没有真实 Android capture。公开状态因此仍是 `blocked_no_real_android_captures`；它不构成人工金标、论文结果、公开 benchmark 或视障用户体验证据。
+本目录当前已有可编译的 Android 30+ `AccessibilityService` 采集器、主机触发/回读工具和经过测试的 V1.1 终结器（合同修订 1.1.2），但没有连接过真实设备，也没有真实 Android capture。公开状态因此仍是 `blocked_no_real_android_captures`；它不构成人工金标、论文结果、公开 benchmark 或视障用户体验证据。
 
 ## 采集器边界
 
@@ -117,7 +117,7 @@ V1.1 每个私有 bundle 必须包含三类彼此分离的证据：
   --output popup-solution/dataset-v1/android-capture/results/feasibility-audit.json
 ```
 
-聚合门以私有 bundle 为输入并现场生成完整终结记录，手工拼写一个 `eligible` 状态或随机哈希不能通过正式 CLI。它要求至少 5 个 source groups、3 个 popup template families，并覆盖 `popup_candidate`、`no_popup_candidate`、`boundary_candidate` 三层；capture ID、截图哈希和 canonical tree hash 均不得重复。通过后也只是 `ready_for_real_g1_pilot`，下一步仍须进行独立、盲式真人 G1 标注。
+聚合门以私有 bundle 为输入并现场生成完整终结记录，手工拼写一个 `eligible` 状态或随机哈希不能通过正式 CLI。离线终结器会从实际 window/node 字段和有序 child IDs 重新计算与 Android `CanonicalStateHasher` 相同的 typed canonical tree hash（`null` 与字面字符串分离），再分别核对树内自报值与机器时序记录；它还验证 collector 值域和父子路径，并从节点重算 package 集与焦点 token。只同步改写文件 SHA-256 或多个自报字段不能绕过该门。它要求至少 5 个 source groups、3 个 popup template families，并覆盖 `popup_candidate`、`no_popup_candidate`、`boundary_candidate` 三层；capture ID、截图哈希和 canonical tree hash 均不得重复。通过后也只是 `ready_for_real_g1_pilot`，下一步仍须进行独立、盲式真人 G1 标注。
 
 ## 回归
 
@@ -133,5 +133,5 @@ V1.1 每个私有 bundle 必须包含三类彼此分离的证据：
 - 当前 ADB 设备列表为空；collector 从未在真机或 emulator 上安装、启用或采集。
 - Android lint 在首次运行中于回传终态前被人工中止，但已生成 `0 errors, 3 warnings` 报告；三条 warning 修复后重新运行正常 exit 0，最终报告为 `No issues found`。
 - FileObserver 事件丢失现由同一 worker 每 2 秒扫描 app-private pending requests 兜底；真实设备上的可靠性仍需 dry run 回证。
-- 完整 finalizer 能校验文件、时序、哈希和字段约束；host attestation 能逐字节绑定本地与已安装 APK，但仍不能证明一个恶意 collector 诚实执行全部语义。因此还要求公开 commit、人工操作记录和可复现构建。
+- 完整 finalizer 能校验文件、时序、字段约束，独立重算 window/node canonical commitment、package 集和焦点 token；host attestation 能逐字节绑定本地与已安装 APK。但 API 34 `isAccessibilityDataSensitive()` 没有逐节点序列化字段，离线端不能独立重算该位；恶意 collector 的整体诚实性也不能由 bundle 自证。因此仍要求公开 commit、人工操作记录和可复现构建，不能把 `tree_hash_verified` 表述成完整隐私／provenance 证明。
 - CAP-001 通过仍不等于 popup 标签正确、不等于方法指标、更不等于视障用户体验改善。

@@ -12,6 +12,7 @@ from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
+import re
 import struct
 from typing import Any
 import zlib
@@ -26,6 +27,46 @@ ALLOWED_STRATA = {
     "no_popup_candidate",
     "boundary_candidate",
 }
+
+WINDOW_CANONICAL_FIELDS = (
+    "display_id",
+    "window_id",
+    "type",
+    "layer",
+    "title",
+    "active",
+    "focused",
+    "accessibility_focused",
+    "bounds_in_screen",
+)
+NODE_CANONICAL_FIELDS = (
+    "window_id",
+    "package",
+    "class",
+    "view_id",
+    "text",
+    "content_description",
+    "hint_text",
+    "state_description",
+    "pane_title",
+    "tooltip_text",
+    "bounds_in_screen",
+    "visible_to_user",
+    "enabled",
+    "clickable",
+    "long_clickable",
+    "focusable",
+    "focused",
+    "accessibility_focused",
+    "checkable",
+    "checked",
+    "selected",
+    "scrollable",
+    "dismissable",
+    "heading",
+    "password",
+    "actions",
+)
 
 
 def _require(condition: bool, message: str) -> None:
@@ -362,6 +403,171 @@ def _validate_machine_artifact(
     return path, data
 
 
+def _collector_tree_commitment(tree: dict[str, Any]) -> dict[str, Any]:
+    """Reconstruct the collector commitment and derivable top-level summaries."""
+
+    entries: list[tuple[str, str, dict[str, str | None], list[str]]] = []
+    packages: list[str] = []
+    focus_tokens: list[str] = []
+    password_node_present = False
+    boolean_fields = {
+        "visible_to_user",
+        "enabled",
+        "clickable",
+        "long_clickable",
+        "focusable",
+        "focused",
+        "accessibility_focused",
+        "checkable",
+        "checked",
+        "selected",
+        "scrollable",
+        "dismissable",
+        "heading",
+        "password",
+    }
+
+    def node_fields(node: dict[str, Any], path: str) -> dict[str, str | None]:
+        expected = {"id", "children", *NODE_CANONICAL_FIELDS}
+        _require(set(node) == expected, f"{path} field set does not match the collector")
+        fields: dict[str, str | None] = {}
+        for field in NODE_CANONICAL_FIELDS:
+            value = node.get(field)
+            _require(
+                value is None or isinstance(value, str),
+                f"{path}.{field} must be a string or null",
+            )
+            if field in boolean_fields:
+                _require(value in {"true", "false"}, f"{path}.{field} has an invalid boolean value")
+            if field == "actions":
+                _require(value is not None, f"{path}.actions must be a string")
+                _require(
+                    re.fullmatch(r"(?:\d+(?:,\d+)*)?", value) is not None,
+                    f"{path}.actions must be a sorted comma-separated integer list",
+                )
+                action_ids = [] if not value else [int(part) for part in value.split(",")]
+                _require(
+                    action_ids == sorted(action_ids),
+                    f"{path}.actions must be sorted",
+                )
+            fields[field] = value
+        return fields
+
+    def visit_node(
+        raw_node: Any,
+        path: str,
+        expected_id: str,
+        expected_window_id: int,
+    ) -> str:
+        nonlocal password_node_present
+        node = _object(raw_node, path)
+        node_id = _nonempty_string(node.get("id"), f"{path}.id")
+        _require(node_id == expected_id, f"{path}.id does not match the collector path")
+        fields = node_fields(node, path)
+        _require(
+            fields["window_id"] == str(expected_window_id),
+            f"{path}.window_id does not match its window",
+        )
+        package_name = fields["package"]
+        if package_name is not None and package_name not in packages:
+            packages.append(package_name)
+        if fields["accessibility_focused"] == "true" or fields["focused"] == "true":
+            focus_tokens.append(
+                f"{node_id}:a={fields['accessibility_focused']}:i={fields['focused']}"
+            )
+        password_node_present |= fields["password"] == "true"
+        children = node.get("children")
+        _require(isinstance(children, list), f"{path}.children must be a list")
+        child_ids = [
+            visit_node(
+                child,
+                f"{path}.children[{index}]",
+                f"{node_id}.{index}",
+                expected_window_id,
+            )
+            for index, child in enumerate(children)
+        ]
+        entries.append(("node", node_id, fields, child_ids))
+        return node_id
+
+    windows = tree.get("windows")
+    _require(isinstance(windows, list), "collector tree windows must be a list")
+    window_order: list[tuple[int, int, int]] = []
+    for index, raw_window in enumerate(windows):
+        path = f"collector tree windows[{index}]"
+        window = _object(raw_window, path)
+        expected = {"id", "root", *WINDOW_CANONICAL_FIELDS}
+        _require(set(window) == expected, f"{path} field set does not match the collector")
+        window_id = _nonempty_string(window.get("id"), f"{path}.id")
+        fields: dict[str, str | None] = {}
+        for field in WINDOW_CANONICAL_FIELDS:
+            value = window.get(field)
+            if field in {"display_id", "window_id", "type", "layer"}:
+                _require(
+                    isinstance(value, int) and not isinstance(value, bool),
+                    f"{path}.{field} must be an integer",
+                )
+                fields[field] = str(value)
+            elif field in {"active", "focused", "accessibility_focused"}:
+                _require(isinstance(value, bool), f"{path}.{field} must be boolean")
+                fields[field] = "true" if value else "false"
+            else:
+                _require(
+                    value is None or isinstance(value, str),
+                    f"{path}.{field} must be a string or null",
+                )
+                fields[field] = value
+        expected_window_id = f"w:{window['display_id']}:{window['window_id']}"
+        _require(
+            window_id == expected_window_id,
+            f"{path}.id does not match the collector window path",
+        )
+        window_order.append((window["display_id"], window["layer"], window["window_id"]))
+        root = window.get("root")
+        child_ids = [] if root is None else [
+            visit_node(
+                root,
+                f"{path}.root",
+                f"{window_id}/n:0",
+                window["window_id"],
+            )
+        ]
+        entries.append(("window", window_id, fields, child_ids))
+    _require(window_order == sorted(window_order), "collector tree windows are not in collector order")
+
+    serialized: list[str] = []
+
+    def append(label: str, value: str | None) -> None:
+        if value is None:
+            serialized.append(f"{label}:null\n")
+            return
+        serialized.append(f"{label}:string:{len(value.encode('utf-8'))}:{value}\n")
+
+    for kind, entry_id, fields, child_ids in sorted(
+        entries, key=lambda entry: (entry[0], entry[1])
+    ):
+        append("entry-kind", kind)
+        append("entry-id", entry_id)
+        for key in sorted(fields):
+            append("field-key", key)
+            append("field-value", fields[key])
+        for child_id in child_ids:
+            append("child", child_id)
+        serialized.append("entry-end\n")
+    return {
+        "sha256": _sha256("".join(serialized).encode("utf-8")),
+        "target_packages": packages,
+        "focus_token": "<none>" if not focus_tokens else "|".join(sorted(focus_tokens)),
+        "password_node_present": password_node_present,
+    }
+
+
+def _canonical_collector_tree_sha256(tree: dict[str, Any]) -> str:
+    """Recompute the Android collector's CanonicalStateHasher commitment."""
+
+    return _collector_tree_commitment(tree)["sha256"]
+
+
 def _validate_collector_tree(
     tree: dict[str, Any],
     *,
@@ -369,8 +575,23 @@ def _validate_collector_tree(
     expected_package: str,
     expected_start: int,
     expected_end: int,
+    expected_focus: str,
     name: str,
 ) -> tuple[int, int]:
+    expected_top_level = {
+        "schema_version",
+        "clock",
+        "start_uptime_ms",
+        "end_uptime_ms",
+        "canonical_tree_sha256",
+        "focus_token",
+        "node_count",
+        "contains_sensitive_node",
+        "truncated",
+        "target_packages",
+        "windows",
+    }
+    _require(set(tree) == expected_top_level, f"{name} field set does not match the collector")
     _require(tree.get("schema_version") == "1.1", f"{name} schema must be 1.1")
     _require(
         tree.get("clock") == "android.os.SystemClock.uptimeMillis",
@@ -378,14 +599,13 @@ def _validate_collector_tree(
     )
     _require(tree.get("start_uptime_ms") == expected_start, f"{name} start time mismatch")
     _require(tree.get("end_uptime_ms") == expected_end, f"{name} end time mismatch")
-    _require(tree.get("canonical_tree_sha256") == expected_hash, f"{name} tree hash mismatch")
+    reported_hash = _sha256_string(
+        tree.get("canonical_tree_sha256"), f"{name}.canonical_tree_sha256"
+    )
     _require(tree.get("contains_sensitive_node") is False, f"{name} contains sensitive nodes")
     _require(tree.get("truncated") is False, f"{name} is truncated")
     packages = tree.get("target_packages")
-    _require(
-        isinstance(packages, list) and expected_package in packages,
-        f"{name} does not contain the expected target package",
-    )
+    _require(isinstance(packages, list), f"{name}.target_packages must be a list")
     forbidden = {
         "gold_label",
         "gold_labels",
@@ -424,6 +644,29 @@ def _validate_collector_tree(
         and node_count == len(node_ids)
         and node_count > 0,
         f"{name} node_count mismatch",
+    )
+    commitment = _collector_tree_commitment(tree)
+    recomputed_hash = commitment["sha256"]
+    _require(
+        recomputed_hash == reported_hash,
+        f"{name} recomputed canonical tree hash does not match its self-report",
+    )
+    _require(
+        recomputed_hash == expected_hash,
+        f"{name} recomputed canonical tree hash does not match machine timing",
+    )
+    _require(
+        packages == commitment["target_packages"],
+        f"{name} target_packages do not match node packages",
+    )
+    _require(expected_package in packages, f"{name} does not contain the expected target package")
+    _require(
+        tree.get("focus_token") == commitment["focus_token"] == expected_focus,
+        f"{name} focus token does not match focused nodes or machine timing",
+    )
+    _require(
+        commitment["password_node_present"] is False,
+        f"{name} contains a password node despite a negative sensitive-node summary",
     )
     return node_count, len(windows)
 
@@ -571,6 +814,7 @@ def finalize_collector_bundle(bundle_root: Path) -> dict[str, Any]:
         expected_package=request["expected_target_package"],
         expected_start=timing["tree_before_start_uptime_ms"],
         expected_end=timing["tree_before_end_uptime_ms"],
+        expected_focus=timing["focus_token_before"],
         name="tree-before.json",
     )
     after_count, after_windows = _validate_collector_tree(
@@ -579,6 +823,7 @@ def finalize_collector_bundle(bundle_root: Path) -> dict[str, Any]:
         expected_package=request["expected_target_package"],
         expected_start=timing["tree_after_start_uptime_ms"],
         expected_end=timing["tree_after_end_uptime_ms"],
+        expected_focus=timing["focus_token_after"],
         name="tree-after.json",
     )
     _require(

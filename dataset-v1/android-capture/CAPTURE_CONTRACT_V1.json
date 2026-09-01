@@ -1,5 +1,6 @@
 {
   "contract_id": "PMAB-ANDROID-CAPTURE-V1",
+  "contract_revision": "1.1.2",
   "capture_schema_version": "1.1.0",
   "legacy_capture_schema_version": "1.0.0",
   "scope": "capture feasibility for action-free popup presence and message research",
@@ -15,11 +16,16 @@
   ],
   "stable_state_requirements": {
     "canonical_tree_hash_must_match": true,
+    "offline_finalizer_must_recompute_canonical_tree_hash": true,
+    "canonical_value_encoding": "explicit_null_or_utf8_string_type_tag",
+    "offline_finalizer_must_validate_collector_value_domains_and_paths": true,
+    "offline_finalizer_must_recompute_target_packages_and_focus_token": true,
     "accessibility_event_sequence_must_match": true,
     "focus_token_must_match": true,
     "tree_must_not_be_truncated": true,
     "sensitive_node_must_be_absent": true
   },
+  "offline_verification_boundary": "API-34 accessibility-data-sensitive state has no per-node serialized field and remains collector-reported plus source/process audited; it is not independently recomputable offline",
   "required_collector_mode": "accessibilityservice_node_snapshot",
   "required_strata": [
     "popup_candidate",

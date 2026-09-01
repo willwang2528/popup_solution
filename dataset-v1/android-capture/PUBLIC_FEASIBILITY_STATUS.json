@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "updated_at": "2026-09-01T10:32:11+08:00",
+  "version": "1.1.2",
+  "updated_at": "2026-09-01T12:42:00+08:00",
   "status": "blocked_no_real_android_captures",
   "tooling_status": "collector_apk_and_v1_1_finalizer_tested_no_device",
   "host_device_tooling": {
@@ -15,16 +15,17 @@
     "installed_on_device": false,
     "service_enabled_on_device": false,
     "real_capture_attempted": false,
-    "jvm_tests_passed": 8,
+    "jvm_tests_passed": 10,
     "apk_contract_tests_passed": 3,
     "host_tool_tests_passed": 4,
-    "v1_1_finalizer_tests_passed": 18,
+    "v1_1_finalizer_tests_passed": 24,
     "full_repository_regression": {
-      "run": 201,
-      "passed": 199,
+      "run": 230,
+      "passed": 228,
       "skipped": 2,
       "failed": 0
     },
+    "built_apk_contract_after_canonical_change": "pending_public_commit_bound_rebuild",
     "android_lint_status": "passed_no_issues"
   },
   "real_capture_count": 0,

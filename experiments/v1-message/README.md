@@ -115,7 +115,7 @@ reason，不进入指标。规范化后的私有 gold 行按 ID 排序并生成
 ../.venv/bin/python3 experiments/v1-message/run_eval.py \
   --items dataset-v1/empirical-pilot/private/pilot-30.pending-union.private.jsonl \
   --annotations /private/path/final-adjudication.jsonl \
-  --predictions experiments/v1-message/pregold/private/pilot-30.predictions.private.jsonl \
+  --predictions experiments/v1-message/pregold/private/pilot-30.heuristic-visual-c1.predictions.private.jsonl \
   --method frozen-prediction \
   --frozen-prediction-method-id structured-only-v1 \
   --output-dir /private/path/scored-a1
@@ -147,6 +147,19 @@ hash 或 prediction 内容。
 当前 group-map 为 30 个 singleton cluster，尚不足以证明正式 leakage control；
 B1 popup-ROI、B2 exact PopSweeper、C1 共享视觉融合和可复现视觉模型也仍未解锁。因此仓库尚无
 正式方法比较数字。
+
+[`pregold/freeze_operating_points.py`](./pregold/freeze_operating_points.py) 现提供
+K25/K50/K100 的 pre-gold selected-ID ledger 冻结入口；其 MG-PU severity 排序是
+明确的 proposed policy，不是现有 binary gate 或已验证策略，当前也没有生成 formal
+ledger。[`popup_eval/formal_k50.py`](./popup_eval/formal_k50.py) 是主确认端点的
+fail-closed finalizer：它只接受 `mg-pu-k50-v1` 对
+`seeded-random-k50-v1`，要求 adjudicated VPMA、formal group map、exact K、共享
+10,000 次 cluster bootstrap、相同冻结 hashes，以及逐方法 pixels/tokens/cost
+实际预算账本。它不会读取 gold 或自行运行 paired scorer；当前 formal paired report、
+Holm、BH 与 Pareto 均不存在，所以不会产生论文结果。冻结 ledger 与 finalizer
+都会重算两种 K 策略的 selected-ID 交集；集合不同时明确输出
+`budget_matched_not_item_matched` 及 overlap count/fraction，不能把等 K 误称为
+item-matched。
 
 截图消息 gold 本身不能证明结构暴露缺口。独立 sidecar 见
 [`STRUCTURE_VISUAL_GAP_AUDIT.md`](../../dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：

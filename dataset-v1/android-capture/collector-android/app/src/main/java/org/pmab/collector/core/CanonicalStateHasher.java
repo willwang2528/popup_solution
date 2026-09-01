@@ -35,7 +35,7 @@ public final class CanonicalStateHasher {
             append(output, "entry-id", entry.id());
             for (Map.Entry<String, String> field : new TreeMap<>(entry.fields()).entrySet()) {
                 append(output, "field-key", field.getKey());
-                append(output, "field-value", field.getValue() == null ? "<null>" : field.getValue());
+                append(output, "field-value", field.getValue());
             }
             for (String childId : entry.orderedChildIds()) {
                 append(output, "child", childId);
@@ -46,12 +46,15 @@ public final class CanonicalStateHasher {
     }
 
     private static void append(StringBuilder output, String label, String value) {
-        String safe = value == null ? "<null>" : value;
-        output.append(label)
+        output.append(label).append(':');
+        if (value == null) {
+            output.append("null\n");
+            return;
+        }
+        output.append("string:")
+                .append(value.getBytes(StandardCharsets.UTF_8).length)
                 .append(':')
-                .append(safe.getBytes(StandardCharsets.UTF_8).length)
-                .append(':')
-                .append(safe)
+                .append(value)
                 .append('\n');
     }
 }
