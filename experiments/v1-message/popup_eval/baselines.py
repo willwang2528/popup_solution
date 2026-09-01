@@ -263,10 +263,48 @@ def message_gap_reasons(item: dict[str, Any], structured_prediction: dict[str, A
     return sorted(reasons)
 
 
+def build_shuffled_gap_permutation(
+    items: list[dict[str, Any]],
+    structured: PopupScopedStructuredTextBaseline,
+    seed: int,
+) -> dict[str, dict[str, Any]]:
+    """Permute pre-gold gap vectors one-to-one with a stable seeded rotation."""
+    items_by_id: dict[str, dict[str, Any]] = {}
+    gaps_by_id: dict[str, list[str]] = {}
+    for item in items:
+        item_id = _item_id(item)
+        if item_id in items_by_id:
+            raise ValueError("item ids must be unique")
+        items_by_id[item_id] = item
+        structured_prediction = structured.predict(item)
+        gaps_by_id[item_id] = message_gap_reasons(item, structured_prediction)
+
+    ranked_ids = sorted(
+        items_by_id,
+        key=lambda item_id: hashlib.sha256(
+            f"shuffled-gap-v1:{seed}:{item_id}".encode("utf-8")
+        ).hexdigest(),
+    )
+    source_ids = ranked_ids[1:] + ranked_ids[:1] if ranked_ids else []
+    return {
+        target_id: {
+            "source_item_id": source_id,
+            "gap_reasons": list(gaps_by_id[source_id]),
+        }
+        for target_id, source_id in zip(ranked_ids, source_ids)
+    }
+
+
 class MessageGapRouter:
     """Select between structure and a frozen visual prediction without actions."""
 
-    VALID_MODES = {"mg-pu", "always-visual", "empty-tree", "random-matched"}
+    VALID_MODES = {
+        "mg-pu",
+        "always-visual",
+        "empty-tree",
+        "random-matched",
+        "shuffled-gap",
+    }
 
     def __init__(
         self,
@@ -274,6 +312,7 @@ class MessageGapRouter:
         visual: PredictionAdapter,
         mode: str,
         random_call_ids: set[str] | None = None,
+        shuffled_gap_assignments: dict[str, dict[str, Any]] | None = None,
     ):
         if mode not in self.VALID_MODES:
             raise ValueError(f"unknown router mode: {mode}")
@@ -281,6 +320,7 @@ class MessageGapRouter:
         self.visual = visual
         self.mode = mode
         self.random_call_ids = random_call_ids or set()
+        self.shuffled_gap_assignments = shuffled_gap_assignments or {}
 
     def _should_call_visual(
         self,
@@ -291,6 +331,8 @@ class MessageGapRouter:
         if self.mode == "always-visual":
             return True
         if self.mode == "mg-pu":
+            return bool(reasons)
+        if self.mode == "shuffled-gap":
             return bool(reasons)
         if self.mode == "random-matched":
             return _item_id(item) in self.random_call_ids
@@ -304,16 +346,28 @@ class MessageGapRouter:
     def predict(self, item: dict[str, Any]) -> dict[str, Any]:
         structured_prediction = self.structured.predict(item)
         reasons = message_gap_reasons(item, structured_prediction)
+        if self.mode == "shuffled-gap":
+            assignment = self.shuffled_gap_assignments.get(_item_id(item))
+            if assignment is None:
+                raise ValueError("shuffled-gap assignment is missing for item")
+            reasons = list(assignment["gap_reasons"])
         call_visual = self._should_call_visual(item, structured_prediction, reasons)
-        method_id = self.mode
+        method_id = (
+            "shuffled-gap-reasons-v1" if self.mode == "shuffled-gap" else self.mode
+        )
+        reason_prefix = "shuffled-gap:" if self.mode == "shuffled-gap" else ""
         if call_visual:
             result = self.visual.predict(item)
             result["method_id"] = method_id
-            result["route_reason"] = f"visual:{','.join(reasons) or self.mode}"
+            result["route_reason"] = (
+                f"visual:{reason_prefix}{','.join(reasons) or self.mode}"
+            )
             return result
         result = deepcopy(structured_prediction)
         result["method_id"] = method_id
-        result["route_reason"] = f"structured:{','.join(reasons) or 'sufficient'}"
+        result["route_reason"] = (
+            f"structured:{reason_prefix}{','.join(reasons) or 'sufficient'}"
+        )
         return result
 
 

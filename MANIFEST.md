@@ -43,9 +43,9 @@
 | `dataset-v1/DATASET_MANIFEST.json` | v1 数据契约、cohort 和校验摘要 | current / provisional |
 | `dataset-v1/ANNOTATION_GUIDE.md` | popup presence/message/gap 标注协议 | current / provisional |
 | `dataset-v1/data/item.template.json` | 单 item 模板与 v1 no-action 示例 | generated source template |
-| `dataset-v1/ITEM_UNION_EXAMPLE.md` | 单个 synthetic item 的 90+165=255 字段并集可读视图 | generated / machine checked / non-empirical |
+| `dataset-v1/ITEM_UNION_EXAMPLE.md` | 单个 synthetic item 的 255 个来源字段 + 44 个 V1 profile 扩展字段 = 299 行完整可追溯视图 | generated / machine checked / non-empirical |
 | `dataset-v1/scripts/build_item_union_example.py` | 从公开 catalog/crosswalk/template/fixture 生成并核验 item union 视图 | tested / no private input |
-| `dataset-v1/tests/test_build_item_union_example.py` | 255 行字段表、90/165 分布、presence/provenance、no-action、Recovery-status 完整性、中文表头与 stale-output 回归 | 9 tests passing |
+| `dataset-v1/tests/test_build_item_union_example.py` | 299 行字段表、90/165/44 分布、schema/template/fixture presence、no-action、Recovery-status 完整性、中文表头与 stale-output 回归 | 11/11 tests passing |
 | `dataset-v1/schema/item.schema.json` | 单 item JSON Schema | current / provisional |
 | `dataset-v1/schema/source_to_item_crosswalk.json` | 90 文献字段 + 165 我方字段 = 255 映射 | generated / validated |
 | `dataset-v1/schema/field_catalog.json` | union 字段目录 | generated / validated |
@@ -76,9 +76,10 @@
 | `dataset-v1/empirical-pilot/PUBLIC_PENDING_UNION_SUMMARY.json` | 30/22/8/186 聚合、hash 与负向声明 | current / unscored |
 | `dataset-v1/android-capture/CAPTURE_CONTRACT_V1.json` | 正式 Android 同步 screenshot + AccessibilityService snapshot 的 fail-closed CAP-001 合同 | current / real capture pending |
 | `dataset-v1/android-capture/finalize_android_capture.py` | 单条终结与 5-group/3-template/3-strata 聚合可行性门 | tested / tooling only |
+| `dataset-v1/android-capture/collector-android/host_capture.py` | collector 请求、APK attestation、bundle 哈希校验与 rejected fail-closed 原子发布 | 9/9 host tests / tooling only |
 | `dataset-v1/android-capture/PUBLIC_FEASIBILITY_STATUS.json` | 不含私有内容的 CAP-001 当前状态 | blocked / real capture count 0 |
 | `dataset-v1/android-capture/ANDROID_RUNTIME_READINESS.md` | 当前 Android 真机优先／模拟器备选的安装与设备状态 | prerequisites recorded / no connected device |
-| `dataset-v1/android-capture/tests/test_capture_finalizer.py` | 截图完整性、provenance、同步、Java/Python typed canonical hash golden vector、null 碰撞与节点篡改拒绝、collector 值域／路径／package／focus 重算、无动作、递归标签泄漏、artifact-refinalizing 聚合、重复和 coverage 回归 | 24 tests passing |
+| `dataset-v1/android-capture/tests/test_capture_finalizer.py` | 截图完整性、provenance、同步、Java/Python typed canonical hash golden vector、null 碰撞与节点篡改拒绝、collector 值域／路径／package／focus 重算、无动作、递归标签泄漏、artifact-refinalizing 聚合、重复、no-overwrite 和 coverage 回归 | 25/25 tests passing |
 | `dataset-v1/android-capture/fixture-target/SCENARIO_CATALOG_V1.json` | 5 个受控 package、3 个模板族、15 个 positive/no-popup/boundary 场景 | definition only / installation prerequisites ready / device validation false |
 | `dataset-v1/android-capture/fixture-target/TARGET_BUILD_CONTRACT_V1.json` | fixture Gradle module、application IDs、模板、strata 与 no-action/no-gold 源码合同 | current / machine checked |
 | `dataset-v1/android-capture/fixture-target/validate_fixture_catalog.py` | 源码清单、场景覆盖、资格和 readiness 命名的 fail-closed 校验 | tested |
@@ -156,7 +157,7 @@
 | `experiments/v1-message/pregold/tests/` | gold/provenance/盲法拒绝、显式 popup scope、预算匹配、零动作、私有输出与公开摘要测试 | 11 tests passing |
 | `experiments/v1-message/pregold/PUBLIC_PREGOLD_SUMMARY.json` | 私有逐项预测的无文本聚合、实现/输入/输出哈希 | pass / unscored / not paper eligible |
 | `experiments/v1-message/pregold/PUBLIC_HEURISTIC_VISUAL_PROJECTION_SUMMARY.json` | 私有视觉 bank 的脱敏投影摘要 | fixed-threshold heuristic / fixed-host replay only |
-| `experiments/v1-message/pregold/PUBLIC_PREGOLD_HEURISTIC_VISUAL_C1_SUMMARY.json` | 五方法路由、调用成本与预测哈希聚合 | pass / unscored / no accuracy claim |
+| `experiments/v1-message/pregold/PUBLIC_PREGOLD_HEURISTIC_VISUAL_C1_SUMMARY.json` | 六方法路由、调用成本、shuffled-gap permutation commitment 与预测哈希聚合 | pass / unscored / no accuracy claim |
 | `refine-logs/FINAL_PROPOSAL.md` | 当前问题锚、benchmark 与 MG-PU proposal | provisional |
 | `refine-logs/NOVELTY_CHECK.md` | 查新与 contribution claim 边界 | proceed with caution |
 | `refine-logs/EXPERIMENT_PLAN.md` | 实验矩阵、统计与 kill criteria | planned |

@@ -24,7 +24,7 @@
 
 ## 数据来源与字段
 
-数据 item 采用 14 篇已有论文的 90 个字段与我方既有方法 165 个字段的语义并集，共 255 条可审计 crosswalk。v1 另加 `message_judgment` profile；该扩展单独计数，避免改写历史来源证据。
+数据 item 采用 14 篇已有论文的 90 个字段与我方既有方法 165 个字段的语义并集，共 255 条可审计 source crosswalk。v1 另加 `message_judgment` profile 的 44 个原子字段；该扩展单列为 `v1_profile_extension`，避免改写历史来源证据。因此单 item 公开完整视图为 299 行，但有论文／方法来源归因的冻结 crosswalk 仍是 255 条。
 
 保存平台原始层、跨平台规范层、截图／OCR、候选、provenance、presence status、标注和 advanced recovery 兼容字段。iOS 字段在真实目标设备 capability probe 前仍是候选，不能用框架文档替代实测。
 
@@ -47,7 +47,7 @@
 - 当前仅有 3 条 synthetic schema fixture：positive/no-popup/abstain；
 - 已冻结 120 条 PopSweeper 来源候选（来源目录标签为 60 `ads` / 60 `no_ads`；每类 45 numeric + 15 named；seed `20260901`）。这些目录标签只用于分层抽样，不是人工 popup presence gold；90 条 numeric 候选均验证有 RICO semantic JSON/PNG，message gold 仍为 pending，且 raw image 采用 adapter-only、不在仓库中再分发；
 - real-app item：0；controlled fixture item：0；iOS item：0；
-- 255 条来源 crosswalk 保持完整；
+- 255 条来源 crosswalk 保持完整；加上 44 条 V1 profile 扩展后，完整可追溯视图为 299 行；
 - v1 QA 4 个 full-automated、2 个 partial-automated；发布前仍需人工证据、隐私、权限和标注门。
 - schema 已加入 `message_judgment.gap_ground_truth`，但当前 30-item pilot 全部仍为 `pending_audit`；它不是现有模型预标注的重命名。
 
@@ -55,4 +55,4 @@
 
 ## Advanced compatibility
 
-动作、Dismissal、`C_tech`、`C_a11y`、`T`、`VTR-tech`、`A-VTR` 继续存在，但只属于未来 `dismissal_recovery_advanced` profile。v1 不允许这些字段出现成功值。
+动作、幻灯片 14 的 `D/C_tech/C_a11y/B/T` 五级回证，以及派生指标 `VTR_tech/A_VTR` 继续存在，但只属于未来 `dismissal_recovery_advanced` profile。v1 不允许这些字段出现成功值。

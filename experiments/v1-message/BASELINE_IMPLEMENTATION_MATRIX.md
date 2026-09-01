@@ -34,6 +34,7 @@
 | B1 ROI-OCR adaptation | `runnable`；固定强矩形 ROI + Vision OCR 在 30 项中 4 judged / 26 abstain | 本研究 adaptation；两次 replay 的决定/ROI/消息一致，但无人工 gold、未评分，不是 PopSweeper exact |
 | C1-AO / C1-BM | `runnable`；AO 30 次视觉调用，BM 以固定哈希选择与 MG-PU 相同的 K=28 | 已冻结但无人工 gold、未评分；AO 不是等预算，BM 不是 always-on；BM 只匹配成本，不匹配 item 集或难度 |
 | C3 MG-PU candidate | `runnable`；冻结启发式 bank 已连接，2 项结构＋4 项视觉 judged，24 abstain；视觉 adapter 调用 28 次 | gold-blind snapshot 已冻结；其中 4 次形成视觉正判断、24 次由 adapter 弃答；仍不是正式方法结果 |
+| ABL-003 shuffled-gap | `runnable`；固定 seed=17 将 30 个 popup-scoped gap vector 一一重排，0 self-assignment；视觉调用同 MG-PU 为 28 次；4 judged / 26 abstain | 只隔离 gap-to-item 归因；保持 gap 多重集与调用预算，但 gap reasons 仍由内容产生，故不是完全内容盲策略，必须与 seeded-random 区分；无人工 gold、未评分 |
 
 A0、A3、B2、B3、C2、C4 仍只有接口、计划或 synthetic smoke。A2 是 paper-constrained v1 adaptation，不是原论文完整系统复现。C1-AO、C1-BM 与 C3 的 gold-blind snapshot 已连接同一冻结的固定阈值启发式 visual bank；它仅验证同一固定主机重复执行一致，跨 OS／设备模型身份未验证。B2 exact 仍是独立 NO-GO。
 
@@ -54,7 +55,7 @@ gold，因此没有运行结果：
 1. finalizer 要求 adjudication 与冻结 pilot item 严格一对一，拒绝重复、未知、
    缺失和夹带 final label 的 `cannot_resolve`；
 2. gold 通过稳定 `pilot_item_id` 连接到 30-item pending-union 的私有结构特征；
-3. A1、A2、MG-PU 直接评分 gold 前冻结的 prediction snapshot，不在 gold 解锁后
+3. A1、A2、MG-PU 与 ABL-003 shuffled-gap 直接评分 gold 前冻结的 prediction snapshot，不在 gold 解锁后
    重跑方法；
 4. 可选消息语义复核绑定逐条 prediction SHA-256，并要求比较方法完整覆盖；
 5. 独立、method-blind 的 structure–visual gap audit 绑定两个审计记录、message-gold batch 和 structured bundle hash，只用于分层分析；

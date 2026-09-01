@@ -16,37 +16,43 @@
 
 ## 来源字段并集
 
-| 来源类别 | 原子 source field 数 |
+冻结 source-field 并集仍为 90+165=255；`v1_profile_extension` 是另计且不归因到既有论文/方法来源的 message-only 协议字段。下表合计的是完整可追溯视图，不改变冻结 source-field 口径。
+
+| 来源类别 | 可追溯原子字段数 |
 |---|---:|
 | `literature_14` | 90 |
 | `our_method` | 165 |
-| **并集总计** | **255** |
+| **冻结 source 字段小计** | **255** |
+| `v1_profile_extension` | 44 |
+| **可追溯并集总计** | **299** |
 
 ## 机器审计完整性
 
-这里的 presence 表示：每个 source-field 记录在公开 catalog 与 crosswalk 中恰好出现一次，并且至少具有一个 canonical pointer；它不表示该 v1 item 的每个 nullable 值都已被观测。
+这里的 presence 表示：冻结 source-field 记录在公开 catalog 与 crosswalk 中恰好出现一次；另计的 v1 协议字段在 catalog 的 protocol inventory 中恰好出现一次。所有行都具有可在 item schema 解析的 canonical pointer。它不表示该 v1 item 的每个 nullable 值都已被观测。
 
 Provenance 完整性表示：对应来源类别要求的 source metadata 已齐备；它不构成经验验证。
 
-| 来源类别 | Catalog presence | Crosswalk presence | 非空 canonical mapping | Provenance 完整 |
+| 来源类别 | Catalog presence | Trace inventory presence | 可解析 canonical mapping | Provenance 完整 |
 |---|---:|---:|---:|---:|
 | `literature_14` | 90 | 90 | 90 | 90 |
 | `our_method` | 165 | 165 | 165 | 165 |
-| **并集总计** | **255** | **255** | **255** | **255** |
+| `v1_profile_extension` | 44 | 44 | 44 | 44 |
+| **可追溯并集总计** | **299** | **299** | **299** | **299** |
 
 | Item 形状检查 | 完整 |
 |---|---:|
+| V1 schema/template/fixture 原子路径 | 44/44/44 |
 | Template/fixture 顶层 containers | 16/16 |
 
 ## 此单个 item 的 canonical containers
 
 `action_attempts`, `annotations`, `assistive_technology`, `candidates`, `capability_profile`, `decision`, `environment`, `feedback`, `identity`, `message_judgment`, `observability`, `observations`, `provenance`, `quality`, `scenario`, `verification`
 
-## 完整 source field 清单
+## 完整可追溯字段清单
 
-下表直接由通过校验的公开 crosswalk 生成；只列字段元数据，不列任何 item 值。
+下表的前两类直接由通过校验的公开 crosswalk 生成，v1 协议扩展由 catalog 的独立 inventory 生成；只列字段元数据，不列任何 item 值。
 
-| 序号 | Namespace | Source field path | Canonical pointer(s) | Provenance 摘要 |
+| 序号 | Namespace | 字段路径 | Canonical pointer(s) | Provenance 摘要 |
 |---:|---|---|---|---|
 | 1 | `literature_14` | `action.action_semantics` | `/decision/selection/action_semantics_pred`<br>`/action_attempts/*/action_semantics`<br>`/candidates/*/ground_truth/action_semantics_gt` | papers=abandon_all_hope_2024,cookieverse_bannerclick,freely_given_consent_2022,ssldetecter_2019,tcf_aaid_2026,the_ok_is_not_enough_2023; evidence=mixed |
 | 2 | `literature_14` | `verification.action_trace` | `/action_attempts` | papers=hotmobile_ad_policy_2018; evidence=reported |
@@ -303,6 +309,50 @@ Provenance 完整性表示：对应来源类别要求的 source metadata 已齐�
 | 253 | `our_method` | `provenance.annotation_records` | `/annotations`<br>`/provenance/annotation_record_ids` | label_source=annotation_system; missing=empty_array_only_for_fully_automatic_non_ground_truth_fields; stage=annotation |
 | 254 | `our_method` | `provenance.episode_evidence_uris` | `/provenance/episode_evidence_uris` | label_source=collector_and_verifier; missing=empty_array_blocks_verified_success_claim; stage=verification_summary |
 | 255 | `our_method` | `provenance.evidence_level` | `/provenance/evidence_level` | label_source=derived_from_evidence_and_capability_profile; missing=unverified; stage=provenance_and_quality |
+| 256 | `v1_profile_extension` | `/message_judgment/profile` | `/message_judgment/profile` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 257 | `v1_profile_extension` | `/message_judgment/labels/popup_present_gt` | `/message_judgment/labels/popup_present_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 258 | `v1_profile_extension` | `/message_judgment/labels/blocking_gt` | `/message_judgment/labels/blocking_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 259 | `v1_profile_extension` | `/message_judgment/labels/message_text_gt` | `/message_judgment/labels/message_text_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 260 | `v1_profile_extension` | `/message_judgment/labels/critical_facts_gt` | `/message_judgment/labels/critical_facts_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 261 | `v1_profile_extension` | `/message_judgment/labels/message_text_observability` | `/message_judgment/labels/message_text_observability` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 262 | `v1_profile_extension` | `/message_judgment/labels/evidence_uris` | `/message_judgment/labels/evidence_uris` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 263 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/status` | `/message_judgment/gap_ground_truth/status` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 264 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/structured_evidence_available` | `/message_judgment/gap_ground_truth/structured_evidence_available` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 265 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/structured_message_text_gt` | `/message_judgment/gap_ground_truth/structured_message_text_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 266 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/structured_message_complete_gt` | `/message_judgment/gap_ground_truth/structured_message_complete_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 267 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/gap_reasons_gt` | `/message_judgment/gap_ground_truth/gap_reasons_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 268 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/critical_facts_missing_from_structure_gt` | `/message_judgment/gap_ground_truth/critical_facts_missing_from_structure_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 269 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/host_text_contamination_gt` | `/message_judgment/gap_ground_truth/host_text_contamination_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 270 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/tree_screenshot_synchronized_gt` | `/message_judgment/gap_ground_truth/tree_screenshot_synchronized_gt` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 271 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/auditor_blind_to_method_outputs` | `/message_judgment/gap_ground_truth/auditor_blind_to_method_outputs` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 272 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/message_gold_batch_sha256` | `/message_judgment/gap_ground_truth/message_gold_batch_sha256` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 273 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/structured_bundle_sha256` | `/message_judgment/gap_ground_truth/structured_bundle_sha256` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 274 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/gap_audit_batch_sha256` | `/message_judgment/gap_ground_truth/gap_audit_batch_sha256` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 275 | `v1_profile_extension` | `/message_judgment/gap_ground_truth/evidence_uris` | `/message_judgment/gap_ground_truth/evidence_uris` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 276 | `v1_profile_extension` | `/message_judgment/prediction/status` | `/message_judgment/prediction/status` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 277 | `v1_profile_extension` | `/message_judgment/prediction/popup_present_pred` | `/message_judgment/prediction/popup_present_pred` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 278 | `v1_profile_extension` | `/message_judgment/prediction/message_text_pred` | `/message_judgment/prediction/message_text_pred` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 279 | `v1_profile_extension` | `/message_judgment/prediction/critical_facts_pred` | `/message_judgment/prediction/critical_facts_pred` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 280 | `v1_profile_extension` | `/message_judgment/prediction/confidence` | `/message_judgment/prediction/confidence` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 281 | `v1_profile_extension` | `/message_judgment/prediction/source_observation_id` | `/message_judgment/prediction/source_observation_id` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 282 | `v1_profile_extension` | `/message_judgment/prediction/evidence_uris` | `/message_judgment/prediction/evidence_uris` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 283 | `v1_profile_extension` | `/message_judgment/prediction/model_or_rule_version` | `/message_judgment/prediction/model_or_rule_version` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 284 | `v1_profile_extension` | `/message_judgment/prediction/latency_ms` | `/message_judgment/prediction/latency_ms` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 285 | `v1_profile_extension` | `/message_judgment/gate/structured_message_complete` | `/message_judgment/gate/structured_message_complete` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 286 | `v1_profile_extension` | `/message_judgment/gate/gap_reasons` | `/message_judgment/gate/gap_reasons` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 287 | `v1_profile_extension` | `/message_judgment/gate/visual_fallback_used` | `/message_judgment/gate/visual_fallback_used` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 288 | `v1_profile_extension` | `/message_judgment/gate/visual_call_count` | `/message_judgment/gate/visual_call_count` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 289 | `v1_profile_extension` | `/message_judgment/gate/tree_screenshot_synchronized` | `/message_judgment/gate/tree_screenshot_synchronized` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 290 | `v1_profile_extension` | `/message_judgment/evaluation/presence_correct` | `/message_judgment/evaluation/presence_correct` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 291 | `v1_profile_extension` | `/message_judgment/evaluation/message_semantically_correct` | `/message_judgment/evaluation/message_semantically_correct` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 292 | `v1_profile_extension` | `/message_judgment/evaluation/critical_information_recall` | `/message_judgment/evaluation/critical_information_recall` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 293 | `v1_profile_extension` | `/message_judgment/evaluation/critical_hallucination` | `/message_judgment/evaluation/critical_hallucination` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 294 | `v1_profile_extension` | `/message_judgment/evaluation/VPMA` | `/message_judgment/evaluation/VPMA` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 295 | `v1_profile_extension` | `/message_judgment/eligibility/eligible_for_v1_presence_metric` | `/message_judgment/eligibility/eligible_for_v1_presence_metric` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 296 | `v1_profile_extension` | `/message_judgment/eligibility/eligible_for_v1_message_metric` | `/message_judgment/eligibility/eligible_for_v1_message_metric` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 297 | `v1_profile_extension` | `/message_judgment/eligibility/eligible_for_advanced_recovery_metric` | `/message_judgment/eligibility/eligible_for_advanced_recovery_metric` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 298 | `v1_profile_extension` | `/message_judgment/eligibility/eligible_for_user_experience_claim` | `/message_judgment/eligibility/eligible_for_user_experience_claim` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
+| 299 | `v1_profile_extension` | `/message_judgment/eligibility/exclusion_reasons` | `/message_judgment/eligibility/exclusion_reasons` | protocol=popup_message_judgment_v1; source=protocol_extension; attribution=not_source_attributed |
 
 ## 进阶 Recovery 兼容字段
 
@@ -319,7 +369,7 @@ Provenance 完整性表示：对应来源类别要求的 source metadata 已齐�
 
 ## 公开输入与机器校验
 
-输入：`schema/field_catalog.json`、`schema/source_to_item_crosswalk.json`、`data/item.template.json` 与 `data/items.schema-fixture.jsonl`。
+输入：`schema/field_catalog.json`、`schema/source_to_item_crosswalk.json`、`schema/item.schema.json`、`data/item.template.json` 与 `data/items.schema-fixture.jsonl`。
 
 ```bash
 ../../.venv/bin/python3 scripts/build_item_union_example.py --check

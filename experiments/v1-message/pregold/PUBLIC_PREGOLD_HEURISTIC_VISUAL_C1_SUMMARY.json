@@ -13,7 +13,7 @@
   "feature_builder_implementation_sha256": "a09919f0f7deeba7b04e957cac851d35106d1bd39974007e007cd413c63192b4",
   "feature_contract_sha256": "4bd7d62994414482e24012ff0ea21f9b5ededda64036873ea76c4c3c93cc8131",
   "human_gold_used": false,
-  "implementation_sha256": "62fe464302d83bcfdb1ca2a106bf11fe5af34932f7b7e131bb014c223995e14b",
+  "implementation_sha256": "bbd5e184f082295563312457ea1306e029efadecb148aa7eddd5cb7ca1d03a01",
   "input_item_count": 30,
   "item_identity_sha256": "a53af22ec3172a5696a77dfe46dfd2340cd1823d72272178bdb7cc0f414457c9",
   "methods": {
@@ -61,6 +61,21 @@
       "visual_call_count": 28,
       "visual_informed_positive_judgment_count": 4
     },
+    "shuffled-gap-reasons-v1": {
+      "abstain_count": 26,
+      "item_count": 30,
+      "judged_count": 4,
+      "predictions_sha256": "d4e35f92f10574d4e975d2808f5900e60bc80a2c913364ec53503f41c624dd07",
+      "route_counts": {
+        "shuffled_gap:ambiguous:visual_evidence_missing_or_unstable": 22,
+        "shuffled_gap:ambiguous:visual_frozen_prediction": 4,
+        "shuffled_gap:missing:visual_evidence_missing_or_unstable": 2,
+        "shuffled_gap:sufficient:structure_insufficient": 2
+      },
+      "visual_adapter_invocation_count": 28,
+      "visual_call_count": 28,
+      "visual_informed_positive_judgment_count": 4
+    },
     "structured-only-v1": {
       "abstain_count": 15,
       "item_count": 30,
@@ -89,8 +104,17 @@
     }
   },
   "paper_result_eligible": false,
-  "predictions_sha256": "e0030c3a36f3778268fcfd58b837633f6217d109d962c787dbad016aca86cb95",
+  "predictions_sha256": "2bd5e617a73c5d24f477edd27afed8133bb0c37b04d4874fd3139fbe1f242107",
   "scored": false,
+  "shuffled_gap": {
+    "gap_vector_count": 30,
+    "mg_pu_visual_call_count": 28,
+    "permutation_commitment_sha256": "90c966485fcd0fba04616dafdcc0faf27c479774f3b77cdab0add68adc29e57c",
+    "seed": 17,
+    "self_assignment_count": 0,
+    "shuffled_visual_call_count": 28,
+    "unique_source_count": 30
+  },
   "the_ok_implementation_sha256": "df7eb2a4d65d915d4fdee4a53370fc484995a1b393dac0776f3686aa36deb66b",
   "the_ok_upstream_revision": "b618948c0d24b917b3a46a88f5c1cf6ff84571cd",
   "visual_adapter_implementation_sha256": "fa86b3c8f2da9e8574700ee28113338275d91362cda85c01553ff4cf35661190",

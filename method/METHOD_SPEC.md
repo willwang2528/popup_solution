@@ -63,7 +63,7 @@ v1 不主张自动消除弹窗，也不主张恢复屏幕阅读器焦点、原�
 1. `action_attempts=[]`。
 2. 决策必须是 `no_action` 或 `abstain`，不能是 `execute`。
 3. 不输出或调用 tap coordinate、element action、protocol handler、Back、外部跳转或业务 API。
-4. Dismissal、`C_tech`、`C_a11y`、`T`、`VTR-tech`、`A-VTR` 在 v1 中为 `null/not_applicable`。
+4. 幻灯片 14 的五级回证 `D/C_tech/C_a11y/B/T` 与派生指标 `VTR_tech/A_VTR` 在 v1 中为 `null/not_applicable`。
 5. CAPTCHA、风控、身份认证、支付、权限安全控制等样本不进入主数据；若被观察到，只允许 `abstain/out_of_scope`。
 
 ## 4. 方法模块

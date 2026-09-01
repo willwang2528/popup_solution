@@ -1,4 +1,6 @@
 from pathlib import Path
+from collections import Counter
+from copy import deepcopy
 import sys
 import unittest
 
@@ -12,6 +14,7 @@ from popup_eval.baselines import (
     StructuredTextRuleBaseline,
     select_random_matched_ids,
 )
+import popup_eval.baselines as popup_baselines
 from popup_eval.the_ok_baseline import TheOkTextBaseline
 from pregold.freeze_predictions import _structured_prediction as pregold_structured_prediction
 
@@ -310,6 +313,125 @@ class RouterTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(len(first), 4)
         self.assertEqual(first, {"e3", "e4", "e6", "e7"})
+
+    def test_shuffled_gap_permutation_is_seeded_order_independent_and_gold_blind(self):
+        # Break caught: ABL-003 shuffles rows nondeterministically, reuses a source,
+        # or lets annotation/action/Recovery fields influence the routing permutation.
+        self.assertTrue(hasattr(popup_baselines, "build_shuffled_gap_permutation"))
+        build = popup_baselines.build_shuffled_gap_permutation
+        examples = [
+            item("e0", True, "gold-0", candidates=[candidate("accessibility", "Complete")]),
+            item(
+                "e1",
+                True,
+                "gold-1",
+                candidates=[candidate("accessibility", "Merged", gaps=["merged"])],
+            ),
+            item(
+                "e2",
+                False,
+                candidates=[candidate("accessibility", "Owner mismatch")],
+            ),
+            item(
+                "e3",
+                True,
+                "gold-3",
+                candidates=[candidate("accessibility", "Stale")],
+                sync="unsynchronized",
+            ),
+        ]
+        examples[2]["candidates"][0]["features"]["owner_consistent"] = False
+        mutated = deepcopy(examples)
+        for example in mutated:
+            example["message_judgment"]["labels"] = {
+                "popup_present_gt": not example["message_judgment"]["labels"][
+                    "popup_present_gt"
+                ],
+                "message_text_gt": "changed gold",
+                "critical_facts_gt": ["changed gold fact"],
+            }
+            example["advanced"] = {
+                "Recovery": {"action": "dismiss", "target": "forbidden"}
+            }
+
+        first = build(examples, self.structured, seed=17)
+        reversed_order = build(list(reversed(examples)), self.structured, seed=17)
+        changed_irrelevant_fields = build(mutated, self.structured, seed=17)
+
+        expected = {
+            "e0": {"source_item_id": "e2", "gap_reasons": ["owner_mismatch"]},
+            "e1": {"source_item_id": "e3", "gap_reasons": ["stale"]},
+            "e2": {"source_item_id": "e1", "gap_reasons": ["merged"]},
+            "e3": {"source_item_id": "e0", "gap_reasons": []},
+        }
+        self.assertEqual(first, expected)
+        self.assertEqual(reversed_order, expected)
+        self.assertEqual(changed_irrelevant_fields, expected)
+        self.assertEqual(
+            len({assignment["source_item_id"] for assignment in first.values()}),
+            len(examples),
+        )
+        self.assertTrue(
+            all(item_id != assignment["source_item_id"] for item_id, assignment in first.items())
+        )
+
+    def test_shuffled_gap_router_preserves_gap_multiset_and_mgpu_visual_budget(self):
+        # Break caught: the shuffle changes the number of non-empty gap vectors or
+        # reports itself as MG-PU/random rather than an independent ablation.
+        self.assertTrue(hasattr(popup_baselines, "build_shuffled_gap_permutation"))
+        examples = [
+            item("e0", True, candidates=[candidate("accessibility", "Complete")]),
+            item(
+                "e1",
+                True,
+                candidates=[candidate("accessibility", "Merged", gaps=["merged"])],
+            ),
+            item(
+                "e2",
+                True,
+                candidates=[candidate("accessibility", "Owner mismatch")],
+            ),
+            item(
+                "e3",
+                True,
+                candidates=[candidate("accessibility", "Stale")],
+                sync="unsynchronized",
+            ),
+        ]
+        examples[2]["candidates"][0]["features"]["owner_consistent"] = False
+        visual = PredictionAdapter.from_rows([visual_row(f"e{i}") for i in range(4)])
+        assignments = popup_baselines.build_shuffled_gap_permutation(
+            examples, self.structured, seed=17
+        )
+        shuffled = MessageGapRouter(
+            self.structured,
+            visual,
+            mode="shuffled-gap",
+            shuffled_gap_assignments=assignments,
+        )
+        mgpu = MessageGapRouter(self.structured, visual, mode="mg-pu")
+
+        shuffled_results = [shuffled.predict(example) for example in examples]
+        mgpu_results = [mgpu.predict(example) for example in examples]
+
+        self.assertEqual(
+            Counter(tuple(row["gap_reasons"]) for row in assignments.values()),
+            Counter({(): 1, ("merged",): 1, ("owner_mismatch",): 1, ("stale",): 1}),
+        )
+        self.assertEqual(
+            sum(row["visual_call_count"] for row in shuffled_results),
+            sum(row["visual_call_count"] for row in mgpu_results),
+        )
+        self.assertEqual(
+            {row["method_id"] for row in shuffled_results},
+            {"shuffled-gap-reasons-v1"},
+        )
+        self.assertTrue(
+            all("shuffled-gap:" in row["route_reason"] for row in shuffled_results)
+        )
+        forbidden = {"action", "recovery", "gold"}
+        for row in shuffled_results:
+            self.assertFalse(forbidden & {key.casefold() for key in row})
 
 
 if __name__ == "__main__":

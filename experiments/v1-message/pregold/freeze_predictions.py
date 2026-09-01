@@ -7,6 +7,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -30,8 +31,10 @@ METHOD_IDS = (
     "c1-always-on-fusion-v1",
     "c1-budget-matched-fusion-v1",
     "mg-pu-gated-union-v1",
+    "shuffled-gap-reasons-v1",
 )
 C1_BUDGET_MATCH_SEED = 17
+SHUFFLED_GAP_SEED = 17
 ITEM_ID_PATTERN = re.compile(r"PMJ-PILOT-\d{3}")
 GAP_REASONS = {
     "ambiguous",
@@ -78,6 +81,17 @@ FORBIDDEN_EXACT_KEYS = {
     "source_record_id",
     "source_sampling_label",
     "group_key",
+}
+FORBIDDEN_ACTION_KEYS = {
+    "action",
+    "action_semantics",
+    "click",
+    "coordinate",
+    "dismiss",
+    "execution_channel",
+    "selector",
+    "target",
+    "target_candidate_id",
 }
 
 
@@ -133,8 +147,13 @@ def _atomic_write(path: Path, payload: bytes, *, mode: int = 0o600) -> None:
     with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as stream:
         temporary = Path(stream.name)
         stream.write(payload)
-    temporary.chmod(mode)
-    temporary.replace(path)
+    try:
+        temporary.chmod(mode)
+        os.link(temporary, path)
+    except FileExistsError as error:
+        raise ContractError(f"output already exists: {path.name}") from error
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _validate_item_id(value: Any, context: str) -> str:
@@ -168,7 +187,16 @@ def _reject_forbidden_keys(value: Any, context: str = "$") -> None:
     if isinstance(value, dict):
         for key, child in value.items():
             child_context = f"{context}.{key}"
-            if key in SAFE_ATTESTATIONS:
+            lowered = key.casefold()
+            if "recovery" in lowered or lowered in FORBIDDEN_ACTION_KEYS:
+                raise ContractError(f"{child_context}: forbidden action/Recovery key")
+            if key == "action_attempts":
+                if child != []:
+                    raise ContractError(f"{child_context}: action_attempts must be empty")
+            elif key in {"action_mode", "action_policy"}:
+                if child != "no_action":
+                    raise ContractError(f"{child_context}: action mode must be no_action")
+            elif key in SAFE_ATTESTATIONS:
                 expected = SAFE_ATTESTATIONS[key]
                 if child is not expected:
                     raise ContractError(
@@ -517,6 +545,53 @@ def _c1_budget_selection(item_ids: list[str], k: int) -> set[str]:
     return set(ordered[:k])
 
 
+def _shuffled_gap_permutation(
+    gap_vectors_by_id: dict[str, list[str]],
+) -> list[dict[str, Any]]:
+    ranked_ids = sorted(
+        gap_vectors_by_id,
+        key=lambda item_id: hashlib.sha256(
+            f"shuffled-gap-reasons-v1|{SHUFFLED_GAP_SEED}|{item_id}".encode()
+        ).hexdigest(),
+    )
+    source_ids = ranked_ids[1:] + ranked_ids[:1] if ranked_ids else []
+    source_by_target = dict(zip(ranked_ids, source_ids))
+    return [
+        {
+            "pilot_item_id": item_id,
+            "source_item_id": source_by_target[item_id],
+            "gap_reasons": list(gap_vectors_by_id[source_by_target[item_id]]),
+        }
+        for item_id in sorted(source_by_target)
+    ]
+
+
+def _shuffled_gap_prediction(
+    item_id: str,
+    scoped_message: str | None,
+    shuffled_gaps: list[str],
+    visual: dict[str, Any] | None,
+) -> dict[str, Any]:
+    visual_called = bool(shuffled_gaps)
+    result = _fusion_prediction(
+        item_id,
+        "shuffled-gap-reasons-v1",
+        scoped_message,
+        shuffled_gaps,
+        visual,
+        visual_called=visual_called,
+    )
+    if visual_called:
+        suffix = result["route_reason"]
+    elif result["status"] == "judged":
+        suffix = "structured_sufficient"
+    else:
+        suffix = "structure_insufficient"
+    reason_label = ",".join(shuffled_gaps) or "sufficient"
+    result["route_reason"] = f"shuffled_gap:{reason_label}:{suffix}"
+    return result
+
+
 def freeze_predictions(
     features_by_id: dict[str, dict[str, Any]],
     visual_by_id: dict[str, dict[str, Any]],
@@ -588,6 +663,20 @@ def freeze_predictions(
                 )
             )
     mg_pu_visual_calls = sum(row["visual_called"] for row in gated_predictions)
+    permutation = _shuffled_gap_permutation(
+        {item_id: context[1] for item_id, context in contexts.items()}
+    )
+    shuffled_predictions = [
+        _shuffled_gap_prediction(
+            row["pilot_item_id"],
+            contexts[row["pilot_item_id"]][0],
+            row["gap_reasons"],
+            contexts[row["pilot_item_id"]][2],
+        )
+        for row in permutation
+    ]
+    if sum(row["visual_called"] for row in shuffled_predictions) != mg_pu_visual_calls:
+        raise ContractError("shuffled-gap visual-call count does not match MG-PU K")
     selected = _c1_budget_selection(sorted(features_by_id), mg_pu_visual_calls)
     always_on_predictions: list[dict[str, Any]] = []
     budget_matched_predictions: list[dict[str, Any]] = []
@@ -619,6 +708,7 @@ def freeze_predictions(
         + always_on_predictions
         + budget_matched_predictions
         + gated_predictions
+        + shuffled_predictions
     )
 
 
@@ -639,7 +729,7 @@ def _method_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "visual_informed_positive_judgment_count": sum(
             row["visual_called"]
             and row["status"] == "judged"
-            and row["route_reason"] == "visual_frozen_prediction"
+            and row["route_reason"].endswith("visual_frozen_prediction")
             and row["popup_present_pred"] is True
             for row in rows
         ),
@@ -668,6 +758,23 @@ def build_public_summary(
         "mg-pu-gated-union-v1"
     ]["visual_call_count"]:
         raise ContractError("C1-BM visual-call count does not match MG-PU K")
+    gap_vectors_by_id = {
+        row["identity"]["pilot_item_id"]: _popup_scoped_message(row)[1]
+        for row in feature_rows
+    }
+    permutation = _shuffled_gap_permutation(gap_vectors_by_id)
+    unique_sources = {row["source_item_id"] for row in permutation}
+    self_assignments = sum(
+        row["pilot_item_id"] == row["source_item_id"] for row in permutation
+    )
+    if len(permutation) > 1 and self_assignments:
+        raise ContractError("shuffled-gap permutation contains a self assignment")
+    if len(unique_sources) != len(permutation):
+        raise ContractError("shuffled-gap permutation reuses a source item")
+    shuffled_calls = methods["shuffled-gap-reasons-v1"]["visual_call_count"]
+    mg_pu_calls = methods["mg-pu-gated-union-v1"]["visual_call_count"]
+    if shuffled_calls != mg_pu_calls:
+        raise ContractError("shuffled-gap visual-call count does not match MG-PU K")
     model_workflow_candidate = bool(visual_rows) and all(
         row.get("evidence_kind") == "model_workflow_visual_candidate"
         and row.get("fixed_threshold_heuristic_adaptation") is False
@@ -734,6 +841,17 @@ def build_public_summary(
                 ("\n".join(selected_ids) + "\n").encode()
             ),
         },
+        "shuffled_gap": {
+            "seed": SHUFFLED_GAP_SEED,
+            "permutation_commitment_sha256": _sha256(
+                _canonical_jsonl(permutation)
+            ),
+            "gap_vector_count": len(permutation),
+            "unique_source_count": len(unique_sources),
+            "self_assignment_count": self_assignments,
+            "mg_pu_visual_call_count": mg_pu_calls,
+            "shuffled_visual_call_count": shuffled_calls,
+        },
         "paper_result_eligible": False,
         "predictions_sha256": _sha256(_canonical_jsonl(predictions)),
         "scored": False,
@@ -784,6 +902,8 @@ def main(argv: list[str] | None = None) -> int:
                 "private predictions must be written under a private/ directory "
                 "with a .private.jsonl filename"
             )
+        if args.private_output.exists() or args.public_summary.exists():
+            raise ContractError("output already exists; refusing to overwrite")
         feature_rows = read_jsonl(args.structured_features)
         features_by_id = _rows_by_feature_id(feature_rows, args.expected_count)
         if args.manifest is not None:

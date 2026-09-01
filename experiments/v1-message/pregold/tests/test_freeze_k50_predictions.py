@@ -127,7 +127,6 @@ class FreezeK50PredictionsCliTest(unittest.TestCase):
         root: Path,
         *,
         tamper_source_message: bool = False,
-        unsafe_visual_action: bool = False,
     ) -> tuple[Path, Path, Path, Path]:
         items = root / "items.jsonl"
         visual = root / "visual.jsonl"
@@ -147,8 +146,6 @@ class FreezeK50PredictionsCliTest(unittest.TestCase):
             ],
         )
         visual_rows = [visual_row(index) for index in range(1, 7)]
-        if unsafe_visual_action:
-            visual_rows[0]["debug"] = {"action": "tap"}
         write_jsonl(visual, visual_rows)
         prediction_result = subprocess.run(
             [
@@ -391,10 +388,13 @@ class FreezeK50PredictionsCliTest(unittest.TestCase):
             self.assertFalse(commitment.exists())
 
     def test_rejects_hidden_action_payload_even_when_upstream_ledgers_bind_it(self) -> None:
-        """Catches an action-bearing extension that older pregold validators ignore."""
+        """Catches downstream acceptance after a frozen snapshot gains hidden action data."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            prepared = self.prepare(root, unsafe_visual_action=True)
+            prepared = self.prepare(root)
+            source_rows = read_jsonl(prepared[2])
+            source_rows[0]["debug"] = {"action": "tap"}
+            write_jsonl(prepared[2], source_rows)
 
             result, predictions, commitment = self.run_cli(root, prepared=prepared)
 

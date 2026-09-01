@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import stat
 import subprocess
 import struct
 import sys
@@ -627,6 +628,33 @@ class AndroidCaptureFinalizerTests(unittest.TestCase):
             text = output.read_text(encoding="utf-8")
             self.assertNotIn("Private collector fixture", text)
             self.assertEqual(json.loads(text)["capture_schema_version"], "1.1.0")
+            self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o600)
+
+    def test_collector_cli_refuses_to_overwrite_an_existing_receipt(self):
+        # Break caught: rerunning a finalizer silently replaces an audited receipt.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "bundle"
+            root.mkdir()
+            write_collector_bundle_fixture(root)
+            output = Path(directory) / "record.json"
+            output.write_text("sentinel\n", encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(MODULE_PATH),
+                    "finalize-collector",
+                    "--bundle",
+                    str(root),
+                    "--output",
+                    str(output),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("output already exists", completed.stderr)
+            self.assertEqual(output.read_text(encoding="utf-8"), "sentinel\n")
 
     def test_valid_pre_action_accessibility_snapshot_is_finalized_with_hashes(self):
         # Break caught: a real, synchronized, action-free snapshot cannot enter CAP-001.

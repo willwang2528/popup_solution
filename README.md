@@ -27,7 +27,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 19. [`experiments/v1-message/BASELINE_IMPLEMENTATION_MATRIX.md`](./experiments/v1-message/BASELINE_IMPLEMENTATION_MATRIX.md)：14 篇论文方法到 v1 的忠实性、可执行性与硬缺口矩阵。
 20. [`experiments/v1-message/B2_POPSWEEPER_REPRODUCIBILITY_GATE.md`](./experiments/v1-message/B2_POPSWEEPER_REPRODUCIBILITY_GATE.md)：PopSweeper exact 复现的 fail-closed 资产门禁，并区分 close-button bbox 与 popup ROI。
 21. [`dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md`](./dataset-v1/annotation-pilot/HUMAN_GOLD_UNLOCK_CHECKLIST.md)：人工 gold 开标前的 NO-GO 门与全量裁决要求。
-22. [`dataset-v1/empirical-pilot/README.md`](./dataset-v1/empirical-pilot/README.md)：30 条真实来源观测的 255 字段 pending-union 物化、隐私边界与复现命令。
+22. [`dataset-v1/empirical-pilot/README.md`](./dataset-v1/empirical-pilot/README.md)：30 条真实来源观测的完整 pending-union 物化（255 个冻结来源字段 + 44 个 V1 profile 扩展字段）、隐私边界与复现命令。
 23. [`dataset-v1/work/MODEL_PREANNOTATION_STATUS.md`](./dataset-v1/work/MODEL_PREANNOTATION_STATUS.md)：双模型预标注的非金标状态与唯一分歧项。
 24. [`experiments/v1-message/ocr/README.md`](./experiments/v1-message/ocr/README.md)：本地 Vision OCR、隐私 withholding 和公开聚合证据。
 25. [`experiments/v1-message/features/README.md`](./experiments/v1-message/features/README.md)：人工金标解锁前的结构化特征冻结与泄漏隔离。
@@ -42,7 +42,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 34. [`idea-stage/IDEA_REPORT.md`](./idea-stage/IDEA_REPORT.md)：ARIS idea-discovery 全链路报告，含候选排序、淘汰理由和已被查新反证的 broad-first 主张。
 35. [`idea-stage/docs/research_contract.md`](./idea-stage/docs/research_contract.md)：当前选中 PMAB-Android 方向、不可观测上限、claim 门与最小证据。
 36. [`CLAIM_BOUNDARY_V1.json`](./CLAIM_BOUNDARY_V1.json)：V1 message-only、必须弃答场景和零实证状态的机器可读约束。
-37. [`dataset-v1/ITEM_UNION_EXAMPLE.md`](./dataset-v1/ITEM_UNION_EXAMPLE.md)：一个公开 synthetic item 的 90+165=255 字段并集可读视图；不是经验数据或 gold。
+37. [`dataset-v1/ITEM_UNION_EXAMPLE.md`](./dataset-v1/ITEM_UNION_EXAMPLE.md)：一个公开 synthetic item 的 90+165 个来源字段与 44 个 V1 profile 扩展字段，共 299 行完整可追溯视图；不是经验数据或 gold。
 38. [`dataset-v1/android-capture/fixture-target/README.md`](./dataset-v1/android-capture/fixture-target/README.md)：5 个可构建受控应用身份、3 个弹窗模板族和 15 个只读场景；安装前条件已就绪，但设备验证仍为 false。
 39. [`experiments/v1-message/FORMAL_ANALYSIS.md`](./experiments/v1-message/FORMAL_ANALYSIS.md)：真人 gold 前冻结的 Holm、BH-FDR 与质量—覆盖—成本 Pareto 口径；当前真实分析行和 receipt 均为 0。
 
@@ -79,7 +79,7 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 ## 进阶层
 
-数据 schema 继续保留动作、Dismissal、`C_tech`、`C_a11y`、`T`、`VTR-tech` 与 `A-VTR`，用于后续可选研究和兼容既有论文方法。它们在 v1 中应为空、`null` 或明确标为 `advanced`，不得成为 v1 纳入条件或主指标。
+数据 schema 继续保留动作、幻灯片 14 的 `D/C_tech/C_a11y/B/T` 五级回证与派生指标 `VTR_tech/A_VTR`，用于后续可选研究和兼容既有论文方法。它们在 v1 中应为空、`null` 或明确标为 `advanced`，不得成为 v1 纳入条件或主指标。
 
 原始论文 PDF、PPT 和上游 ARIS 工作区未复制进本仓库；机器可读记录保留来源定位与证据等级。后续提交以 Git 历史追踪版本。
 
@@ -93,7 +93,9 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 
 人工金标解锁前的输入与预测现已冻结：30 项中 22 项有 RICO 结构、8 项结构缺失，共 186 个结构节点；A1 structure-only 产生 15 个判断和 15 个弃答；A2 The OK text rule 对 10 个有 raw text 的 item 均判断为 rule no-match，其余 20 个因 raw text 缺失弃答。按预注册的显式 popup-scope gate，MG-PU 候选对 2 项使用结构、28 项调用冻结的 Model-B 视觉候选。该视觉候选的精确模型身份和运行可复现性不完整，因此不是正式论文 baseline；整轮输出均为 `human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
 
-这 30 条观测现已物化为完整的 90+165=255 字段 union item，并保留 30/30
+这 30 条观测现已物化为完整 union item：冻结来源字段仍为 90+165=255，另含
+44 个不归因于既有论文/方法的 V1 message-only profile 扩展字段，完整可追溯视图
+共 299 行；同时保留 30/30
 稳定 `pilot_item_id`；其中 22 项有结构、8 项缺失，共 186 个候选节点。生命周期
 仍是 `collected + pending_human_annotation`：所有 scenario/popup/candidate/message
 gold 均为空，0 项可进入指标。私有 bundle 不发布；公开摘要只含聚合计数、

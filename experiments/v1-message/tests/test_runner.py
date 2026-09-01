@@ -590,6 +590,93 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(result["predictions"][0]["method_id"], "the-ok-text-rule")
         self.assertEqual(result["metrics"]["presence"]["tp"], 1)
 
+    def test_shuffled_gap_method_is_reproducible_budget_matched_and_output_safe(self):
+        # Break caught: ABL-003 is unavailable through the common runner, changes
+        # budget, depends on row/gold order, or leaks action/Recovery/gold fields.
+        self.assertIn("shuffled-gap", popup_runner.METHODS)
+        examples = [frozen_item(item_id=f"e{i}", message=f"Message {i}") for i in range(4)]
+        examples[1]["candidates"][0]["features"]["gap_reasons"] = ["merged"]
+        examples[2]["candidates"][0]["features"]["owner_consistent"] = False
+        examples[3]["observations"][0]["synchronization"][
+            "tree_screenshot_sync_status"
+        ] = "unsynchronized"
+        visual_rows = [
+            {
+                "item_id": f"e{i}",
+                "status": "judged",
+                "popup_present_pred": True,
+                "message_text_pred": f"Visual {i}",
+                "critical_facts_pred": [],
+                "confidence": 0.9,
+                "source_observation_id": "obs.before",
+            }
+            for i in range(4)
+        ]
+        mutated = json.loads(json.dumps(examples))
+        for example in mutated:
+            example["message_judgment"]["labels"].update(
+                {
+                    "popup_present_gt": False,
+                    "message_text_gt": None,
+                    "critical_facts_gt": ["changed gold"],
+                }
+            )
+            example["advanced"] = {
+                "Recovery": {"action": "dismiss", "target": "forbidden"}
+            }
+
+        mgpu = run_experiment(examples, method="mg-pu", seed=17, prediction_rows=visual_rows)
+        first = run_experiment(
+            examples,
+            method="shuffled-gap",
+            seed=17,
+            prediction_rows=visual_rows,
+        )
+        second = run_experiment(
+            list(reversed(mutated)),
+            method="shuffled-gap",
+            seed=17,
+            prediction_rows=visual_rows,
+        )
+
+        self.assertEqual(first["run"]["method"], "shuffled-gap")
+        self.assertEqual(first["run"]["method_config"], second["run"]["method_config"])
+        self.assertEqual(first["run"]["method_config"], {
+            "matched_visual_call_count": 3,
+            "shuffle_seed": 17,
+            "shuffled_gap_permutation": [
+                {"item_id": "e0", "source_item_id": "e2", "gap_reasons": ["owner_mismatch"]},
+                {"item_id": "e1", "source_item_id": "e3", "gap_reasons": ["stale"]},
+                {"item_id": "e2", "source_item_id": "e1", "gap_reasons": ["merged"]},
+                {"item_id": "e3", "source_item_id": "e0", "gap_reasons": []},
+            ],
+        })
+        self.assertEqual(
+            sum(row["visual_call_count"] for row in first["predictions"]),
+            sum(row["visual_call_count"] for row in mgpu["predictions"]),
+        )
+        self.assertEqual(
+            {row["method_id"] for row in first["predictions"]},
+            {"shuffled-gap-reasons-v1"},
+        )
+        self.assertEqual(
+            sorted(first["predictions"], key=lambda row: row["item_id"]),
+            sorted(second["predictions"], key=lambda row: row["item_id"]),
+        )
+
+        def nested_keys(value):
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    yield key.casefold()
+                    yield from nested_keys(child)
+            elif isinstance(value, list):
+                for child in value:
+                    yield from nested_keys(child)
+
+        forbidden = {"action", "recovery", "gold"}
+        self.assertFalse(forbidden & set(nested_keys(first["predictions"])))
+        self.assertFalse(forbidden & set(nested_keys(first["run"]["method_config"])))
+
 
 class CliTests(unittest.TestCase):
     def test_cli_scores_the_named_frozen_method_without_rerunning_it(self):

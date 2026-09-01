@@ -27,6 +27,7 @@ CLI 的 `--method` 支持：
 | `always-visual` | 每个 item 都调用冻结 visual adapter。 |
 | `empty-tree` | 只有无结构节点或无结构消息时调用视觉。 |
 | `random-matched` | 用 SHA-256(`seed:item_id`) 的稳定排序随机选择 item，调用数严格匹配 MG-PU。 |
+| `shuffled-gap` | ABL-003：固定种子重排 popup-scoped gap vector；`N>1` 时一一置换且无 self-assignment，保持 MG-PU 的 gap 多重集与视觉调用数，用于隔离“正确 gap 归因”本身。 |
 
 路由只决定使用哪一个**感知 prediction**，不产生 action candidate 或执行动作。
 
@@ -59,6 +60,7 @@ no-popup/complete/missing 等逻辑。当前没有任何真人 gap audit 行，�
 - C1-AO：6 judged、24 abstain、30 visual calls；
 - C1-BM：6 judged、24 abstain、28 visual calls；K 取 MG-PU 冻结调用数并按固定 hash 选择；
 - MG-PU：6 judged、24 abstain，其中 2 条使用显式 popup scope 内结构；视觉 adapter 被调用 28 次，4 次形成视觉正判断，24 次由 adapter 弃答；
+- shuffled-gap：固定 `seed=17` 对 30 个 gap vector 做稳定一一置换，0 self-assignment；28 次视觉调用与 MG-PU 严格相同，4 judged、26 abstain；该输出未评分，只是 ABL-003 的 pre-gold 冻结；
 - 所有结果均为 `no_action`、`human_gold_used=false`、`scored=false`、`paper_result_eligible=false`。
 
 旧 Model-B 输出只保留为工作流历史。新的 visual projection 已绑定 protocol、图片

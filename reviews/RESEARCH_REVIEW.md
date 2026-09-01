@@ -173,6 +173,25 @@ dominance 定义。当前尚未实现的 method/operating-point 也必须保留�
 analysis receipt=0、paper result=0；不得据此宣称 superiority、usability、dismissal
 或 Recovery。
 
+## 299 字段、shuffled-gap 与 collector 语义增量审阅
+
+第 18 次调用在用户明确授权后，只发送了 299 行字段归因、ABL-003 shuffled-gap
+合同、collector rejected/no-overwrite 行为、聚合测试结果和全部为零的经验计数；工具
+关闭，没有发送逐项 ID、截图、OCR/UI 文本、私有 prediction、人工标签、凭据或无关
+文件。Claude 给出 `PROCEED`，mandatory fix 为 0。
+
+Reviewer 确认 `90 literature + 165 our-method = 255 source-attributed` 与另计的
+`44 non-source-attributed V1 protocol extensions` 合成 299 行的说法准确，不把新增
+协议字段误归因给已有论文。它也确认 rejected bundle 退出码 2、partial 清理、不得
+发布到成功路径，以及 0600 atomic no-overwrite receipt 足以作为 tooling evidence；
+但真实设备／模拟器运行仍为 0，CAP-001 与 empirical readiness 均未解锁。
+
+ABL-003 被接受为 gold 前冻结的 equal-visual-budget ablation，同时形成必须保留的
+论文 caveat：它把同一批由内容产生的 gap reasons 一一置换到其他 item，隔离的是
+“gap reason 与 item 的正确绑定”是否提供超越 gap 分布本身的信号；它不是完全内容
+盲的随机策略，必须与 seeded-random 对照区分。当前 6 judged 对 4 judged 只是未评分
+的路由／输出计数，不是准确率、显著性或优越性结果。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
@@ -189,6 +208,7 @@ analysis receipt=0、paper result=0；不得据此宣称 superiority、usability
 - Fixture readiness-field recheck job：`4161a87c339f48e3b696f6d317f8e5d3`
 - Formal CAP-001 / K50 freezer review job：`15b95afc3e984fd2b49840eb43367901`
 - Formal multiplicity / Pareto review job：`f5cdc8e10e704d459d917eb361dd50da`
+- Item union / shuffled-gap / collector review job：`0f09af5714984c178d5fb044b3c152f8`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。

@@ -13,7 +13,7 @@
   "feature_builder_implementation_sha256": "a09919f0f7deeba7b04e957cac851d35106d1bd39974007e007cd413c63192b4",
   "feature_contract_sha256": "4bd7d62994414482e24012ff0ea21f9b5ededda64036873ea76c4c3c93cc8131",
   "human_gold_used": false,
-  "implementation_sha256": "62fe464302d83bcfdb1ca2a106bf11fe5af34932f7b7e131bb014c223995e14b",
+  "implementation_sha256": "bbd5e184f082295563312457ea1306e029efadecb148aa7eddd5cb7ca1d03a01",
   "input_item_count": 30,
   "item_identity_sha256": "a53af22ec3172a5696a77dfe46dfd2340cd1823d72272178bdb7cc0f414457c9",
   "methods": {
@@ -56,6 +56,20 @@
       "visual_call_count": 28,
       "visual_informed_positive_judgment_count": 18
     },
+    "shuffled-gap-reasons-v1": {
+      "abstain_count": 2,
+      "item_count": 30,
+      "judged_count": 28,
+      "predictions_sha256": "9b38ec19e854d7506aa594801f4889bfc7ca328bc18ecd7eeed110fd0fbb8a65",
+      "route_counts": {
+        "shuffled_gap:ambiguous:visual_frozen_prediction": 26,
+        "shuffled_gap:missing:visual_frozen_prediction": 2,
+        "shuffled_gap:sufficient:structure_insufficient": 2
+      },
+      "visual_adapter_invocation_count": 28,
+      "visual_call_count": 28,
+      "visual_informed_positive_judgment_count": 19
+    },
     "structured-only-v1": {
       "abstain_count": 15,
       "item_count": 30,
@@ -84,8 +98,17 @@
     }
   },
   "paper_result_eligible": false,
-  "predictions_sha256": "0b333c2cecf77ffbb2a4f42087544894ff955941dbc8f7df32476b9089e16d40",
+  "predictions_sha256": "7e3fc724840638be4d2ad7f24fffb6fe67f2d4c5dd1ab6680c706e4aa1784823",
   "scored": false,
+  "shuffled_gap": {
+    "gap_vector_count": 30,
+    "mg_pu_visual_call_count": 28,
+    "permutation_commitment_sha256": "90c966485fcd0fba04616dafdcc0faf27c479774f3b77cdab0add68adc29e57c",
+    "seed": 17,
+    "self_assignment_count": 0,
+    "shuffled_visual_call_count": 28,
+    "unique_source_count": 30
+  },
   "the_ok_implementation_sha256": "df7eb2a4d65d915d4fdee4a53370fc484995a1b393dac0776f3686aa36deb66b",
   "the_ok_upstream_revision": "b618948c0d24b917b3a46a88f5c1cf6ff84571cd",
   "visual_adapter_implementation_sha256": "9f18d6f697f326b2e4412f604af0b08191e2750fc14870a1e5177b06df4382b7",

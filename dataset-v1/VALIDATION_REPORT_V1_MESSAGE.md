@@ -11,7 +11,7 @@
 - 只读取动作前观察；
 - 输出 popup presence、message、critical facts 或 abstain；
 - `action_attempts=[]`；
-- D/C/T/VTR 均为 `null/not_applicable`；
+- `D/C_tech/C_a11y/B/T/VTR_tech/A_VTR` 均为 `null/not_applicable`；
 - synthetic fixture 不进入经验指标或用户体验结论。
 
 旧 [`VALIDATION_REPORT.md`](./VALIDATION_REPORT.md) 记录 schema 1.0 Recovery 契约的历史验证；本报告取代它成为当前 v1 状态说明，但不改写历史文件。
@@ -50,7 +50,7 @@ warnings: 2
 - presence correctness、critical-information recall 与 VPMA 可从原子字段重算；
 - `gap_ground_truth` 在 schema/fixture 中有独立容器，pending empirical item 不会从截图 gold 或方法 route 自动填入；
 - Android raw pixel bounds 使用非归一化 bbox contract；没有可信 screen size 时规范化 bounds 保持 null；
-- v1 不允许 D/C/T/VTR 成功值；
+- v1 不允许 `D/C_tech/C_a11y/B/T/VTR_tech/A_VTR` 成功值；
 - synthetic/paper-reconstruction item 不具备 v1 经验指标资格；
 - 255 条来源字段全部映射到仍存在的 canonical pointer。
 

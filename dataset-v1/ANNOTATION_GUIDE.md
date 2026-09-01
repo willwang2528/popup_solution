@@ -8,7 +8,7 @@
 2. 若存在，弹窗向用户表达了什么消息？
 3. 哪些是不能遗漏或编造的关键事实？
 
-不要点击、关闭或继续原任务。不要标注 D/C/T/VTR；这些属于 advanced profile。
+不要点击、关闭或继续原任务。不要标注 `D/C_tech/C_a11y/B/T/VTR_tech/A_VTR`；这些属于 advanced profile。
 
 ## 2. 范围判定
 
@@ -113,5 +113,5 @@ abstain:        null, not success
 - [ ] 否定、金额、日期、对象、条件和后果已核对；
 - [ ] evidence 可解析且 hash 一致；
 - [ ] 双标与裁决完成；
-- [ ] v1 D/C/T/VTR 均为 null；
+- [ ] v1 `D/C_tech/C_a11y/B/T/VTR_tech/A_VTR` 均为 null；
 - [ ] synthetic/real/target-user 证据没有混用。

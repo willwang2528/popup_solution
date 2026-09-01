@@ -154,4 +154,4 @@ platform × owner × popup kind × exposure tier × language × message complexi
 
 ## 进阶研究
 
-在 v1 之后可逐级研究：安全动作建议、授权后的弹窗消除、`D`、`C_tech`、`C_a11y`、`T`、`VTR-tech`、`A-VTR`。每一级都需独立权限、安全策略和回证；不得用 v1 消息准确率替代 Recovery 证据。
+在 v1 之后可逐级研究：安全动作建议、授权后的弹窗消除，以及幻灯片 14 的五级回证 `D/C_tech/C_a11y/B/T` 与派生指标 `VTR_tech/A_VTR`。每一级都需独立权限、安全策略和回证；不得用 v1 消息准确率替代 Recovery 证据。

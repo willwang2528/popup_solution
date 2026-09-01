@@ -48,6 +48,33 @@ COMPLETE_ARTIFACTS = {
     "tree_after": "tree-after.json",
     "screenshot": "screenshot.png",
 }
+REJECTED_MACHINE_REASONS = frozenset(
+    {
+        "capture_already_in_flight",
+        "sensitive_accessibility_node_present",
+        "accessibility_tree_incomplete",
+        "expected_target_package_absent",
+        "pre_screenshot_exception",
+        "hardware_buffer_wrap_failed",
+        "software_bitmap_copy_failed",
+        "png_encoding_failed",
+        "invalid_monotonic_order",
+        "synchronization_delta_exceeded",
+        "tree_hash_drift",
+        "accessibility_event_drift",
+        "focus_drift",
+        "post_screenshot_exception",
+    }
+)
+SCREENSHOT_ERROR_REASON = re.compile(r"screenshot_error_[0-9]+\Z")
+
+
+class CollectorRejectedError(ValueError):
+    """A validated collector rejection that must not become a candidate bundle."""
+
+    def __init__(self, reason: str):
+        self.reason = reason
+        super().__init__(f"collector rejected capture: {reason}")
 
 
 def validate_request(request: dict[str, Any]) -> None:
@@ -154,6 +181,17 @@ def verify_pulled_bundle(bundle: Path, request: dict[str, str]) -> None:
     status = machine.get("machine_status")
     if status not in {"complete", "rejected"}:
         raise ValueError("invalid machine_status")
+    reason = machine.get("machine_reason")
+    if status == "complete" and reason != "accepted":
+        raise ValueError("complete machine_reason must be accepted")
+    if status == "rejected" and (
+        not isinstance(reason, str)
+        or (
+            reason not in REJECTED_MACHINE_REASONS
+            and SCREENSHOT_ERROR_REASON.fullmatch(reason) is None
+        )
+    ):
+        raise ValueError("rejected machine_reason is not allowlisted")
     artifacts = machine.get("artifacts")
     if not isinstance(artifacts, dict):
         raise ValueError("artifacts must be an object")
@@ -180,6 +218,8 @@ def verify_pulled_bundle(bundle: Path, request: dict[str, str]) -> None:
         raise ValueError("complete bundle artifact set mismatch")
     if status == "rejected" and artifacts:
         raise ValueError("rejected bundle must not contain capture artifacts")
+    if status == "rejected":
+        raise CollectorRejectedError(reason)
 
 
 def _adb(
@@ -407,9 +447,13 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-if __name__ == "__main__":
+def cli(argv: list[str] | None = None) -> int:
     try:
-        raise SystemExit(main())
+        return main(argv)
     except (OSError, RuntimeError, TimeoutError, ValueError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
-        raise SystemExit(2)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(cli())

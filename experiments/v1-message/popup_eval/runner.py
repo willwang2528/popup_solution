@@ -9,6 +9,7 @@ import json
 from typing import Any
 
 from .baselines import (
+    build_shuffled_gap_permutation,
     MajorityNoInputBaseline,
     MessageGapRouter,
     PopupScopedStructuredTextBaseline,
@@ -29,6 +30,7 @@ METHODS = {
     "always-visual",
     "empty-tree",
     "random-matched",
+    "shuffled-gap",
 }
 FORBIDDEN_PREDICTION_KEYS = {
     "action",
@@ -220,6 +222,37 @@ def _make_baseline(
 
     mgpu = MessageGapRouter(popup_scoped_structured, visual, mode="mg-pu")
     matched_count = sum(mgpu.predict(item)["visual_call_count"] for item in items)
+    if method == "shuffled-gap":
+        assignments = build_shuffled_gap_permutation(
+            items, popup_scoped_structured, seed
+        )
+        shuffled_count = sum(
+            bool(assignment["gap_reasons"])
+            for assignment in assignments.values()
+        )
+        if shuffled_count != matched_count:
+            raise ContractError("shuffled-gap visual-call budget differs from MG-PU")
+        permutation = [
+            {
+                "item_id": item_id,
+                "source_item_id": assignments[item_id]["source_item_id"],
+                "gap_reasons": list(assignments[item_id]["gap_reasons"]),
+            }
+            for item_id in sorted(assignments)
+        ]
+        return (
+            MessageGapRouter(
+                popup_scoped_structured,
+                visual,
+                mode="shuffled-gap",
+                shuffled_gap_assignments=assignments,
+            ),
+            {
+                "matched_visual_call_count": matched_count,
+                "shuffle_seed": seed,
+                "shuffled_gap_permutation": permutation,
+            },
+        )
     selected = select_random_matched_ids(items, matched_count, seed)
     return (
         MessageGapRouter(

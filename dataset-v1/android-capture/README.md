@@ -51,7 +51,9 @@ PMAB_EXPECTED_SOURCE_REVISION=<40-char-public-commit-sha> \
 2. 由操作者在系统“无障碍”设置中手动启用 PMAB Collector；工具不会改写 secure settings。保留研究条件要求的屏幕阅读器，并在后续 `review.json` 中人工确认其名称和版本。
 3. 把普通、已授权目标 App 停在待采集的稳定弹窗/非弹窗/边界状态。不要采集验证码、认证、支付、风险控制、人工审核或其他安全控制。
 4. 从 `collector-android/request.example.json` 复制一个请求，保证 capture/group/template ID 唯一，目标包准确。
-5. 运行 doctor；四个布尔门全部为 true 才继续：
+5. 运行 doctor；只有 `device_state="device"`，且
+   `package_installed`、`debug_run_as_ready`、`collector_service_enabled` 三个布尔门
+   全部为 true 才继续：
 
 ```bash
 .venv/bin/python3 \
@@ -70,6 +72,23 @@ PMAB_EXPECTED_SOURCE_REVISION=<40-char-public-commit-sha> \
 ```
 
 主机输出包含 `request.json`、`machine-capture.json`、`tree-before.json`、`tree-after.json` 和 `screenshot.png`。它仍是私有候选，不是公开数据。
+
+如果设备端 collector 返回 `machine_status="rejected"`，主机命令必须以退出码 2
+失败，并且不会把该记录发布到成功的 `incoming/<capture-id>` 路径。stderr 只报告经
+allowlist 约束的 `machine_reason`。常见原因及处理如下：
+
+| `machine_reason` | 含义／下一步 |
+|---|---|
+| `expected_target_package_absent` | 目标 App 不在当前 accessibility window；回到目标 App 的待采集状态并使用新的 capture ID |
+| `sensitive_accessibility_node_present` | 发现 password 或 API 34 sensitive node；停止采集该状态，不绕过隐私门 |
+| `accessibility_tree_incomplete` | 树超过采集上限或不完整；该状态不可进入 CAP-001 |
+| `synchronization_delta_exceeded` | tree／screenshot 时间间距超过 3000 ms；稳定页面后以新 capture ID 重试 |
+| `tree_hash_drift` / `accessibility_event_drift` / `focus_drift` | 前后状态或 TalkBack 焦点发生变化；不得把该 bundle 当作同步证据 |
+| `screenshot_error_<code>` 或图像转换错误 | 平台截图能力／buffer／PNG 失败；先检查 runtime capability，不降级为异步截图 |
+| `capture_already_in_flight` 或 collector exception | 并发或 collector 运行异常；保留日志诊断，不生成正式候选 |
+
+设备端会保留该 capture ID 的拒绝记录以供诊断，因此重试必须生成新的 capture ID 和
+nonce；不得编辑拒绝记录后重新提交。
 
 7. 用同一个 request、公开 commit 对应的本地 APK 和 `apksigner`，逐字节比较设备已安装 APK，并生成独立 host attestation：
 
@@ -111,6 +130,9 @@ V1.1 每个私有 bundle 必须包含三类彼此分离的证据：
 ```
 
 输出只保留标识符、同步结果、授权状态、文件哈希／大小和 window/node 计数，不复制原始 screenshot 或 node text。单条成功状态仅为 `eligible_for_capture_feasibility`。
+终结输出以 `0600` 权限、同目录临时文件加原子 no-overwrite 链接写入；目标 receipt
+已存在时退出码为 2，并保持原文件逐字节不变。重跑必须使用新的输出路径，不能覆盖
+已经审计的 receipt。
 
 ## 聚合门
 

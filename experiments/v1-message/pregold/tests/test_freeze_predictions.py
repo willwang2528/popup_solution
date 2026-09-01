@@ -232,7 +232,7 @@ class FreezePredictionsCliTest(unittest.TestCase):
             predictions = read_jsonl(private_output)
             self.assertEqual(stat.S_IMODE(private_output.parent.stat().st_mode), 0o700)
             self.assertEqual(stat.S_IMODE(private_output.stat().st_mode), 0o600)
-            self.assertEqual(len(predictions), 15)
+            self.assertEqual(len(predictions), 18)
             by_key = {(row["method_id"], row["pilot_item_id"]): row for row in predictions}
             self.assertEqual(
                 by_key[("structured-only-v1", "PMJ-PILOT-001")]["message_text_pred"],
@@ -271,6 +271,7 @@ class FreezePredictionsCliTest(unittest.TestCase):
                     "c1-always-on-fusion-v1",
                     "c1-budget-matched-fusion-v1",
                     "mg-pu-gated-union-v1",
+                    "shuffled-gap-reasons-v1",
                     "the-ok-text-rule",
                 },
             )
@@ -513,11 +514,200 @@ class FreezePredictionsCliTest(unittest.TestCase):
                 1,
             )
             rows = read_jsonl(private_output)
-            self.assertEqual(len(rows), 15)
+            self.assertEqual(len(rows), 18)
             ao = [row for row in rows if row["method_id"] == "c1-always-on-fusion-v1"]
             bm = [row for row in rows if row["method_id"] == "c1-budget-matched-fusion-v1"]
             self.assertTrue(all(row["visual_called"] for row in ao))
             self.assertEqual(sum(row["visual_called"] for row in bm), 2)
+
+    def test_shuffled_gap_freeze_is_seeded_order_independent_and_mgpu_budget_matched(
+        self,
+    ) -> None:
+        """Catches ABL-003 changing gap multiplicity, mapping, or visual-call K."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            features_a = root / "features-a.jsonl"
+            features_b = root / "features-b.jsonl"
+            visual = root / "visual.jsonl"
+            feature_rows = [
+                structured_feature("PMJ-PILOT-001", text="Message one"),
+                structured_feature(
+                    "PMJ-PILOT-002", text="Message two", gap_reasons=["merged"]
+                ),
+                structured_feature(
+                    "PMJ-PILOT-003",
+                    text="Message three",
+                    gap_reasons=["contradictory"],
+                ),
+                structured_feature("PMJ-PILOT-004", text=None),
+            ]
+            write_jsonl(features_a, feature_rows)
+            write_jsonl(features_b, list(reversed(feature_rows)))
+            write_jsonl(
+                visual,
+                [
+                    {
+                        "pilot_item_id": f"PMJ-PILOT-{index:03d}",
+                        "status": "judged",
+                        "popup_present_pred": True,
+                        "message_text_pred": f"Visual {index}",
+                        "critical_facts_pred": [],
+                        "confidence": 0.9,
+                    }
+                    for index in range(1, 5)
+                ],
+            )
+
+            run_a, private_a, summary_a = self.run_cli(
+                root,
+                features=features_a,
+                visual=visual,
+                suffix="a",
+                expected_count=4,
+            )
+            run_b, private_b, summary_b = self.run_cli(
+                root,
+                features=features_b,
+                visual=visual,
+                suffix="b",
+                expected_count=4,
+            )
+
+            self.assertEqual(run_a.returncode, 0, run_a.stderr)
+            self.assertEqual(run_b.returncode, 0, run_b.stderr)
+            rows_a = read_jsonl(private_a)
+            rows_b = read_jsonl(private_b)
+            shuffled_a = [
+                row for row in rows_a if row["method_id"] == "shuffled-gap-reasons-v1"
+            ]
+            shuffled_b = [
+                row for row in rows_b if row["method_id"] == "shuffled-gap-reasons-v1"
+            ]
+            self.assertEqual(shuffled_a, shuffled_b)
+            self.assertEqual(len(shuffled_a), 4)
+            self.assertEqual(
+                {row["pilot_item_id"]: row["route_reason"] for row in shuffled_a},
+                {
+                    "PMJ-PILOT-001": "shuffled_gap:merged:visual_frozen_prediction",
+                    "PMJ-PILOT-002": "shuffled_gap:ambiguous:visual_frozen_prediction",
+                    "PMJ-PILOT-003": "shuffled_gap:sufficient:structured_sufficient",
+                    "PMJ-PILOT-004": "shuffled_gap:contradictory:visual_frozen_prediction",
+                },
+            )
+            mgpu_calls = sum(
+                row["visual_called"]
+                for row in rows_a
+                if row["method_id"] == "mg-pu-gated-union-v1"
+            )
+            shuffled_calls = sum(row["visual_called"] for row in shuffled_a)
+            self.assertEqual(shuffled_calls, mgpu_calls)
+            self.assertEqual(shuffled_calls, 3)
+
+            expected_permutation = [
+                {
+                    "gap_reasons": ["merged"],
+                    "pilot_item_id": "PMJ-PILOT-001",
+                    "source_item_id": "PMJ-PILOT-002",
+                },
+                {
+                    "gap_reasons": ["ambiguous"],
+                    "pilot_item_id": "PMJ-PILOT-002",
+                    "source_item_id": "PMJ-PILOT-004",
+                },
+                {
+                    "gap_reasons": [],
+                    "pilot_item_id": "PMJ-PILOT-003",
+                    "source_item_id": "PMJ-PILOT-001",
+                },
+                {
+                    "gap_reasons": ["contradictory"],
+                    "pilot_item_id": "PMJ-PILOT-004",
+                    "source_item_id": "PMJ-PILOT-003",
+                },
+            ]
+            commitment = hashlib.sha256(
+                "".join(
+                    json.dumps(
+                        row,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                    for row in expected_permutation
+                ).encode("utf-8")
+            ).hexdigest()
+            summary = json.loads(summary_a.read_text(encoding="utf-8"))
+            self.assertEqual(
+                summary["methods"]["shuffled-gap-reasons-v1"][
+                    "visual_informed_positive_judgment_count"
+                ],
+                3,
+            )
+            self.assertEqual(summary["shuffled_gap"], {
+                "gap_vector_count": 4,
+                "mg_pu_visual_call_count": 3,
+                "permutation_commitment_sha256": commitment,
+                "seed": 17,
+                "self_assignment_count": 0,
+                "shuffled_visual_call_count": 3,
+                "unique_source_count": 4,
+            })
+            self.assertEqual(
+                summary["shuffled_gap"],
+                json.loads(summary_b.read_text(encoding="utf-8"))["shuffled_gap"],
+            )
+            serialized_summary = summary_a.read_text(encoding="utf-8")
+            self.assertNotIn("source_item_id", serialized_summary)
+            self.assertNotIn("PMJ-PILOT-", serialized_summary)
+
+    def test_existing_outputs_are_never_overwritten(self) -> None:
+        """Catches an accidental second freeze replacing committed pre-gold evidence."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            features = root / "features.jsonl"
+            write_jsonl(
+                features,
+                [structured_feature("PMJ-PILOT-001", text="Stable message")],
+            )
+
+            first, private_output, public_summary = self.run_cli(
+                root, features=features, expected_count=1
+            )
+            private_before = private_output.read_bytes()
+            summary_before = public_summary.read_bytes()
+            second, _, _ = self.run_cli(root, features=features, expected_count=1)
+
+            self.assertEqual(first.returncode, 0, first.stderr)
+            self.assertNotEqual(second.returncode, 0)
+            self.assertIn("already exists", second.stderr)
+            self.assertEqual(private_output.read_bytes(), private_before)
+            self.assertEqual(public_summary.read_bytes(), summary_before)
+
+    def test_rejects_nested_action_or_recovery_fields(self) -> None:
+        """Catches action/Recovery payloads hidden below otherwise safe containers."""
+        unsafe_rows = []
+        recovery = structured_feature("PMJ-PILOT-001", text="Safe")
+        recovery["advanced"] = {"Recovery": {"status": "restored"}}
+        unsafe_rows.append(recovery)
+        action = structured_feature("PMJ-PILOT-001", text="Safe")
+        action["advanced"] = {"payload": {"action": "dismiss"}}
+        unsafe_rows.append(action)
+
+        for index, unsafe in enumerate(unsafe_rows):
+            with self.subTest(index=index), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                features = root / "features.jsonl"
+                write_jsonl(features, [unsafe])
+
+                result, private_output, public_summary = self.run_cli(
+                    root, features=features, expected_count=1
+                )
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertRegex(result.stderr, "action|Recovery")
+                self.assertFalse(private_output.exists())
+                self.assertFalse(public_summary.exists())
 
     def test_rejects_gold_or_metric_keys_in_feature_and_visual_inputs(self) -> None:
         """Catches acceptance of adjudication, gold, or metric-eligibility leakage."""
@@ -584,7 +774,7 @@ class FreezePredictionsCliTest(unittest.TestCase):
             )
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("gold_blind", result.stderr)
+            self.assertRegex(result.stderr, "action_attempts|gold_blind")
             self.assertFalse(private_output.exists())
             self.assertFalse(public_summary.exists())
 

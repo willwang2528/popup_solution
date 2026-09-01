@@ -71,6 +71,25 @@ This is cost-matching only, not item-set or difficulty matching. Any future
 accuracy comparison must report the overlap between its visually inspected item
 set and MG-PU's.
 
+`shuffled-gap-reasons-v1` (`ABL-003`) reuses the exact popup-scoped gap vectors
+derived for MG-PU, ranks item IDs with the fixed seed `17`, and assigns those
+vectors through a stable one-position rotation. For `N > 1` this is a one-to-one
+permutation with no self-assignment; therefore the gap-vector multiset and total
+visual-call count are exactly preserved while the item-to-gap association is
+broken. The private predictions identify shuffled routing in `route_reason`.
+The public summary exposes only the seed, a SHA-256 commitment to the private
+permutation, and aggregate permutation/call counts; it never exposes the item
+mapping.
+
+它不是完全内容盲的随机路由：gap reason 仍来自同一批 item，只是被应用到不同
+item。因此它隔离的是“gap reason 与 item 的正确绑定”是否提供超越 gap 分布本身的
+信号。未来论文必须与 seeded-random 控制并列披露这一限制，不能把 ABL-003 描述成
+内容独立策略。
+
+All freezer outputs are immutable. If either requested private prediction or
+public-summary path already exists, the run fails before reading inputs and does
+not replace either file.
+
 ## Reproduce the 30-item freeze
 
 The current frozen heuristic visual path uses the verified private bank projection rather

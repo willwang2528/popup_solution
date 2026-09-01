@@ -19,7 +19,7 @@ scenario + frozen observation
 Schema 同时保留两个层次：
 
 - `popup_message_judgment_v1`：当前必需 profile，止于消息判断／弃答；
-- advanced compatibility layer：动作、Dismissal、`C_tech`、`C_a11y`、`T`、`VTR-tech`、`A-VTR`，v1 中全部为 `null/not_applicable`。
+- advanced compatibility layer：动作、幻灯片 14 的五级回证 `D/C_tech/C_a11y/B/T` 与派生指标 `VTR_tech/A_VTR`，v1 中全部为 `null/not_applicable`。
 
 ## 2. 字段并集
 
@@ -111,7 +111,7 @@ item 统一写 `status=pending_audit`，不能由视觉 route 或模型预标注
 - v1 decision 为 `no_action/abstain`；
 - prediction 只能引用动作前 observation；
 - 任何 post-action/task-check observation 都是 v1 违规；
-- v1 的 D/C/T/VTR 均为 `null`；
+- v1 的 `D/C_tech/C_a11y/B/T/VTR_tech/A_VTR` 均为 `null`；
 - 所有正值真值与预测都需可解析证据；
 - presence、provenance、hash、权限、隐私和 split group 必须可审计。
 
