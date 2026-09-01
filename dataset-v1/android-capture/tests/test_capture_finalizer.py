@@ -202,18 +202,273 @@ def finalized_record(index: int, stratum: str) -> dict:
     }
 
 
+def write_collector_bundle_fixture(root: Path) -> tuple[Path, dict, dict]:
+    request = {
+        "schema_version": "1.1",
+        "capture_id": "PMAB-A-CAP-101",
+        "item_id": "PMAB-A-ITEM-101",
+        "source_group_id": "group-101",
+        "popup_template_family_id": "template-dialog",
+        "intended_stratum": "popup_candidate",
+        "expected_target_package": "org.example.fixture",
+        "request_nonce": "bd33d879debc4c38",
+    }
+    canonical_hash = "1" * 64
+
+    def tree(start: int, end: int) -> dict:
+        return {
+            "schema_version": "1.1",
+            "clock": "android.os.SystemClock.uptimeMillis",
+            "start_uptime_ms": start,
+            "end_uptime_ms": end,
+            "canonical_tree_sha256": canonical_hash,
+            "focus_token": "w:0:7/n:0.0:a=true:i=false",
+            "node_count": 2,
+            "contains_sensitive_node": False,
+            "truncated": False,
+            "target_packages": ["org.example.fixture"],
+            "windows": [
+                {
+                    "id": "w:0:7",
+                    "window_id": 7,
+                    "root": {
+                        "id": "w:0:7/n:0",
+                        "text": None,
+                        "children": [
+                            {
+                                "id": "w:0:7/n:0.0",
+                                "text": "Private collector fixture message",
+                                "children": [],
+                            }
+                        ],
+                    },
+                }
+            ],
+        }
+
+    screenshot = make_png(3, 2)
+    artifacts = {
+        "tree-before.json": json.dumps(tree(100, 120), sort_keys=True).encode(),
+        "tree-after.json": json.dumps(tree(170, 190), sort_keys=True).encode(),
+        "screenshot.png": screenshot,
+    }
+    for filename, data in artifacts.items():
+        (root / filename).write_bytes(data)
+    artifact_records = {
+        key: {
+            "filename": filename,
+            "bytes": len(artifacts[filename]),
+            "sha256": hashlib.sha256(artifacts[filename]).hexdigest(),
+        }
+        for key, filename in {
+            "tree_before": "tree-before.json",
+            "tree_after": "tree-after.json",
+            "screenshot": "screenshot.png",
+        }.items()
+    }
+    machine = {
+        "schema_version": "1.1",
+        "collector": "pmab-android-accessibilityservice",
+        "machine_status": "complete",
+        "machine_reason": "accepted",
+        "clock": "android.os.SystemClock.uptimeMillis",
+        "request": request,
+        "runtime": {
+            "sdk_int": 35,
+            "build_fingerprint": "fixture/fingerprint",
+            "source_revision": "c" * 40,
+            "service_capabilities": 129,
+            "service_flags": 80,
+            "service_event_types": 4229160,
+            "service_feedback_type": 16,
+            "device": {
+                "manufacturer": "AOSP",
+                "model": "controlled-fixture",
+                "android_release": "15",
+                "display_width_px": 3,
+                "display_height_px": 2,
+            },
+            "target_app": {
+                "package_name": "org.example.fixture",
+                "version_name": "1.0",
+                "version_code": 1,
+            },
+            "collector_app": {
+                "package_name": "org.pmab.collector",
+                "version_name": "0.1.0",
+                "version_code": 1,
+            },
+            "locale": "en-US",
+        },
+        "timing": {
+            "tree_before_start_uptime_ms": 100,
+            "tree_before_end_uptime_ms": 120,
+            "screenshot_request_uptime_ms": 130,
+            "screenshot_result_uptime_ms": 150,
+            "screenshot_callback_uptime_ms": 160,
+            "tree_after_start_uptime_ms": 170,
+            "tree_after_end_uptime_ms": 190,
+            "tree_before_sha256": canonical_hash,
+            "tree_after_sha256": canonical_hash,
+            "event_sequence_before": 5,
+            "event_sequence_after": 5,
+            "focus_token_before": "w:0:7/n:0.0:a=true:i=false",
+            "focus_token_after": "w:0:7/n:0.0:a=true:i=false",
+        },
+        "artifacts": artifact_records,
+    }
+    review = {
+        "schema_version": "1.1",
+        "capture_id": request["capture_id"],
+        "reviewer_id": "reviewer-01",
+        "reviewed_at": "2026-09-01T12:00:00+08:00",
+        "collection_authorized": True,
+        "basis": "controlled fixture collection",
+        "privacy_review_status": "passed",
+        "redistribution_status": "adapter_only",
+        "screen_reader": {
+            "enabled": True,
+            "name": "TalkBack",
+            "version": "15.2",
+        },
+        "collector_apk_sha256": "a" * 64,
+        "collector_signing_certificate_sha256": "b" * 64,
+        "human_gold_added": False,
+        "method_predictions_added": False,
+    }
+    (root / "request.json").write_text(json.dumps(request), encoding="utf-8")
+    (root / "machine-capture.json").write_text(json.dumps(machine), encoding="utf-8")
+    (root / "review.json").write_text(json.dumps(review), encoding="utf-8")
+    attestation = {
+        "schema_version": "1.1",
+        "status": "verified",
+        "capture_id": request["capture_id"],
+        "source_revision": "c" * 40,
+        "local_apk_sha256": "a" * 64,
+        "installed_apk_sha256": "a" * 64,
+        "signing_certificate_sha256": "b" * 64,
+        "device_serial_sha256": "d" * 64,
+        "verified_at": "2026-09-01T12:00:00+08:00",
+    }
+    (root / "collector-attestation.json").write_text(
+        json.dumps(attestation), encoding="utf-8"
+    )
+    return root, machine, review
+
+
 class AndroidCaptureFinalizerTests(unittest.TestCase):
     def test_public_status_stays_blocked_until_real_capture_gate_passes(self):
         # Break caught: tooling readiness is published as empirical-data readiness.
         contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
         status = json.loads(PUBLIC_STATUS_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(contract["capture_schema_version"], "1.0.0")
+        self.assertEqual(contract["capture_schema_version"], "1.1.0")
         self.assertEqual(contract["minimum_source_groups"], 5)
         self.assertEqual(contract["minimum_popup_template_families"], 3)
         self.assertEqual(status["status"], "blocked_no_real_android_captures")
         self.assertEqual(status["real_capture_count"], 0)
         self.assertEqual(status["human_gold_count"], 0)
         self.assertFalse(status["paper_result_eligible"])
+
+    def test_collector_bundle_uses_monotonic_bracket_and_separate_review(self):
+        # Break caught: the real collector bundle cannot enter CAP-001 without legacy tokens.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _ = write_collector_bundle_fixture(Path(directory))
+            record = module.finalize_collector_bundle(root)
+
+        self.assertEqual(record["capture_schema_version"], "1.1.0")
+        self.assertEqual(record["status"], "eligible_for_capture_feasibility")
+        self.assertEqual(record["synchronization"]["delta_ms"], 30)
+        self.assertTrue(record["synchronization"]["event_sequence_verified"])
+        self.assertTrue(record["synchronization"]["focus_verified"])
+        self.assertEqual(
+            record["artifacts"]["accessibility_snapshot_sha256"], "1" * 64
+        )
+        self.assertNotIn("Private collector fixture", json.dumps(record))
+
+    def test_collector_bundle_fails_on_drift_or_machine_injected_review(self):
+        # Break caught: arbitrary tokens, drift, or self-approved privacy bypass finalization.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, machine, _ = write_collector_bundle_fixture(Path(directory))
+            machine["timing"]["event_sequence_after"] = 6
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+            with self.assertRaisesRegex(ValueError, "event sequence"):
+                module.finalize_collector_bundle(root)
+
+            _, machine, _ = write_collector_bundle_fixture(root)
+            machine["privacy_review_status"] = "passed"
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+            with self.assertRaisesRegex(ValueError, "human decision"):
+                module.finalize_collector_bundle(root)
+
+    def test_collector_bundle_requires_screen_reader_and_human_privacy_review(self):
+        # Break caught: collection outside the target screen-reader condition is admitted.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, review = write_collector_bundle_fixture(Path(directory))
+            review["screen_reader"]["enabled"] = False
+            (root / "review.json").write_text(json.dumps(review))
+            with self.assertRaisesRegex(ValueError, "screen reader"):
+                module.finalize_collector_bundle(root)
+
+            review["screen_reader"]["enabled"] = True
+            review["privacy_review_status"] = "pending"
+            (root / "review.json").write_text(json.dumps(review))
+            with self.assertRaisesRegex(ValueError, "privacy review"):
+                module.finalize_collector_bundle(root)
+
+    def test_collector_bundle_requires_runtime_device_and_target_app_provenance(self):
+        # Break caught: an unbound APK or unknown target app is treated as a real capture.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, machine, _ = write_collector_bundle_fixture(Path(directory))
+            machine["runtime"].pop("device")
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+            with self.assertRaisesRegex(ValueError, "runtime.device"):
+                module.finalize_collector_bundle(root)
+
+            _, machine, _ = write_collector_bundle_fixture(root)
+            machine["runtime"]["target_app"]["package_name"] = "org.other"
+            (root / "machine-capture.json").write_text(json.dumps(machine))
+            with self.assertRaisesRegex(ValueError, "target app"):
+                module.finalize_collector_bundle(root)
+
+    def test_collector_bundle_cross_checks_apk_attestation(self):
+        # Break caught: a reviewer can type arbitrary well-shaped APK/cert hashes.
+        module = load_module()
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, review = write_collector_bundle_fixture(Path(directory))
+            review["collector_apk_sha256"] = "e" * 64
+            (root / "review.json").write_text(json.dumps(review))
+            with self.assertRaisesRegex(ValueError, "attestation"):
+                module.finalize_collector_bundle(root)
+
+    def test_collector_cli_writes_minimized_record(self):
+        # Break caught: the documented V1.1 collector command is not executable.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "bundle"
+            root.mkdir()
+            write_collector_bundle_fixture(root)
+            output = Path(directory) / "record.json"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(MODULE_PATH),
+                    "finalize-collector",
+                    "--bundle",
+                    str(root),
+                    "--output",
+                    str(output),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            text = output.read_text(encoding="utf-8")
+            self.assertNotIn("Private collector fixture", text)
+            self.assertEqual(json.loads(text)["capture_schema_version"], "1.1.0")
 
     def test_valid_pre_action_accessibility_snapshot_is_finalized_with_hashes(self):
         # Break caught: a real, synchronized, action-free snapshot cannot enter CAP-001.

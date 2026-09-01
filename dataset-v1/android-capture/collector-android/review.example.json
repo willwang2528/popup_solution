@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.1",
+  "capture_id": "PMAB-A-CAP-001",
+  "reviewer_id": "reviewer-pseudonym",
+  "reviewed_at": "2026-09-01T12:00:00+08:00",
+  "collection_authorized": true,
+  "basis": "Describe the controlled or otherwise authorized collection basis",
+  "privacy_review_status": "passed",
+  "redistribution_status": "adapter_only",
+  "screen_reader": {
+    "enabled": true,
+    "name": "TalkBack",
+    "version": "record-exact-version"
+  },
+  "collector_apk_sha256": "replace-with-64-lowercase-hex",
+  "collector_signing_certificate_sha256": "replace-with-64-lowercase-hex",
+  "human_gold_added": false,
+  "method_predictions_added": false
+}

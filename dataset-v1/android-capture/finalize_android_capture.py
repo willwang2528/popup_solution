@@ -18,6 +18,7 @@ import zlib
 
 
 CAPTURE_SCHEMA_VERSION = "1.0.0"
+COLLECTOR_CAPTURE_SCHEMA_VERSION = "1.1.0"
 SNAPSHOT_SCHEMA_VERSION = "1.0.0"
 MAX_SYNCHRONIZATION_DELTA_MS = 3000
 ALLOWED_STRATA = {
@@ -303,6 +304,398 @@ def finalize_capture(metadata_path: Path) -> dict[str, Any]:
     }
 
 
+def _read_json_file(path: Path, name: str) -> dict[str, Any]:
+    _require(path.is_file() and not path.is_symlink(), f"{name} does not exist or is a symlink")
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{name} must be valid UTF-8 JSON") from error
+    return _object(value, name)
+
+
+def _contains_key_recursive(value: Any, forbidden: set[str]) -> bool:
+    if isinstance(value, dict):
+        return bool(forbidden.intersection(value)) or any(
+            _contains_key_recursive(child, forbidden) for child in value.values()
+        )
+    if isinstance(value, list):
+        return any(_contains_key_recursive(child, forbidden) for child in value)
+    return False
+
+
+def _validate_collector_request(request: dict[str, Any]) -> None:
+    required = {
+        "schema_version",
+        "capture_id",
+        "item_id",
+        "source_group_id",
+        "popup_template_family_id",
+        "intended_stratum",
+        "expected_target_package",
+        "request_nonce",
+    }
+    _require(set(request) == required, "collector request must contain exactly the V1.1 keys")
+    _require(request.get("schema_version") == "1.1", "collector request schema must be 1.1")
+    for field in required.difference({"schema_version"}):
+        _nonempty_string(request.get(field), f"request.{field}")
+    _require(
+        request.get("intended_stratum") in ALLOWED_STRATA,
+        "request.intended_stratum is outside the frozen V1 strata",
+    )
+
+
+def _validate_machine_artifact(
+    bundle_root: Path,
+    artifacts: dict[str, Any],
+    key: str,
+    expected_filename: str,
+) -> tuple[Path, bytes]:
+    record = _object(artifacts.get(key), f"machine.artifacts.{key}")
+    _require(
+        record.get("filename") == expected_filename,
+        f"machine.artifacts.{key}.filename mismatch",
+    )
+    path = _resolve_artifact(bundle_root, expected_filename, expected_filename)
+    data = path.read_bytes()
+    _require(record.get("bytes") == len(data), f"{expected_filename} byte count mismatch")
+    _require(record.get("sha256") == _sha256(data), f"{expected_filename} sha256 mismatch")
+    return path, data
+
+
+def _validate_collector_tree(
+    tree: dict[str, Any],
+    *,
+    expected_hash: str,
+    expected_package: str,
+    expected_start: int,
+    expected_end: int,
+    name: str,
+) -> tuple[int, int]:
+    _require(tree.get("schema_version") == "1.1", f"{name} schema must be 1.1")
+    _require(
+        tree.get("clock") == "android.os.SystemClock.uptimeMillis",
+        f"{name} must use the collector monotonic clock",
+    )
+    _require(tree.get("start_uptime_ms") == expected_start, f"{name} start time mismatch")
+    _require(tree.get("end_uptime_ms") == expected_end, f"{name} end time mismatch")
+    _require(tree.get("canonical_tree_sha256") == expected_hash, f"{name} tree hash mismatch")
+    _require(tree.get("contains_sensitive_node") is False, f"{name} contains sensitive nodes")
+    _require(tree.get("truncated") is False, f"{name} is truncated")
+    packages = tree.get("target_packages")
+    _require(
+        isinstance(packages, list) and expected_package in packages,
+        f"{name} does not contain the expected target package",
+    )
+    forbidden = {
+        "gold_label",
+        "gold_labels",
+        "prediction",
+        "predictions",
+        "method_prediction",
+        "privacy_review_status",
+        "paper_result_eligible",
+    }
+    _require(
+        not _contains_key_recursive(tree, forbidden),
+        f"{name} contains a human decision or prediction",
+    )
+    windows = tree.get("windows")
+    _require(isinstance(windows, list) and windows, f"{name} must contain windows")
+    node_ids: list[str] = []
+
+    def visit(node: Any, path: str) -> None:
+        node = _object(node, path)
+        node_ids.append(_nonempty_string(node.get("id"), f"{path}.id"))
+        children = node.get("children")
+        _require(isinstance(children, list), f"{path}.children must be a list")
+        for index, child in enumerate(children):
+            visit(child, f"{path}.children[{index}]")
+
+    for index, raw_window in enumerate(windows):
+        window = _object(raw_window, f"{name}.windows[{index}]")
+        _nonempty_string(window.get("id"), f"{name}.windows[{index}].id")
+        _require(window.get("root") is not None, f"{name}.windows[{index}] has no root")
+        visit(window.get("root"), f"{name}.windows[{index}].root")
+    _require(len(node_ids) == len(set(node_ids)), f"{name} contains duplicate node ids")
+    node_count = tree.get("node_count")
+    _require(
+        isinstance(node_count, int)
+        and not isinstance(node_count, bool)
+        and node_count == len(node_ids)
+        and node_count > 0,
+        f"{name} node_count mismatch",
+    )
+    return node_count, len(windows)
+
+
+def finalize_collector_bundle(bundle_root: Path) -> dict[str, Any]:
+    """Validate a V1.1 app-private collector bundle plus separate human review."""
+
+    bundle_root = Path(bundle_root)
+    _require(bundle_root.is_dir() and not bundle_root.is_symlink(), "collector bundle must be a directory")
+    request = _read_json_file(bundle_root / "request.json", "request.json")
+    machine = _read_json_file(bundle_root / "machine-capture.json", "machine-capture.json")
+    review = _read_json_file(bundle_root / "review.json", "review.json")
+    attestation = _read_json_file(
+        bundle_root / "collector-attestation.json", "collector-attestation.json"
+    )
+    _validate_collector_request(request)
+
+    forbidden_machine = {
+        "privacy_review_status",
+        "gold_label",
+        "gold_labels",
+        "prediction",
+        "predictions",
+        "method_prediction",
+        "paper_result_eligible",
+    }
+    _require(
+        not _contains_key_recursive(machine, forbidden_machine),
+        "machine capture contains a human decision or prediction",
+    )
+    _require(machine.get("schema_version") == "1.1", "machine schema must be 1.1")
+    _require(machine.get("collector") == "pmab-android-accessibilityservice", "unexpected collector")
+    _require(machine.get("machine_status") == "complete", "machine capture is not complete")
+    _require(machine.get("machine_reason") == "accepted", "machine capture was not accepted")
+    _require(machine.get("request") == request, "machine request binding mismatch")
+    _require(
+        machine.get("clock") == "android.os.SystemClock.uptimeMillis",
+        "machine capture must use the collector monotonic clock",
+    )
+
+    runtime = _object(machine.get("runtime"), "machine.runtime")
+    capabilities = runtime.get("service_capabilities")
+    flags = runtime.get("service_flags")
+    _require(isinstance(capabilities, int) and not isinstance(capabilities, bool), "service capabilities missing")
+    _require(capabilities & 0x01 and capabilities & 0x80, "collector lacks tree or screenshot capability")
+    _require(isinstance(flags, int) and not isinstance(flags, bool), "service flags missing")
+    _require(flags & 0x10 and flags & 0x40, "collector lacks window or view-id flags")
+    source_revision = _nonempty_string(runtime.get("source_revision"), "runtime.source_revision")
+    _require(
+        len(source_revision) == 40
+        and all(character in "0123456789abcdef" for character in source_revision),
+        "collector source revision must be a 40-character Git commit",
+    )
+    device = _object(runtime.get("device"), "runtime.device")
+    for field in ("manufacturer", "model", "android_release"):
+        _nonempty_string(device.get(field), f"runtime.device.{field}")
+    for field in ("display_width_px", "display_height_px"):
+        _positive_integer(device.get(field), f"runtime.device.{field}")
+    target_app = _object(runtime.get("target_app"), "runtime.target_app")
+    _require(
+        target_app.get("package_name") == request["expected_target_package"],
+        "runtime target app does not match the request",
+    )
+    _nonempty_string(target_app.get("version_name"), "runtime.target_app.version_name")
+    target_version_code = target_app.get("version_code")
+    _require(
+        isinstance(target_version_code, int)
+        and not isinstance(target_version_code, bool)
+        and target_version_code >= 0,
+        "runtime.target_app.version_code must be non-negative",
+    )
+    collector_app = _object(runtime.get("collector_app"), "runtime.collector_app")
+    _require(
+        collector_app.get("package_name") == "org.pmab.collector",
+        "runtime collector app package mismatch",
+    )
+    _nonempty_string(collector_app.get("version_name"), "runtime.collector_app.version_name")
+    collector_version_code = collector_app.get("version_code")
+    _require(
+        isinstance(collector_version_code, int)
+        and not isinstance(collector_version_code, bool)
+        and collector_version_code >= 0,
+        "runtime.collector_app.version_code must be non-negative",
+    )
+    _nonempty_string(runtime.get("locale"), "runtime.locale")
+
+    timing = _object(machine.get("timing"), "machine.timing")
+    time_fields = (
+        "tree_before_start_uptime_ms",
+        "tree_before_end_uptime_ms",
+        "screenshot_request_uptime_ms",
+        "screenshot_result_uptime_ms",
+        "screenshot_callback_uptime_ms",
+        "tree_after_start_uptime_ms",
+        "tree_after_end_uptime_ms",
+    )
+    times = [timing.get(field) for field in time_fields]
+    _require(
+        all(isinstance(value, int) and not isinstance(value, bool) and value >= 0 for value in times),
+        "collector timing fields must be non-negative integers",
+    )
+    _require(times == sorted(times), "collector timing has invalid monotonic order")
+    before_hash = _sha256_string(timing.get("tree_before_sha256"), "tree_before_sha256")
+    after_hash = _sha256_string(timing.get("tree_after_sha256"), "tree_after_sha256")
+    _require(before_hash == after_hash, "tree hash drift detected")
+    _require(
+        timing.get("event_sequence_before") == timing.get("event_sequence_after"),
+        "accessibility event sequence drift detected",
+    )
+    _require(
+        timing.get("focus_token_before") == timing.get("focus_token_after"),
+        "screen-reader focus drift detected",
+    )
+    before_distance = timing["screenshot_result_uptime_ms"] - timing["tree_before_end_uptime_ms"]
+    after_distance = timing["tree_after_start_uptime_ms"] - timing["screenshot_result_uptime_ms"]
+    delta_ms = max(before_distance, after_distance)
+    _require(
+        delta_ms <= MAX_SYNCHRONIZATION_DELTA_MS,
+        f"synchronization delta exceeds {MAX_SYNCHRONIZATION_DELTA_MS} ms",
+    )
+
+    artifacts = _object(machine.get("artifacts"), "machine.artifacts")
+    _require(
+        set(artifacts) == {"tree_before", "tree_after", "screenshot"},
+        "machine artifact set mismatch",
+    )
+    _, before_bytes = _validate_machine_artifact(
+        bundle_root, artifacts, "tree_before", "tree-before.json"
+    )
+    _, after_bytes = _validate_machine_artifact(
+        bundle_root, artifacts, "tree_after", "tree-after.json"
+    )
+    _, screenshot_bytes = _validate_machine_artifact(
+        bundle_root, artifacts, "screenshot", "screenshot.png"
+    )
+    _validate_screenshot(screenshot_bytes)
+    try:
+        before_tree = _object(json.loads(before_bytes.decode("utf-8")), "tree-before.json")
+        after_tree = _object(json.loads(after_bytes.decode("utf-8")), "tree-after.json")
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("collector trees must be valid UTF-8 JSON") from error
+    before_count, before_windows = _validate_collector_tree(
+        before_tree,
+        expected_hash=before_hash,
+        expected_package=request["expected_target_package"],
+        expected_start=timing["tree_before_start_uptime_ms"],
+        expected_end=timing["tree_before_end_uptime_ms"],
+        name="tree-before.json",
+    )
+    after_count, after_windows = _validate_collector_tree(
+        after_tree,
+        expected_hash=after_hash,
+        expected_package=request["expected_target_package"],
+        expected_start=timing["tree_after_start_uptime_ms"],
+        expected_end=timing["tree_after_end_uptime_ms"],
+        name="tree-after.json",
+    )
+    _require(
+        before_count == after_count and before_windows == after_windows,
+        "tree summary drift detected",
+    )
+
+    _require(review.get("schema_version") == "1.1", "review schema must be 1.1")
+    _require(review.get("capture_id") == request["capture_id"], "review capture binding mismatch")
+    _nonempty_string(review.get("reviewer_id"), "review.reviewer_id")
+    _parse_time(review.get("reviewed_at"), "review.reviewed_at")
+    _require(review.get("collection_authorized") is True, "collection must be authorized")
+    _nonempty_string(review.get("basis"), "review.basis")
+    _require(review.get("privacy_review_status") == "passed", "privacy review must be passed")
+    redistribution = review.get("redistribution_status")
+    _require(
+        redistribution in {"public_media", "adapter_only"},
+        "redistribution_status must be public_media or adapter_only",
+    )
+    screen_reader = _object(review.get("screen_reader"), "review.screen_reader")
+    _require(screen_reader.get("enabled") is True, "screen reader must be enabled")
+    screen_reader_name = _nonempty_string(screen_reader.get("name"), "screen_reader.name")
+    screen_reader_version = _nonempty_string(screen_reader.get("version"), "screen_reader.version")
+    _require(review.get("human_gold_added") is False, "review must not add human gold")
+    _require(review.get("method_predictions_added") is False, "review must not add predictions")
+    apk_sha256 = _sha256_string(review.get("collector_apk_sha256"), "collector_apk_sha256")
+    certificate_sha256 = _sha256_string(
+        review.get("collector_signing_certificate_sha256"),
+        "collector_signing_certificate_sha256",
+    )
+    _require(
+        not _contains_key_recursive(attestation, forbidden_machine),
+        "collector attestation contains a human decision or prediction",
+    )
+    _require(attestation.get("schema_version") == "1.1", "attestation schema must be 1.1")
+    _require(attestation.get("status") == "verified", "collector attestation is not verified")
+    _require(
+        attestation.get("capture_id") == request["capture_id"],
+        "collector attestation capture binding mismatch",
+    )
+    _require(
+        attestation.get("source_revision") == source_revision,
+        "collector attestation source binding mismatch",
+    )
+    local_apk_sha256 = _sha256_string(
+        attestation.get("local_apk_sha256"), "attestation.local_apk_sha256"
+    )
+    installed_apk_sha256 = _sha256_string(
+        attestation.get("installed_apk_sha256"), "attestation.installed_apk_sha256"
+    )
+    attested_certificate_sha256 = _sha256_string(
+        attestation.get("signing_certificate_sha256"),
+        "attestation.signing_certificate_sha256",
+    )
+    _sha256_string(
+        attestation.get("device_serial_sha256"), "attestation.device_serial_sha256"
+    )
+    _parse_time(attestation.get("verified_at"), "attestation.verified_at")
+    _require(
+        local_apk_sha256 == installed_apk_sha256 == apk_sha256,
+        "collector APK review/attestation hashes do not match",
+    )
+    _require(
+        attested_certificate_sha256 == certificate_sha256,
+        "collector signing-certificate review/attestation hashes do not match",
+    )
+
+    return {
+        "capture_schema_version": COLLECTOR_CAPTURE_SCHEMA_VERSION,
+        "status": "eligible_for_capture_feasibility",
+        "capture_id": request["capture_id"],
+        "item_id": request["item_id"],
+        "source_group_id": request["source_group_id"],
+        "popup_template_family_id": request["popup_template_family_id"],
+        "intended_stratum": request["intended_stratum"],
+        "collector_mode": "accessibilityservice_node_snapshot",
+        "authorization_summary": {
+            "collection_authorized": True,
+            "privacy_review_status": "passed",
+            "redistribution_status": redistribution,
+        },
+        "screen_reader_summary": {
+            "enabled": True,
+            "name": screen_reader_name,
+            "version": screen_reader_version,
+        },
+        "collector_attestation": {
+            "source_revision": source_revision,
+            "apk_sha256": apk_sha256,
+            "signing_certificate_sha256": certificate_sha256,
+        },
+        "synchronization": {
+            "delta_ms": delta_ms,
+            "maximum_delta_ms": MAX_SYNCHRONIZATION_DELTA_MS,
+            "stable_state_verified": True,
+            "tree_hash_verified": True,
+            "event_sequence_verified": True,
+            "focus_verified": True,
+            "clock": "android.os.SystemClock.uptimeMillis",
+        },
+        "artifacts": {
+            "screenshot_sha256": _sha256(screenshot_bytes),
+            "screenshot_size_bytes": len(screenshot_bytes),
+            "accessibility_snapshot_sha256": before_hash,
+            "accessibility_snapshot_size_bytes": len(before_bytes) + len(after_bytes),
+            "tree_before_file_sha256": _sha256(before_bytes),
+            "tree_after_file_sha256": _sha256(after_bytes),
+        },
+        "accessibility_summary": {
+            "node_count": before_count,
+            "window_count": before_windows,
+        },
+        "paper_result_eligible": False,
+        "human_gold_count": 0,
+    }
+
+
 def _positive_integer(value: Any, name: str) -> int:
     _require(
         isinstance(value, int) and not isinstance(value, bool) and value > 0,
@@ -323,7 +716,8 @@ def _sha256_string(value: Any, name: str) -> str:
 def _validate_finalized_record(record: dict[str, Any], index: int) -> None:
     prefix = f"records[{index}]"
     _require(
-        record.get("capture_schema_version") == CAPTURE_SCHEMA_VERSION,
+        record.get("capture_schema_version")
+        in {CAPTURE_SCHEMA_VERSION, COLLECTOR_CAPTURE_SCHEMA_VERSION},
         f"{prefix} has an invalid capture schema version",
     )
     _require(
@@ -448,6 +842,33 @@ def audit_metadata_bundles(metadata_list_path: Path) -> dict[str, Any]:
     return audit_feasibility([finalize_capture(path) for path in paths])
 
 
+def audit_collector_bundles(bundle_list_path: Path) -> dict[str, Any]:
+    """Re-finalize V1.1 collector directories before the aggregate gate."""
+
+    bundle_list_path = Path(bundle_list_path)
+    _require(bundle_list_path.is_file(), "bundle list does not exist")
+    try:
+        entries = json.loads(bundle_list_path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("bundle list must be valid UTF-8 JSON") from error
+    _require(isinstance(entries, list) and entries, "bundle list must be a non-empty JSON array")
+    root = bundle_list_path.resolve().parent
+    resolved_root = root.resolve()
+    paths: list[Path] = []
+    for index, entry in enumerate(entries):
+        relative = Path(_nonempty_string(entry, f"bundle_list[{index}]"))
+        _require(not relative.is_absolute(), f"bundle_list[{index}] must be relative")
+        _require(".." not in relative.parts, f"bundle_list[{index}] must not escape its root")
+        path = root / relative
+        _require(not path.is_symlink(), f"bundle_list[{index}] must not be a symlink")
+        resolved = path.resolve()
+        _require(resolved_root in resolved.parents, f"bundle_list[{index}] escapes its root")
+        _require(resolved.is_dir(), f"bundle_list[{index}] is not a bundle directory")
+        paths.append(resolved)
+    _require(len(paths) == len(set(paths)), "bundle list contains duplicate paths")
+    return audit_feasibility([finalize_collector_bundle(path) for path in paths])
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -465,18 +886,32 @@ def main(argv: list[str] | None = None) -> int:
     finalize_parser = subparsers.add_parser("finalize", help="finalize one private capture bundle")
     finalize_parser.add_argument("--metadata", required=True, type=Path)
     finalize_parser.add_argument("--output", required=True, type=Path)
+    collector_parser = subparsers.add_parser(
+        "finalize-collector", help="finalize one V1.1 collector bundle"
+    )
+    collector_parser.add_argument("--bundle", required=True, type=Path)
+    collector_parser.add_argument("--output", required=True, type=Path)
     audit_parser = subparsers.add_parser(
         "audit", help="re-finalize private bundles and audit aggregate coverage"
     )
     audit_parser.add_argument("--metadata-list", required=True, type=Path)
     audit_parser.add_argument("--output", required=True, type=Path)
+    collector_audit_parser = subparsers.add_parser(
+        "audit-collector", help="re-finalize V1.1 collector bundles and audit coverage"
+    )
+    collector_audit_parser.add_argument("--bundle-list", required=True, type=Path)
+    collector_audit_parser.add_argument("--output", required=True, type=Path)
     arguments = parser.parse_args(argv)
 
     try:
         if arguments.command == "finalize":
             result = finalize_capture(arguments.metadata)
-        else:
+        elif arguments.command == "finalize-collector":
+            result = finalize_collector_bundle(arguments.bundle)
+        elif arguments.command == "audit":
             result = audit_metadata_bundles(arguments.metadata_list)
+        else:
+            result = audit_collector_bundles(arguments.bundle_list)
         _write_json(arguments.output, result)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
         parser.exit(2, f"capture finalization failed: {error}\n")

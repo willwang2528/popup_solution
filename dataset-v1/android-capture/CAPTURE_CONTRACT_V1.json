@@ -1,12 +1,25 @@
 {
   "contract_id": "PMAB-ANDROID-CAPTURE-V1",
-  "capture_schema_version": "1.0.0",
+  "capture_schema_version": "1.1.0",
+  "legacy_capture_schema_version": "1.0.0",
   "scope": "capture feasibility for action-free popup presence and message research",
   "formal_input_anchor": "synchronized Android screenshot plus AccessibilityService node snapshot",
   "required_observation_phase": "pre_action",
   "required_action_attempts": [],
   "maximum_synchronization_delta_ms": 3000,
-  "stable_state_token_must_match": true,
+  "synchronization_clock": "android.os.SystemClock.uptimeMillis",
+  "required_capture_order": [
+    "tree_before",
+    "screenshot",
+    "tree_after"
+  ],
+  "stable_state_requirements": {
+    "canonical_tree_hash_must_match": true,
+    "accessibility_event_sequence_must_match": true,
+    "focus_token_must_match": true,
+    "tree_must_not_be_truncated": true,
+    "sensitive_node_must_be_absent": true
+  },
   "required_collector_mode": "accessibilityservice_node_snapshot",
   "required_strata": [
     "popup_candidate",
@@ -15,7 +28,7 @@
   ],
   "minimum_source_groups": 5,
   "minimum_popup_template_families": 3,
-  "aggregate_input_must_be_complete_finalizer_output": true,
+  "aggregate_input_must_be_private_bundles": true,
   "aggregate_command_refinalizes_private_bundles": true,
   "aggregate_command_accepts_record_only_input": false,
   "duplicate_policy": {
@@ -32,9 +45,13 @@
     ]
   },
   "private_inputs": [
-    "capture metadata",
+    "request metadata",
+    "collector machine record",
+    "host collector APK attestation",
+    "separate human review record",
     "screenshot",
-    "raw accessibility snapshot"
+    "raw accessibility tree before screenshot",
+    "raw accessibility tree after screenshot"
   ],
   "public_record_allowlist": [
     "capture and item identifiers",

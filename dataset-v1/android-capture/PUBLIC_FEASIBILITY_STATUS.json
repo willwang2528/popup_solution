@@ -1,13 +1,31 @@
 {
-  "version": "1.0.0",
-  "updated_at": "2026-09-01T09:15:00+08:00",
+  "version": "1.1.0",
+  "updated_at": "2026-09-01T10:32:11+08:00",
   "status": "blocked_no_real_android_captures",
-  "tooling_status": "offline_finalizer_tested",
+  "tooling_status": "collector_apk_and_v1_1_finalizer_tested_no_device",
   "host_device_tooling": {
-    "adb_available": false,
+    "adb_available": true,
     "emulator_available": false,
     "appium_available": false,
     "checked_at": "2026-09-01"
+  },
+  "collector_status": {
+    "android_min_api": 30,
+    "apk_built_locally": true,
+    "installed_on_device": false,
+    "service_enabled_on_device": false,
+    "real_capture_attempted": false,
+    "jvm_tests_passed": 8,
+    "apk_contract_tests_passed": 3,
+    "host_tool_tests_passed": 4,
+    "v1_1_finalizer_tests_passed": 18,
+    "full_repository_regression": {
+      "run": 201,
+      "passed": 199,
+      "skipped": 2,
+      "failed": 0
+    },
+    "android_lint_status": "passed_no_issues"
   },
   "real_capture_count": 0,
   "source_group_count": 0,

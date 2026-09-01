@@ -25,6 +25,9 @@ class PublicReleaseGateTests(unittest.TestCase):
             "experiments/v1-message/ocr/.build/",
             "experiments/v1-message/pregold/private/",
             "experiments/v1-message/statistics/private/",
+            "dataset-v1/android-capture/incoming/",
+            "dataset-v1/android-capture/private/",
+            "dataset-v1/android-capture/results/",
         }
         self.assertEqual(required - patterns, set())
 

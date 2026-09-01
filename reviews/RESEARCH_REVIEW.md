@@ -101,6 +101,18 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 
 因此当前状态仍是：真实 capture=0、human gold=0、paper result=0。增量审阅不允许提前宣称 capture feasibility 已实证通过。
 
+## 真实 Android collector 增量审阅
+
+在离线门之后实现了 Android 30+ `AccessibilityService` 采集器、app-private request/readback、`tree-before → screenshot → tree-after` 单调时钟回证，以及机器记录与人工 `review.json` 分离的 V1.1 终结协议。
+
+第 7 次 reviewer 调用尝试让 Claude 限定读取采集器源码和测试，但 600 秒后明确超时，没有返回任何审阅文本；该次调用保持 `provisional/failed_timeout`，不能算 cross-family 接受。随后第 8 次调用改成不使用 repository tools 的自包含 bounded design/contract review，Claude 明确声明这不是 fresh source-level verification，并给出 `PROCEED_TO_ONE_DRY_RUN`。
+
+该结论只允许在一台已授权 Android 设备上做一个 dry run，不能直接进入 5-group gate。Claude 认为 dry run 前没有已识别的 fatal blocker，同时要求 5-group gate 前关闭以下问题：完成或重跑 Android lint；独立计算并核对实际安装 APK 与签名证书哈希；把 Git SHA/可复现构建继续视为信任边界；记录 TalkBack 导致的 `focus_drift` 拒绝率；为 FileObserver 事件遗漏增加可靠性策略；在真实 OEM/Android 设备上核对 runtime capability/flag bits。
+
+审阅后已进一步加入三项不依赖设备的修复：服务用同一 worker 每 2 秒扫描 app-private pending request，兜底 FileObserver 事件遗漏；主机新增 `attest` 命令，逐字节比较本地与已安装 APK、核对 DEX source revision、从 `apksigner` 读取证书哈希，V1.1 finalizer 再与人工 review 交叉绑定；Android lint 的 3 条 warning 修复后重新运行正常 exit 0，最终为 `No issues found`。真实 OEM capability、TalkBack focus drift 和设备端安装 APK 读取仍需 dry run 实证。
+
+经验主张变化仍为 `NONE`。真实 capture=0、human gold=0、method metrics=0；`PROCEED_TO_ONE_DRY_RUN` 只说明设计合同足以尝试一次安全、授权的真实采集。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
@@ -110,6 +122,8 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 - Android gate review job：`8939bb2d516544ba9cebdd2126da555c`
 - Fail-closed recheck job：`5cc4019879de44d2a9b9b10b06c39fda`
 - Artifact-binding final job：`9c58eb567dd9407b9e7aa10c4949d726`
+- Real collector source-reading job（timeout/provisional）：`48b3db97d19b433796ec20462c8a5ead`
+- Bounded collector review job：`5a97eb92f2c04a1fb9c682440950bca0`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。
