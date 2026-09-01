@@ -195,10 +195,19 @@ finalizer：它只接受 `mg-pu-k50-v1` 对
 `seeded-random-k50-v1`，要求 adjudicated VPMA、formal group map、exact K、共享
 10,000 次 cluster bootstrap、相同冻结 hashes，以及逐方法 pixels/tokens/cost
 实际预算账本。当前没有真实 finalized item、语义裁决、正式 budget receipt 或 group-map
-attestation，因此没有 formal paired report；Holm、BH 与 Pareto 也仍未实现，所以不会产生论文结果。冻结 ledger 与 finalizer
+attestation，因此没有 formal paired report。冻结 ledger 与 finalizer
 都会重算两种 K 策略的 selected-ID 交集；集合不同时明确输出
 `budget_matched_not_item_matched` 及 overlap count/fraction，不能把等 K 误称为
 item-matched。
+
+[`FORMAL_ANALYSIS.md`](./FORMAL_ANALYSIS.md) 与冻结注册表
+[`FORMAL_ANALYSIS_REGISTRY_V1.json`](./FORMAL_ANALYSIS_REGISTRY_V1.json) 已补齐
+预注册的 Holm 次级比较、BH-FDR `q=0.10` 探索性分层，以及分别按视觉调用、decoded
+pixels 和货币成本计算的质量—覆盖—成本 Pareto。注册表逐条绑定方法与 operating
+point；[`popup_eval/formal_analysis.py`](./popup_eval/formal_analysis.py) 要求完整精确
+coverage，并在 group 数不足 5 时只允许 `raw_p_value=null` 的描述性输出。该工具仍
+只生成私有、不可覆盖、`paper_result_eligible=false` 的分析 receipt；当前真实输入与
+receipt 均为 0，所以不会产生论文结果。
 
 截图消息 gold 本身不能证明结构暴露缺口。独立 sidecar 见
 [`STRUCTURE_VISUAL_GAP_AUDIT.md`](../../dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：

@@ -1,0 +1,89 @@
+{
+  "contract_version": "popup-message-analysis-registry-v1.0",
+  "frozen_before_gold": true,
+  "primary_endpoint": "vpma_overall_success_rate",
+  "secondary_alpha": 0.05,
+  "secondary_comparisons": [
+    {
+      "comparison_id": "mgpu-k50_vs_structure-only-natural",
+      "proposed_method_id": "mg-pu-k50-v1",
+      "reference_method_id": "structure-only-v1",
+      "proposed_operating_point": "K50",
+      "reference_operating_point": "natural"
+    },
+    {
+      "comparison_id": "mgpu-k50_vs_vision-only-k50",
+      "proposed_method_id": "mg-pu-k50-v1",
+      "reference_method_id": "vision-only-v1",
+      "proposed_operating_point": "K50",
+      "reference_operating_point": "K50"
+    },
+    {
+      "comparison_id": "mgpu-k50_vs_empty-tree-k50",
+      "proposed_method_id": "mg-pu-k50-v1",
+      "reference_method_id": "empty-tree-gate-v1",
+      "proposed_operating_point": "K50",
+      "reference_operating_point": "K50"
+    },
+    {
+      "comparison_id": "mgpu-k50_vs_c1-budget-matched-k50",
+      "proposed_method_id": "mg-pu-k50-v1",
+      "reference_method_id": "c1-budget-matched-fusion-v1",
+      "proposed_operating_point": "K50",
+      "reference_operating_point": "K50"
+    },
+    {
+      "comparison_id": "mgpu-k50_vs_c1-always-on-natural",
+      "proposed_method_id": "mg-pu-k50-v1",
+      "reference_method_id": "c1-always-on-fusion-v1",
+      "proposed_operating_point": "K50",
+      "reference_operating_point": "natural"
+    }
+  ],
+  "subgroup_fdr_q": 0.1,
+  "subgroup_tests": [
+    {"subgroup_test_id": "gap-tier.structure-complete", "dimension": "gap_tier", "level": "structure_complete"},
+    {"subgroup_test_id": "gap-tier.structure-incomplete", "dimension": "gap_tier", "level": "structure_incomplete"},
+    {"subgroup_test_id": "gap-tier.structure-missing", "dimension": "gap_tier", "level": "structure_missing"},
+    {"subgroup_test_id": "popup-type.centered-modal", "dimension": "popup_type", "level": "centered_modal"},
+    {"subgroup_test_id": "popup-type.bottom-sheet", "dimension": "popup_type", "level": "bottom_sheet"},
+    {"subgroup_test_id": "popup-type.fullscreen-interstitial", "dimension": "popup_type", "level": "fullscreen_interstitial"},
+    {"subgroup_test_id": "popup-type.other-ordinary", "dimension": "popup_type", "level": "other_ordinary"},
+    {"subgroup_test_id": "message-complexity.low", "dimension": "message_complexity", "level": "low"},
+    {"subgroup_test_id": "message-complexity.medium", "dimension": "message_complexity", "level": "medium"},
+    {"subgroup_test_id": "message-complexity.high", "dimension": "message_complexity", "level": "high"}
+  ],
+  "subgroup_dimensions": [
+    "gap_tier",
+    "popup_type",
+    "message_complexity"
+  ],
+  "minimum_inference_groups": 5,
+  "pareto_points": [
+    {"point_id": "structure-only-natural", "method_id": "structure-only-v1", "operating_point": "natural"},
+    {"point_id": "the-ok-natural", "method_id": "the-ok-text-rule", "operating_point": "natural"},
+    {"point_id": "vision-only-k25", "method_id": "vision-only-v1", "operating_point": "K25"},
+    {"point_id": "vision-only-k50", "method_id": "vision-only-v1", "operating_point": "K50"},
+    {"point_id": "vision-only-k100", "method_id": "vision-only-v1", "operating_point": "K100"},
+    {"point_id": "empty-tree-k25", "method_id": "empty-tree-gate-v1", "operating_point": "K25"},
+    {"point_id": "empty-tree-k50", "method_id": "empty-tree-gate-v1", "operating_point": "K50"},
+    {"point_id": "empty-tree-k100", "method_id": "empty-tree-gate-v1", "operating_point": "K100"},
+    {"point_id": "seeded-random-k25", "method_id": "seeded-random-k25-v1", "operating_point": "K25"},
+    {"point_id": "seeded-random-k50", "method_id": "seeded-random-k50-v1", "operating_point": "K50"},
+    {"point_id": "seeded-random-k100", "method_id": "seeded-random-k100-v1", "operating_point": "K100"},
+    {"point_id": "c1-budget-matched-k25", "method_id": "c1-budget-matched-fusion-v1", "operating_point": "K25"},
+    {"point_id": "c1-budget-matched-k50", "method_id": "c1-budget-matched-fusion-v1", "operating_point": "K50"},
+    {"point_id": "c1-budget-matched-k100", "method_id": "c1-budget-matched-fusion-v1", "operating_point": "K100"},
+    {"point_id": "c1-always-on-natural", "method_id": "c1-always-on-fusion-v1", "operating_point": "natural"},
+    {"point_id": "mgpu-k25", "method_id": "mg-pu-k25-v1", "operating_point": "K25"},
+    {"point_id": "mgpu-k50", "method_id": "mg-pu-k50-v1", "operating_point": "K50"},
+    {"point_id": "mgpu-k100", "method_id": "mg-pu-k100-v1", "operating_point": "K100"}
+  ],
+  "pareto_quality_metric": "vpma_overall_success_rate",
+  "pareto_coverage_metric": "coverage",
+  "pareto_cost_axes": [
+    "visual_calls",
+    "decoded_pixels",
+    "monetary_cost_microunits"
+  ]
+}

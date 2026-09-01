@@ -19,9 +19,7 @@ from .comparison import DEFAULT_BOOTSTRAP_SEED
 MG_PU_METHOD_ID = "mg-pu-k50-v1"
 SEEDED_RANDOM_METHOD_ID = "seeded-random-k50-v1"
 DEFERRED_BLOCKERS = [
-    "holm_secondary_not_implemented",
-    "bh_q_0_10_subgroups_not_implemented",
-    "pareto_frontier_not_implemented",
+    "formal_supplementary_analysis_receipt_pending",
 ]
 COMPARISON_CONTRACT_VERSION = "popup-message-paired-comparison-v1.0"
 FORMAL_CONTRACT_VERSION = "popup-message-formal-k50-v1.0"

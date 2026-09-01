@@ -25,6 +25,8 @@
 | `sources/SOURCE_LEDGER.md` | PopSweeper/RICO 校验、join、许可与发布边界 | verified source ledger |
 | `method/METHOD_SPEC.md` | MG-PU 方法规格；v1 无动作 | current / provisional |
 | `refine-logs/EXPERIMENT_PLAN.md` | 当前 claim-driven Android 正式实验计划 | current / pre-empirical |
+| `refine-logs/EXPERIMENT_PLAN_20260901_142000.md` | 加入已实现 formal supplementary-analysis 状态的不可变计划快照 | fixed snapshot / pre-empirical |
+| `refine-logs/EXPERIMENT_TRACKER_20260901_142000.md` | Holm/BH/Pareto 工具完成但真实行仍为 0 的 tracker 快照 | fixed snapshot / pre-empirical |
 | `refine-logs/EXPERIMENT_PLAN_20260901_130000.md` | 2026-09-01 13:00 实验计划不可变快照 | archived version |
 | `refine-logs/EXPERIMENT_TRACKER.md` | 当前运行、门禁、外部阻塞与负向状态 | current |
 | `refine-logs/EXPERIMENT_TRACKER_20260901_130000.md` | 2026-09-01 13:00 tracker 不可变快照 | archived version |
@@ -89,10 +91,14 @@
 | `experiments/v1-message/popup_eval/formal_k50_runner.py` | adjudicated item/prediction/semantic review/group/budget 到 formal K50 paired report 的 fail-closed 上游 | tested runner / no formal input |
 | `experiments/v1-message/popup_eval/formal_item_materializer.py` | CAP-001 绑定的 G1/G2 真人终结结果到私有正式 metric item 的 fail-closed 桥接 | tested / no real source or human gold |
 | `experiments/v1-message/pregold/freeze_k50_predictions.py` | 从冻结 K50 ledger 生成 MG-PU 与 seeded-random 完整预测快照及 commitment | tested / no real frozen predictions |
+| `experiments/v1-message/FORMAL_ANALYSIS_REGISTRY_V1.json` | gold 前冻结的 5 次级比较、10 探索性分层和 18 Pareto 点方法／operating-point 绑定 | frozen / no result rows |
+| `experiments/v1-message/FORMAL_ANALYSIS.md` | Holm、BH-FDR `q=.10` 与三成本轴 Pareto 的正式私有后处理合同 | current / no formal receipt |
+| `experiments/v1-message/popup_eval/formal_analysis.py` | exact-coverage、多重比较、低 group-count 描述性降级与 Pareto finalizer | tested / no empirical input |
 | `experiments/v1-message/tests/test_formal_k50.py` | 正式 hash／group／K／prediction／CI／预算与撤销主张门 | 11 tests passing |
 | `experiments/v1-message/tests/test_formal_k50_runner.py` | unresolved gold、CAP-001 binding、prediction coverage、semantic hallucination、budget binding、动作/Recovery 与私有输出回归 | 8 tests passing |
 | `experiments/v1-message/tests/test_formal_item_materializer.py` | CAP-001 full-device binding、G1/G2 coverage、prediction independence、动作/Recovery 与原子私有输出回归 | 9 tests passing |
 | `experiments/v1-message/pregold/tests/test_freeze_k50_predictions.py` | exact-K、同覆盖、全链哈希、gold/action/Recovery 泄漏与原子私有输出回归 | 6 tests passing |
+| `experiments/v1-message/tests/test_formal_analysis.py` | registry drift、方法调包、Holm/BH、低 group-count、Pareto 与私有输出回归 | 7 tests passing |
 | `dataset-v1/scripts/build_crosswalk.py` | 生成 255 条 source-field crosswalk | tested generator |
 | `dataset-v1/scripts/materialize_schema_fixture.py` | 生成 3 条非经验 fixture | tested generator |
 | `dataset-v1/scripts/build_popsweeper_candidate_manifest.py` | 只读 ZIP 元数据并分层抽取来源候选 | tested generator |

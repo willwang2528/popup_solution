@@ -150,6 +150,29 @@ Claude 认为该修复关闭了已识别的 partial-evidence 绕过，G1/G2 gold
 该审阅不改变经验状态：真实 capture=0、human G1/G2=0、formal K50 result=0，不能
 宣称数据集完成、方法优越、可用性改善、弹窗消除或 Recovery。
 
+## 正式多重比较与 Pareto 合同增量审阅
+
+第 17 次调用只发送了 V1 边界、预注册统计口径、冻结注册表摘要、fail-closed
+约束、聚合测试结果和全部为零的经验计数；工具关闭，没有发送逐项内容、截图、
+消息文本、人工标签、凭据或无关仓库材料。Claude 给出 `PROCEED`，mandatory
+blocker 为 0。
+
+Reviewer 确认 Holm step-down 与 BH step-up 公式正确；少于 5 个 group 的分层行必须
+保持 descriptive-only，同时以 `p=1` 留在完整冻结 family 中，避免通过删减低样本行
+缩小校正族。质量—覆盖—成本 Pareto 采用“所有维度不差且至少一维严格更好”的
+dominance 定义。当前尚未实现的 method/operating-point 也必须保留在 gold 前冻结的
+注册表内，后续若要改变只能走显式修订，不能静默删除。
+
+审阅同时确认，主计划在数据产生前把含糊的“corrected CI”澄清为“Holm-adjusted
+`p<.05` 且原始逐比较 paired cluster-bootstrap 95% CI 排除 0”是可辩护的。其非阻断
+建议已落实为机器可读字段
+`ci_adjustment_status=unadjusted_per_comparison_cluster_bootstrap_95ci`，防止未来报告
+把该 CI 错称为同时校正区间。
+
+该审阅不产生经验结果：真实 capture=0、human G1/G2=0、formal supplementary
+analysis receipt=0、paper result=0；不得据此宣称 superiority、usability、dismissal
+或 Recovery。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
@@ -165,6 +188,7 @@ Claude 认为该修复关闭了已识别的 partial-evidence 绕过，G1/G2 gold
 - PMAB contract / union / K50 / fixture gate job：`43d3cd07957a4cc9acd55261ff325eea`
 - Fixture readiness-field recheck job：`4161a87c339f48e3b696f6d317f8e5d3`
 - Formal CAP-001 / K50 freezer review job：`15b95afc3e984fd2b49840eb43367901`
+- Formal multiplicity / Pareto review job：`f5cdc8e10e704d459d917eb361dd50da`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。

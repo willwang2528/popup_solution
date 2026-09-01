@@ -44,6 +44,7 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 36. [`CLAIM_BOUNDARY_V1.json`](./CLAIM_BOUNDARY_V1.json)：V1 message-only、必须弃答场景和零实证状态的机器可读约束。
 37. [`dataset-v1/ITEM_UNION_EXAMPLE.md`](./dataset-v1/ITEM_UNION_EXAMPLE.md)：一个公开 synthetic item 的 90+165=255 字段并集可读视图；不是经验数据或 gold。
 38. [`dataset-v1/android-capture/fixture-target/README.md`](./dataset-v1/android-capture/fixture-target/README.md)：5 个可构建受控应用身份、3 个弹窗模板族和 15 个只读场景；安装前条件已就绪，但设备验证仍为 false。
+39. [`experiments/v1-message/FORMAL_ANALYSIS.md`](./experiments/v1-message/FORMAL_ANALYSIS.md)：真人 gold 前冻结的 Holm、BH-FDR 与质量—覆盖—成本 Pareto 口径；当前真实分析行和 receipt 均为 0。
 
 ## v1 闭环
 

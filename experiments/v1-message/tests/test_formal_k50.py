@@ -193,9 +193,7 @@ class FormalK50Tests(unittest.TestCase):
         self.assertEqual(
             result["blockers"],
             [
-                "holm_secondary_not_implemented",
-                "bh_q_0_10_subgroups_not_implemented",
-                "pareto_frontier_not_implemented",
+                "formal_supplementary_analysis_receipt_pending",
             ],
         )
         self.assertEqual(result["action_policy"], "no_action")
