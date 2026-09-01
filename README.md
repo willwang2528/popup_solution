@@ -38,11 +38,12 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 30. [`dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md`](./dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：独立于截图消息盲标的结构—视觉 exposure-gap 仲裁协议。
 31. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 32. [`dataset-v1/android-capture/README.md`](./dataset-v1/android-capture/README.md)：正式 Android screenshot + AccessibilityService snapshot 的 fail-closed 采集可行性门；当前真实样本仍为 0。
-33. [`idea-stage/IDEA_REPORT.md`](./idea-stage/IDEA_REPORT.md)：ARIS idea-discovery 全链路报告，含候选排序、淘汰理由和已被查新反证的 broad-first 主张。
-34. [`idea-stage/docs/research_contract.md`](./idea-stage/docs/research_contract.md)：当前选中 PMAB-Android 方向、不可观测上限、claim 门与最小证据。
-35. [`CLAIM_BOUNDARY_V1.json`](./CLAIM_BOUNDARY_V1.json)：V1 message-only、必须弃答场景和零实证状态的机器可读约束。
-36. [`dataset-v1/ITEM_UNION_EXAMPLE.md`](./dataset-v1/ITEM_UNION_EXAMPLE.md)：一个公开 synthetic item 的 90+165=255 字段并集可读视图；不是经验数据或 gold。
-37. [`dataset-v1/android-capture/fixture-target/README.md`](./dataset-v1/android-capture/fixture-target/README.md)：5 个可构建受控应用身份、3 个弹窗模板族和 15 个只读场景；安装前条件已就绪，但设备验证仍为 false。
+33. [`dataset-v1/android-capture/ANDROID_RUNTIME_READINESS.md`](./dataset-v1/android-capture/ANDROID_RUNTIME_READINESS.md)：当前主机真机优先／模拟器备选的运行准备证据；尚无连接设备。
+34. [`idea-stage/IDEA_REPORT.md`](./idea-stage/IDEA_REPORT.md)：ARIS idea-discovery 全链路报告，含候选排序、淘汰理由和已被查新反证的 broad-first 主张。
+35. [`idea-stage/docs/research_contract.md`](./idea-stage/docs/research_contract.md)：当前选中 PMAB-Android 方向、不可观测上限、claim 门与最小证据。
+36. [`CLAIM_BOUNDARY_V1.json`](./CLAIM_BOUNDARY_V1.json)：V1 message-only、必须弃答场景和零实证状态的机器可读约束。
+37. [`dataset-v1/ITEM_UNION_EXAMPLE.md`](./dataset-v1/ITEM_UNION_EXAMPLE.md)：一个公开 synthetic item 的 90+165=255 字段并集可读视图；不是经验数据或 gold。
+38. [`dataset-v1/android-capture/fixture-target/README.md`](./dataset-v1/android-capture/fixture-target/README.md)：5 个可构建受控应用身份、3 个弹窗模板族和 15 个只读场景；安装前条件已就绪，但设备验证仍为 false。
 
 ## v1 闭环
 
@@ -159,6 +160,11 @@ collector 已按测试先行实现：它拒绝动作后数据、UIAutomator/RICO
 审查关闭了 nested label 泄漏、手写 record 放行和随机哈希不绑定 artifact 三条绕过；
 最终正式 audit CLI 会逐 bundle 重新读取私有 artifact 并重算哈希，但仍不能替代
 collector 来源、授权和同步声明的过程审计。
+
+G1/G2 到正式 metric item 的私有物化链现又增加逐项 CAP-001 绑定：只有
+`full_device_evidence`、隐私通过、同步 `AccessibilityService` capture 及其 record／
+screenshot／snapshot 哈希都一致时才能进入 formal runner。原有归档来源的
+`partial_device_evidence` 不会因补做人工标注而升级成正式实验样本。
 
 受控 fixture target 已能构建 5 个唯一 package，覆盖 centered、bottom、fullscreen
 三类模板和 positive/no-popup/boundary 三类场景；5 个 APK 的 package、API 30/35 与

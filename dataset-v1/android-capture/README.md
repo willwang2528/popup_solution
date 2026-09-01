@@ -4,6 +4,11 @@
 
 本目录当前已有可编译的 Android 30+ `AccessibilityService` 采集器、主机触发/回读工具和经过测试的 V1.1 终结器（合同修订 1.1.2），但没有连接过真实设备，也没有真实 Android capture。公开状态因此仍是 `blocked_no_real_android_captures`；它不构成人工金标、论文结果、公开 benchmark 或视障用户体验证据。
 
+当前主机安装前提与两条可执行路径见
+[`ANDROID_RUNTIME_READINESS.md`](./ANDROID_RUNTIME_READINESS.md)：优先使用授权真机；
+模拟器路径仍缺 command-line tools、emulator 与 system image。该记录不改变真实
+capture 数为 0 的状态。
+
 [`fixture-target/`](./fixture-target/) 提供受控采集目标的源码、场景目录和构建合同：5 个唯一 package、3 个弹窗模板族、每组 positive/no-popup/boundary，共 15 个 `definition_only` 场景。其状态是 `installation_prerequisites_ready=true`、`device_capture_validated=false`；它只用于后续真实采集 dry run，不能替代 AccessibilityService 设备证据或人工复核。
 
 ## 采集器边界

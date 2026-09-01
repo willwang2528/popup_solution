@@ -132,6 +132,24 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 
 Validator 要求前者为 true，并在后者被改为 true 时 fail closed；catalog、机器摘要和 README 均使用同一命名。第 15 次同线程复核确认强制修改已满足，最终 verdict 为 `PROCEED`，mandatory blocker 为 0。经验主张变化仍为 `NONE`；真实 Android capture、human gold、formal result 和 paper result 继续全部为 0。
 
+## CAP-001 正式 item 与 K50 冻结链增量审阅
+
+第 16 次调用只发送了非私有的合同与测试摘要，工具关闭。审阅前 Codex 发现
+formal item materializer 仅凭 `record_kind=real_app` 可能把归档
+`partial_device_evidence` 误送进正式评测，因此先增加逐项 CAP-001 绑定和负向测试：
+正式 item 必须是 `full_device_evidence`，来自真实设备或 emulator、隐私复核通过、
+使用同步 `AccessibilityService` snapshot，并绑定 finalized capture record、截图和
+accessibility snapshot 三类 SHA-256；formal runner 会再次独立校验。
+
+Claude 认为该修复关闭了已识别的 partial-evidence 绕过，G1/G2 gold 独立性、K50
+预测冻结哈希链和 V1 无动作／无 Recovery 边界没有新增强制问题，最终 verdict 为
+`PROCEED`，mandatory blocker 为 0。非阻断 hardening 是：真实采集出现后，必须保留
+由私有原始 bundle 实际终结出的 capture record，并确认 formal item 校验的是该原始
+终结产物的 hash，而不是后续编辑副本。
+
+该审阅不改变经验状态：真实 capture=0、human G1/G2=0、formal K50 result=0，不能
+宣称数据集完成、方法优越、可用性改善、弹窗消除或 Recovery。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
@@ -146,6 +164,7 @@ Validator 要求前者为 true，并在后者被改为 true 时 fail closed；ca
 - Visual bank / C1 fatal-gate job：`762b47f9867245b18f082a33d2b16164`
 - PMAB contract / union / K50 / fixture gate job：`43d3cd07957a4cc9acd55261ff325eea`
 - Fixture readiness-field recheck job：`4161a87c339f48e3b696f6d317f8e5d3`
+- Formal CAP-001 / K50 freezer review job：`15b95afc3e984fd2b49840eb43367901`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。

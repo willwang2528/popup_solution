@@ -78,6 +78,20 @@ def adjudicated_item(index: int) -> dict:
             "adjudication_status": "resolved",
             "evidence_rechecked_via_adapter": True,
             "adjudication_batch_sha256": GOLD_SHA256,
+            "capture_binding": {
+                "capture_id": f"PMAB-A-CAP-{index:03d}",
+                "capture_schema_version": "1.1.0",
+                "capture_status": "eligible_for_capture_feasibility",
+                "collector_mode": "accessibilityservice_node_snapshot",
+                "source_origin": "real_device",
+                "privacy_review_status": "passed",
+                "finalized_capture_record_sha256": f"{index + 100:064x}",
+                "screenshot_sha256": f"{index + 200:064x}",
+                "accessibility_snapshot_sha256": f"{index + 300:064x}",
+                "capture_delta_ms": 400,
+                "maximum_delta_ms": 3000,
+                "stable_state_verified": True,
+            },
         },
     }
 
@@ -256,6 +270,14 @@ class FormalK50RunnerTests(unittest.TestCase):
         bundle[0][0]["adjudication_provenance"]["adjudication_status"] = "pending"
 
         with self.assertRaisesRegex(ValueError, "gold is not fully adjudicated"):
+            self.build(tuple(bundle))
+
+    def test_rejects_gold_without_finalized_cap001_capture_binding(self) -> None:
+        """Catches archived or hand-labeled rows entering the formal runner."""
+        bundle = list(fixture_bundle())
+        del bundle[0][0]["adjudication_provenance"]["capture_binding"]
+
+        with self.assertRaisesRegex(ValueError, "CAP-001 capture binding"):
             self.build(tuple(bundle))
 
     def test_rejects_missing_hallucination_adjudication(self) -> None:

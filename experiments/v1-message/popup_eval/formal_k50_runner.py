@@ -35,6 +35,7 @@ from popup_eval.semantic_adjudication import SEMANTIC_KEYS  # noqa: E402
 RUNNER_CONTRACT_VERSION = "popup-message-formal-k50-runner-v1.0"
 FORMAL_METHODS = (MG_PU_METHOD_ID, SEEDED_RANDOM_METHOD_ID)
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+CAPTURE_ID_PATTERN = re.compile(r"PMAB-A-CAP-\d{3}")
 ACTION_BEARING_KEYS = {
     "action_semantics",
     "click",
@@ -147,6 +148,36 @@ def _validate_adjudicated_items(
         provenance = item.get("adjudication_provenance")
         if not isinstance(provenance, Mapping):
             raise FormalK50RunnerError("gold is not fully adjudicated")
+        capture = provenance.get("capture_binding")
+        if not isinstance(capture, Mapping):
+            raise FormalK50RunnerError("gold lacks finalized CAP-001 capture binding")
+        capture_id = capture.get("capture_id")
+        delta_ms = capture.get("capture_delta_ms")
+        maximum_delta_ms = capture.get("maximum_delta_ms")
+        if (
+            not isinstance(capture_id, str)
+            or CAPTURE_ID_PATTERN.fullmatch(capture_id) is None
+            or capture.get("capture_schema_version") != "1.1.0"
+            or capture.get("capture_status") != "eligible_for_capture_feasibility"
+            or capture.get("collector_mode")
+            != "accessibilityservice_node_snapshot"
+            or capture.get("source_origin") not in {"real_device", "emulator"}
+            or capture.get("privacy_review_status") != "passed"
+            or not isinstance(delta_ms, int)
+            or isinstance(delta_ms, bool)
+            or not isinstance(maximum_delta_ms, int)
+            or isinstance(maximum_delta_ms, bool)
+            or maximum_delta_ms != 3000
+            or not 0 <= delta_ms <= maximum_delta_ms
+            or capture.get("stable_state_verified") is not True
+        ):
+            raise FormalK50RunnerError("gold CAP-001 capture binding is invalid")
+        for field in (
+            "finalized_capture_record_sha256",
+            "screenshot_sha256",
+            "accessibility_snapshot_sha256",
+        ):
+            _require_sha256(capture.get(field), f"gold capture binding {field}")
         if (
             provenance.get("adjudication_status") != "resolved"
             or provenance.get("evidence_rechecked_via_adapter") is not True

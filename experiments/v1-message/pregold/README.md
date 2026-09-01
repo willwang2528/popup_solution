@@ -111,6 +111,50 @@ the predictions are correct or that Apple Vision has a reproducible model identi
 `human_gold_used=false`, `scored=false`, and
 `paper_result_eligible=false` remain mandatory.
 
+## Materialize the formal K50 prediction pair
+
+[`freeze_operating_points.py`](./freeze_operating_points.py) freezes the K25,
+K50, and K100 selected-ID ledgers, but it deliberately emits no predictions.
+After that ledger exists, [`freeze_k50_predictions.py`](./freeze_k50_predictions.py)
+materializes exactly two complete K50 snapshots: `mg-pu-k50-v1` and
+`seeded-random-k50-v1`.
+
+The materializer revalidates the original feature, visual-bank, and method
+snapshots; reconstructs the complete operating-point ledger; and recomputes the
+source `mg-pu-gated-union-v1` rows through the shared pregold freezer. Every
+output row binds the source-method snapshot, selected-ID ledger, visual-bank
+input/config/protocol commitments, K50 budget commitment, and operating-point
+ledger hashes. Both methods cover the identical full item set and set
+`visual_called=true` for exactly `ceil(0.5 * N)` ledger-selected items.
+
+The ledger's canonical-JSON selected-set hash and the formal finalizer's
+newline-delimited selected-set hash are deliberately stored under different
+names. The sidecar's `formal_receipt_hash_binding` projects the latter together
+with the exact prediction, item-set, visual-bank/config, and budget-spec hashes;
+copying the ledger hash into a later formal receipt would be rejected.
+
+Both the prediction JSONL and its commitment sidecar are private, mode `0600`,
+and immutable: existing paths are never replaced. The sidecar exposes each
+method's canonical `frozen_prediction_sha256`, which a later measured budget
+receipt can bind. It is not itself an actual-budget receipt, does not read gold,
+does not compute metrics, and does not create a formal result.
+
+```bash
+../.venv/bin/python3 \
+  experiments/v1-message/pregold/freeze_k50_predictions.py \
+  --items experiments/v1-message/features/private/formal.features.private.jsonl \
+  --visual-bank experiments/v1-message/pregold/private/formal.visual.private.jsonl \
+  --method-results experiments/v1-message/pregold/private/formal.predictions.private.jsonl \
+  --operating-point-ledger experiments/v1-message/pregold/private/formal.operating-points.private.json \
+  --private-output experiments/v1-message/pregold/private/formal-k50.predictions.private.jsonl \
+  --private-commitment experiments/v1-message/pregold/private/formal-k50.commitment.private.json
+```
+
+Formal scoring remains blocked until real adjudicated items, method-specific
+semantic adjudications, a leakage-safe group-map attestation, and measured
+pixels/tokens/cost receipts all exist. This freezer cannot satisfy or simulate
+those gates.
+
 ## Tests
 
 ```bash
@@ -121,4 +165,5 @@ the predictions are correct or that Apple Vision has a reproducible model identi
 The tests cover manifest-label value and physical-absence invariance, unknown
 manifest-field fail-closed behavior, explicit popup-scope gating, strict
 human/gold/adjudication rejection, safe Model-B projection, zero actions, zero
-scoring, private-output placement and permissions, and public-summary privacy.
+scoring, private-output placement and permissions, public-summary privacy, and
+the K50 pair's complete coverage plus input/selection/budget hash bindings.

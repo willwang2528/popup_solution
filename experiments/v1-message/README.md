@@ -148,6 +148,41 @@ hash 或 prediction 内容。
 B1 popup-ROI、B2 exact PopSweeper、C1 共享视觉融合和可复现视觉模型也仍未解锁。因此仓库尚无
 正式方法比较数字。
 
+[`popup_eval/formal_item_materializer.py`](./popup_eval/formal_item_materializer.py)
+补齐真人 gold 到 formal runner 之间的私有桥接。它复用既有 G1 message-gold
+finalizer 与 G2 structure–visual-gap finalizer，要求 source item、G1 final rows、
+冻结 structure bundle、每项 G2 A/B audit 和 G2 final rows 全覆盖且 hash 一致；任何
+G1 `cannot_resolve/out_of_scope/uncertain/unusable`、G2 对 G1 的实质质疑、活动动作或
+Recovery payload 都整批 fail-closed。source 中仅为 union schema 占位的
+null／`not_observable` Recovery 容器会在输出投影时删除，不能进入 formal item。
+
+formal source 还必须逐项绑定已终结的 CAP-001 Android 采集证据：
+`record_kind=real_app` 本身不够；必须是 `full_device_evidence`、真实设备或 emulator、
+隐私复核通过、`AccessibilityService` snapshot、同步差值不超过 3000 ms，并且
+capture record、screenshot 与 accessibility snapshot 的 SHA-256 完整一致。历史
+PopSweeper/RICO 的 `partial_device_evidence` 即使随后补上真人标签也会整批拒绝。
+绑定会保留在 `adjudication_provenance.capture_binding`，正式 runner 会再次校验。
+
+两个 gold hash 均不读取 source item prediction：G1 hash 只覆盖规范化的真人 G1
+final rows；G2 hash 只覆盖绑定 G1／structure hash 和两条独立 audit hash 的 G2
+final rows。最终 text-bearing item 与 summary 都必须写入 `private/`，权限固定为
+`0700/0600` 且禁止覆盖。输出仍是 message-only、`no_action`、未评分、
+`paper_result_eligible=false`，可以直接作为 formal K50 runner 的
+`--adjudicated-items`，但本身不是实验结果。
+
+```bash
+../.venv/bin/python3 experiments/v1-message/popup_eval/formal_item_materializer.py \
+  --source-items /ABSOLUTE/private/pending-union.private.jsonl \
+  --g1-adjudications /ABSOLUTE/private/g1-final.private.jsonl \
+  --structured-features /ABSOLUTE/private/features.private.jsonl \
+  --structured-bundle-sha256 <FROZEN_SHA256> \
+  --g2-independent-audits /ABSOLUTE/private/g2-a-b.private.jsonl \
+  --g2-adjudications /ABSOLUTE/private/g2-final.private.jsonl \
+  --output-items /ABSOLUTE/private/formal-items.private.jsonl \
+  --output-summary /ABSOLUTE/private/formal-items-summary.private.json \
+  --expected-count 30
+```
+
 [`pregold/freeze_operating_points.py`](./pregold/freeze_operating_points.py) 现提供
 K25/K50/K100 的 pre-gold selected-ID ledger 冻结入口；其 MG-PU severity 排序是
 明确的 proposed policy，不是现有 binary gate 或已验证策略，当前也没有生成 formal
