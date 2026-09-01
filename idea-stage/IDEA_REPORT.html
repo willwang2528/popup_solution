@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>移动弹窗消息可访问性：Idea Discovery Report</title>
+
+<meta name="generator" content="ARIS render-html (academic, v1)">
+<meta name="aris:source-path" content="popup-solution/idea-stage/IDEA_REPORT.md">
+<meta name="aris:source-sha256" content="ef80137265c62a9fb25cccb780490415101cee31314b30b302d4bf37ab61603e">
+<meta name="aris:generated-at" content="2026-09-01 05:13 UTC">
+
+<!-- MathJax 3 -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+
+
+<style>
+:root {
+  --bg: #fdfcf7;
+  --bg-soft: #f4f1ea;
+  --bg-code: #f8f5ec;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-muted: #6b6b6b;
+  --primary: #1a4a8c;
+  --primary-soft: #2d6cb8;
+  --accent: #b8390e;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --info-bg: #dbeafe;
+  --good-bg: #d1fae5;
+  --good: #065f46;
+  --bad-bg: #fee2e2;
+  --bad: #991b1b;
+  --border: #d6d0c0;
+  --border-soft: #e8e3d5;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Source Serif Pro", "Source Serif 4", "Crimson Pro", "Georgia", "Songti SC", "STSong", serif;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 48px;
+  padding: 40px 32px;
+}
+
+nav.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  font-size: 13px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border-soft);
+  padding-right: 16px;
+}
+nav.toc h3 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+nav.toc ol li { margin: 5px 0; counter-increment: toc; }
+nav.toc ol li::before { content: counter(toc) ". "; color: var(--ink-muted); margin-right: 4px; }
+nav.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted transparent;
+}
+nav.toc a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+nav.toc ul { list-style: none; padding-left: 14px; margin: 3px 0; font-size: 12px; }
+nav.toc ul li::before { content: "→ "; color: var(--border); }
+
+main { min-width: 0; }
+
+header.hero {
+  border-bottom: 3px double var(--primary);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+}
+header.hero .eyebrow {
+  color: var(--accent);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+header.hero h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+header.hero .subtitle {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+  font-style: italic;
+}
+header.hero .byline {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+header.hero .byline strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+header.hero .meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 14px;
+}
+header.hero .meta span strong { color: var(--ink-soft); }
+header.hero .meta code {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 11px;
+  background: var(--bg-soft);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+}
+
+h2 {
+  font-size: 24px;
+  margin: 44px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 700;
+}
+h2 .num { color: var(--primary); font-weight: 600; margin-right: 8px; }
+h3 { font-size: 19px; margin: 28px 0 10px; color: var(--primary); font-weight: 600; }
+h4 { font-size: 16px; margin: 20px 0 8px; color: var(--ink); font-weight: 600; }
+
+p { margin: 10px 0; }
+ul, ol { padding-left: 22px; margin: 10px 0; }
+ul li, ol li { margin: 4px 0; }
+ul li::marker { color: var(--primary); }
+
+strong { color: var(--accent); font-weight: 600; }
+em { color: var(--ink-soft); }
+
+a { color: var(--primary); }
+a:hover { color: var(--accent); }
+
+code:not(.hljs) {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.86em;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  color: var(--accent);
+}
+
+pre {
+  background: #fafaf6;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  padding: 0;
+  overflow-x: auto;
+  border-radius: 4px;
+  margin: 14px 0;
+}
+pre code, pre code.hljs {
+  background: transparent !important;
+  display: block;
+  padding: 14px 18px !important;
+  font-size: 13px;
+  line-height: 1.55;
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+  color: var(--ink);
+}
+pre.diagram {
+  background: #f9f6ed;
+  border-left: 4px solid var(--accent);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.callout {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  font-size: 15px;
+}
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.callout-info { background: var(--info-bg); border-left-color: var(--primary); }
+.callout-info .callout-title { color: var(--primary); }
+.callout-warn { background: var(--warn-bg); border-left-color: var(--warn); }
+.callout-warn .callout-title { color: var(--warn); }
+.callout-good { background: var(--good-bg); border-left-color: var(--good); }
+.callout-good .callout-title { color: var(--good); }
+.callout-bad { background: var(--bad-bg); border-left-color: var(--bad); }
+.callout-bad .callout-title { color: var(--bad); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+thead { background: var(--primary); color: white; }
+th, td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+th { font-weight: 600; font-size: 13px; letter-spacing: 0.02em; }
+tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--bg-soft); }
+
+details.qa, details {
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  margin: 10px 0;
+  padding: 0;
+}
+details summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary);
+  list-style: none;
+  user-select: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸ ";
+  margin-right: 4px;
+  display: inline-block;
+  transition: transform 0.15s;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details[open] summary { border-bottom: 1px solid var(--border-soft); }
+details > :not(summary) { padding: 10px 14px; }
+details p:first-of-type { margin-top: 8px; }
+
+mjx-container[display="true"] { margin: 12px 0 !important; }
+
+footer.aris-footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+footer.aris-footer a { color: var(--ink-muted); border-bottom: 1px dotted var(--border); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px; }
+  nav.toc {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-soft);
+    padding-right: 0;
+    padding-bottom: 14px;
+  }
+  header.hero h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+}
+@media print {
+  nav.toc { display: none; }
+  .layout { grid-template-columns: 1fr; padding: 0; }
+  body { background: white; }
+  header.hero { border-bottom-color: var(--ink); }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+<li><a href="#executive-summary">Executive Summary</a>
+</li>
+<li><a href="#问题锚点与证据边界">问题锚点与证据边界</a>
+</li>
+<li><a href="#phase-1文献图谱">Phase 1：文献图谱</a>
+<ul>
+<li><a href="#a-弹窗识别解除与自动探索">A. 弹窗识别、解除与自动探索</a></li>
+<li><a href="#b-同意弹窗广告与业务状态">B. 同意弹窗、广告与业务状态</a></li>
+<li><a href="#c-屏幕阅读器与像素补全邻近工作">C. 屏幕阅读器与像素补全邻近工作</a></li>
+<li><a href="#d-现有研究留下的结构性空位">D. 现有研究留下的结构性空位</a></li>
+</ul>
+</li>
+<li><a href="#phase-2候选-idea-与机械筛选">Phase 2：候选 idea 与机械筛选</a>
+</li>
+<li><a href="#phase-3查新结论">Phase 3：查新结论</a>
+</li>
+<li><a href="#phase-4独立评审后的收敛">Phase 4：独立评审后的收敛</a>
+</li>
+<li><a href="#phase-45方法与实验计划">Phase 4.5：方法与实验计划</a>
+</li>
+<li><a href="#eliminated-ideas">Eliminated Ideas</a>
+</li>
+<li><a href="#数据与工程现状">数据与工程现状</a>
+</li>
+<li><a href="#当前可证伪主张">当前可证伪主张</a>
+</li>
+<li><a href="#公开来源入口">公开来源入口</a>
+</li>
+<li><a href="#pipeline-checklist">Pipeline checklist</a>
+</li>
+</ol>
+</nav>
+
+<main>
+<header class="hero">
+
+  <h1>移动弹窗消息可访问性：Idea Discovery Report</h1>
+
+
+  <div class="meta">
+    <span><strong>Source:</strong> <code>popup-solution/idea-stage/IDEA_REPORT.md</code></span>
+    <span><strong>SHA256:</strong> <code>ef80137265c6</code></span>
+    <span><strong>Rendered:</strong> 2026-09-01 05:13 UTC</span>
+
+  </div>
+</header>
+
+<h1 id="移动弹窗消息可访问性idea-discovery-report">移动弹窗消息可访问性：Idea Discovery Report</h1>
+<p><strong>Direction</strong>：面向依赖 TalkBack／VoiceOver 的视障人士，研究移动弹窗可见消息与结构化可访问性表示之间的缺口；V1 只判断弹窗存在与消息，不执行关闭或 Recovery。 <strong>Generated</strong>：2026-09-01 <strong>Pipeline</strong>：<code>research-lit → idea-creator → novelty-check → research-review → research-refine-pipeline</code> <strong>Current phase</strong>：Phase 1–5 的研究设计与报告链已闭合；结论为 <code>PROCEED_WITH_CAUTION</code>、fatal design flaws=0、readiness=3.5/5。真实同步 Android feasibility、G1/G2 人工标注和正式方法实验尚未执行。所有性能主张均为 <code>not_yet_tested</code>，数据集 novelty 仅为 <code>LOW-MEDIUM / provisional</code>。</p>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>当前选中方向不是“统一关闭所有弹窗”，而是 <strong>PMAB-Android：移动弹窗消息可观测缺口的测量 benchmark</strong>。核心事实边界是：平台没有暴露到 UI／可访问性树的内容，tree-only 方法原则上无法读取；若内容仍存在于可见像素中，视觉只可作为消息转录兜底；若结构、像素和其他获授权观察均未提供该事实，方法必须弃答，不能从无证据中恢复。</p>
+<p>最小论文故事由两个层次组成：数据集负责测量可见消息、结构暴露和缺口；MG-PU 只是一种在结构消息不足时分配视觉预算的可证伪 policy。数据集是否具有首创性、MG-PU 是否更好，都必须由公开发布、系统查新和正式实验决定。</p>
+<h2 id="问题锚点与证据边界">问题锚点与证据边界</h2>
+<p>PPT 第 14 页把“弹窗标识消失”和“截图／日志变化”列为弱回证；原目标与 Context、业务持久化、原任务后置条件才是更强回证。因此 V1 不挑战统一弹窗解决器，也不把消息判断写成 Recovery。没有进入 UI／可访问性树的内容，tree-only 方法原则上不可读；视觉只能扩展对屏幕像素的可观察范围，不能证明用户意图、业务状态或原任务恢复。</p>
+<h2 id="phase-1文献图谱">Phase 1：文献图谱</h2>
+<h3 id="a-弹窗识别解除与自动探索">A. 弹窗识别、解除与自动探索</h3>
+<table><thead><tr><th>工作</th><th>输入与输出</th><th>对本研究的作用</th><th>不能支持的主张</th></tr></thead><tbody><tr><td>PopSweeper</td><td>视频帧变化、图像分类、close-button 检测与坐标</td><td>提供 app-blocking popup 图像来源和视觉检测强邻近基线</td><td>不输出 popup 消息、可访问性暴露缺口或屏幕阅读器结果；公开资产不足以 exact 复现</td></tr><tr><td>Poker / Sneaky Pop-ups</td><td>screenshot、XML、几何与探索；收集并解除 popup</td><td>支持 popup 类型、视觉范围与真实 App 采样</td><td>研究目标是 sneaky pattern，不是结构—可见消息差</td></tr><tr><td>VLM-Fuzz</td><td>UI hierarchy、Activity/Manifest、按需 VLM 与动作</td><td>支持按需视觉、owner/context 和探索特征</td><td>指标是 GUI testing coverage，不是消息可访问性</td></tr><tr><td>DiOS / iOS Testing / WhisperTest</td><td>iOS UI 自动化、AccessibilityAudit、截图/OCR/OmniParser、Voice Control</td><td>支持 iOS 原始字段、感知级联和平台限制</td><td>Voice Control 不等于 VoiceOver；画面变化不等于 Recovery</td></tr></tbody></table>
+<h3 id="b-同意弹窗广告与业务状态">B. 同意弹窗、广告与业务状态</h3>
+<table><thead><tr><th>工作</th><th>输入与输出</th><th>对本研究的作用</th><th>边界</th></tr></thead><tbody><tr><td>The OK Is Not Enough</td><td>Appium 文本与规则识别 consent dialog/choice</td><td>可形成 structure-text baseline 和文本字段</td><td>研究的是 consent/dark pattern，不是通用 popup message gap</td></tr><tr><td>Freely Given Consent</td><td>screenshot OCR、词表、聚类</td><td>可形成 OCR-only 消息基线</td><td>不能替代 popup presence、owner 或 screen-reader message gold</td></tr><tr><td>TCF A(A)ID / Abandon All Hope</td><td>banner 选择、持久化与网络行为</td><td>为进阶业务回证提供字段</td><td>超出 V1，只能保留兼容字段</td></tr><tr><td>Cookieverse / BannerClick</td><td>DOM、iframe、ShadowDOM、词表与按钮操作</td><td>提供 mobile-web DOM 表示和 banner baseline</td><td>Web banner 不能直接外推原生 Android／iOS</td></tr><tr><td>HotMobile ad policy / SSLDetecter</td><td>UI state graph、widget tree、规则与自动遍历</td><td>提供结构状态、页面范围与规则字段</td><td>不是屏幕阅读器或消息质量评测</td></tr></tbody></table>
+<h3 id="c-屏幕阅读器与像素补全邻近工作">C. 屏幕阅读器与像素补全邻近工作</h3>
+<table><thead><tr><th>工作</th><th>已有结论</th><th>与本研究的关系</th></tr></thead><tbody><tr><td>ScreenAudit (2025)</td><td>用移动屏幕元数据和 screen-reader transcript 发现传统 checker 漏掉的问题</td><td>最接近“结构信息不足时评估实际朗读”，但不是 popup-message benchmark</td></tr><tr><td>Screen Recognition (2021)</td><td>从像素推断移动 UI 的 accessibility metadata，并做屏幕阅读器用户研究</td><td>证明视觉可补充未暴露 accessibility metadata；任务粒度不是 popup 消息与关键事实</td></tr><tr><td>Accessibility first (2024)</td><td>视障用户实验记录 modal 打开后焦点仍停留在底层页面等障碍</td><td>直接支持问题动机，但不是自动数据集或方法对比</td></tr><tr><td>MCP-Driven Accessibility Tree Standardization (2026 preprint)</td><td>尝试统一异构 accessibility tree 传输与 schema</td><td>支持跨平台规范层的必要性；标准化不会恢复平台从未暴露的事实</td></tr></tbody></table>
+<h3 id="d-现有研究留下的结构性空位">D. 现有研究留下的结构性空位</h3>
+<p>截至本轮检索，没有已核实工作同时满足以下四项：</p>
+<ol><li>研究对象是移动弹窗在屏幕上可见、但对屏幕阅读器结构化表示缺失／合并／矛盾的消息；</li><li>item 同步保存 screenshot、平台原始结构、规范字段、消息真值、关键事实和 gap 真值；</li><li>比较 structure-only、vision-only、always-on fusion 与 gap-gated fusion；</li><li>用消息正确性、关键事实召回、关键编造、coverage 与视觉成本做同预算配对评测。</li></ol>
+<p>这只是查新候选空位，不足以证明“第一个”。最接近的反例族是 ScreenAudit、Screen Recognition、PopSweeper、WhisperTest 和移动 consent-dialog 测量。</p>
+<h2 id="phase-2候选-idea-与机械筛选">Phase 2：候选 idea 与机械筛选</h2>
+<table><thead><tr><th>排名</th><th>候选</th><th>判定</th><th>选择依据</th></tr></thead><tbody><tr><td>1</td><td><strong>PMAB-Android popup-message observability benchmark</strong></td><td><code>RECOMMENDED / pre-empirical</code></td><td>与问题锚、数据集交付和现有工程最一致；独立 reviewer 允许进入 feasibility；novelty 仅低—中等，不能写“已证明首创”</td></tr><tr><td>2</td><td><strong>MG-PU message-sufficiency visual allocation</strong></td><td><code>SUPPORTING / contingent</code></td><td>可做同预算、可否证比较；不是独立新算法，只有正式实验优于 strongest baseline 才能形成方法收益主张</td></tr><tr><td>3</td><td><strong>BVI message-adequacy validation</strong></td><td><code>DEFERRED</code></td><td>能支持消息是否对目标用户充分，但需要独立招募、伦理与协议；当前 V1 不以 UX claim 为必要条件</td></tr></tbody></table>
+<p>选中 Idea 1 的理由是问题—数据—实验链最集中，而不是因为已有正向 pilot。当前没有任何可以写成 <code>POSITIVE</code> 的正式结果。</p>
+<h2 id="phase-3查新结论">Phase 3：查新结论</h2>
+<ul><li>“第一个提出弹窗问题”已经被已有 pop-up focus specification 和移动无障碍研究反证，必须删除。</li><li>“首次同步 screenshot + accessibility tree”已有 Abra 等工具反例，必须删除。</li><li>“视觉兜底本身新颖”已有 Screen Recognition、ScreenAudit、WhisperTest、VLM-Fuzz 等直接邻近工作，必须删除。</li><li>尚未命中 exact combination 的候选空位是：<strong>移动 popup-message gold + 结构暴露 gap + 四族同预算评测</strong>；当前只能写 <code>LOW-MEDIUM / provisional</code>。</li></ul>
+<h2 id="phase-4独立评审后的收敛">Phase 4：独立评审后的收敛</h2>
+<ul><li>独立 Claude cross-family reviewer 的最终设计结论为 <code>PROCEED_WITH_CAUTION</code>；这只允许进入 feasibility/G1/G2 pilot。</li><li>主贡献冻结为 PMAB-Android measurement benchmark；MG-PU 降为 supporting allocation policy。</li><li>PopSweeper/RICO 降为 annotation/infrastructure pilot，不能替代真实同步 Android accessibility capture。</li><li>G1 screenshot fact gold 与 G2 structure-sufficiency audit 分离；G2 不得改写 G1。</li><li>V1 明确无动作、无 Recovery、无 UX 改善主张。</li></ul>
+<h2 id="phase-45方法与实验计划">Phase 4.5：方法与实验计划</h2>
+<ul><li>Proposal：<code>refine-logs/FINAL_PROPOSAL.md</code></li><li>Experiment plan：<code>refine-logs/EXPERIMENT_PLAN.md</code></li><li>Tracker：<code>refine-logs/EXPERIMENT_TRACKER.md</code></li><li>Active contract：<code>idea-stage/docs/research_contract.md</code></li></ul>
+<p>首批执行门依次为：真实同步 Android capture feasibility；G1/G2 人工 pilot；冻结 B1 strong-family baselines；最后才运行 K50 allocation comparison。任何硬门失败都按预注册条件停止或转向，不用 synthetic 或 adapter pilot 补位。</p>
+<h2 id="eliminated-ideas">Eliminated Ideas</h2>
+<table><thead><tr><th>Idea</th><th>淘汰原因</th></tr></thead><tbody><tr><td>统一跨平台弹窗解决器</td><td>owner、协议、平台暴露和业务语义不统一；不可观测事实无法由算法恢复</td></tr><tr><td>以自动关闭／Recovery 为 V1 主任务</td><td>PPT 第 14 页要求动作后多级回证；当前无动作、无焦点／业务／任务后证据</td></tr><tr><td>以跨 Android/iOS 为 V1 主张</td><td>iOS 尚无独立真实 capture；会造成无证据外推</td></tr><tr><td>以视觉兜底为主要算法创新</td><td>已有大量视觉补全和按需视觉邻近工作；只能作为工程部件</td></tr><tr><td>以 PopSweeper/RICO 30-item 作为正式 benchmark</td><td>缺少真实同步 accessibility representation、人工 gold 与 release gate</td></tr></tbody></table>
+<h2 id="数据与工程现状">数据与工程现状</h2>
+<ul><li>PPT 边界内 14 篇记录已完成结构化采集；14/14 现有公开主来源，逐字段证据等级未因补 URL 自动升级。</li><li>文献原子字段 90 个、已有方法／工程字段 165 个，共 255 个 item 合同字段；这是 schema coverage，不是 empirical dataset 规模。</li><li>120 个 PopSweeper real-source candidates 与 30-item pilot observation 已冻结；人工消息 gold 为 0。</li><li>正式 Android capture 为 0；正式 baseline result 为 0；paper result 为 0。</li></ul>
+<h2 id="当前可证伪主张">当前可证伪主张</h2>
+<table><thead><tr><th>Claim</th><th>最低可信证据</th><th>当前状态</th></tr></thead><tbody><tr><td>移动 popup message observability gap 可测</td><td>screenshot + 同步 structure + 双人消息 gold + 独立 gap audit</td><td><code>not_yet_tested</code></td></tr><tr><td>公开 item union 可复现</td><td>schema、field catalog、source crosswalk、公开来源与真实非空 item</td><td>合同已就绪；empirical gold 未就绪</td></tr><tr><td>MG-PU 在同预算下优于 strongest baseline</td><td>frozen split、同视觉 bank、同 backbone、paired cluster bootstrap</td><td><code>not_yet_tested</code></td></tr><tr><td>改善视障用户体验</td><td>合规目标用户研究</td><td><code>out_of_current_evidence</code></td></tr><tr><td>Recovery 成功</td><td>动作后 D/C/B/T 分层回证</td><td><code>out_of_v1</code></td></tr></tbody></table>
+<h2 id="公开来源入口">公开来源入口</h2>
+<ul><li><a href="https://doi.org/10.1145/3719027.3765183">WhisperTest, ACM CCS 2025</a></li><li><a href="https://www.usenix.org/conference/usenixsecurity23/presentation/koch">The OK Is Not Enough, USENIX Security 2023</a></li><li><a href="https://arxiv.org/abs/2412.02933">PopSweeper, arXiv:2412.02933</a></li><li><a href="https://arxiv.org/abs/2505.12056">Understanding the Sneaky Patterns of Pop-up Windows, arXiv:2505.12056</a></li><li><a href="https://link.springer.com/article/10.1007/s10664-026-10816-4">VLM-Fuzz, Empirical Software Engineering 2026</a></li><li><a href="https://arxiv.org/abs/2504.02110">ScreenAudit, arXiv:2504.02110</a></li><li><a href="https://arxiv.org/abs/2101.04893">Screen Recognition, arXiv:2101.04893</a></li><li><a href="https://link.springer.com/article/10.1007/s10209-023-01053-3">Accessibility first, Universal Access in the Information Society</a></li><li><a href="https://arxiv.org/abs/2608.24898">MCP-Driven Accessibility Tree Standardization, arXiv:2608.24898</a></li></ul>
+<h2 id="pipeline-checklist">Pipeline checklist</h2>
+<ul><li>[x] Phase 0：读取 <code>RESEARCH_BRIEF.md</code> 与 PPT 第 14 页</li><li>[x] Phase 1：本地 14 篇 + 公开来源 + 相邻查新图谱</li><li>[x] Phase 2：候选生成、机械筛选与选择依据</li><li>[x] Phase 3：逐 idea novelty check</li><li>[x] Phase 4：独立 critical review</li><li>[x] Phase 4.5：refine + experiment plan 更新</li><li>[x] Phase 5：canonical report 与 active research contract</li><li>[ ] Execution：真实 Android capture、人工 G1/G2 与正式实验</li></ul>
+
+<footer class="aris-footer">
+  Generated by <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/render-html/SKILL.md">ARIS <code>/render-html</code></a> ·
+  source path <code>popup-solution/idea-stage/IDEA_REPORT.md</code> ·
+  SHA256 <code>ef80137265c6</code> ·
+  generated at 2026-09-01 05:13 UTC.
+  This is a generated view — edit the source Markdown, then re-render.
+</footer>
+</main>
+
+</div>
+</body>
+</html>

@@ -38,6 +38,11 @@ v1 不自动点击或关闭弹窗。弹窗消失、屏幕阅读器焦点恢复�
 30. [`dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md`](./dataset-v1/annotation-pilot/STRUCTURE_VISUAL_GAP_AUDIT.md)：独立于截图消息盲标的结构—视觉 exposure-gap 仲裁协议。
 31. [`MANIFEST.md`](./MANIFEST.md)：本轮耐久研究产物及其状态清单。
 32. [`dataset-v1/android-capture/README.md`](./dataset-v1/android-capture/README.md)：正式 Android screenshot + AccessibilityService snapshot 的 fail-closed 采集可行性门；当前真实样本仍为 0。
+33. [`idea-stage/IDEA_REPORT.md`](./idea-stage/IDEA_REPORT.md)：ARIS idea-discovery 全链路报告，含候选排序、淘汰理由和已被查新反证的 broad-first 主张。
+34. [`idea-stage/docs/research_contract.md`](./idea-stage/docs/research_contract.md)：当前选中 PMAB-Android 方向、不可观测上限、claim 门与最小证据。
+35. [`CLAIM_BOUNDARY_V1.json`](./CLAIM_BOUNDARY_V1.json)：V1 message-only、必须弃答场景和零实证状态的机器可读约束。
+36. [`dataset-v1/ITEM_UNION_EXAMPLE.md`](./dataset-v1/ITEM_UNION_EXAMPLE.md)：一个公开 synthetic item 的 90+165=255 字段并集可读视图；不是经验数据或 gold。
+37. [`dataset-v1/android-capture/fixture-target/README.md`](./dataset-v1/android-capture/fixture-target/README.md)：5 个可构建受控应用身份、3 个弹窗模板族和 15 个只读场景；安装前条件已就绪，但设备验证仍为 false。
 
 ## v1 闭环
 
@@ -67,6 +72,7 @@ v1 主成功值为 `VPMA`：存在性正确，且正样本消息语义正确、�
 - 排除：CAPTCHA、风控、身份认证、PIN／生物识别、支付确认、安装／删除、权限安全控制、人工审核及其他高风险流程。OS 级系统权限对话框和 App 内权限／安全控制均显式 `out_of_scope`，不能混入 `uncertain`。
 - v1 只读观察并生成消息，不执行弹窗动作。
 - Appium、XCUI、UIAutomator 能读到元素，不等于 TalkBack／VoiceOver 用户一定可聚焦、可理解。
+- 平台未暴露到 UI／可访问性树的事实，tree-only 原则上无法读取；若结构、像素和其他获授权通道均未暴露该事实，系统必须弃答。
 - 没有真实目标用户研究时，只报告技术消息判断性能，不宣称已改善真实用户体验。
 
 ## 进阶层
@@ -153,3 +159,9 @@ collector 已按测试先行实现：它拒绝动作后数据、UIAutomator/RICO
 审查关闭了 nested label 泄漏、手写 record 放行和随机哈希不绑定 artifact 三条绕过；
 最终正式 audit CLI 会逐 bundle 重新读取私有 artifact 并重算哈希，但仍不能替代
 collector 来源、授权和同步声明的过程审计。
+
+受控 fixture target 已能构建 5 个唯一 package，覆盖 centered、bottom、fullscreen
+三类模板和 positive/no-popup/boundary 三类场景；5 个 APK 的 package、API 30/35 与
+launchable Activity 已通过 `aapt2` 检查。其机器状态严格区分
+`installation_prerequisites_ready=true` 与 `device_capture_validated=false`；这些场景仍是
+`definition_only`，不会增加真实 capture、human gold 或论文结果计数。

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="fixture_root" type="id" />
+    <item name="fixture_host_title" type="id" />
+    <item name="fixture_host_body" type="id" />
+    <item name="fixture_boundary_panel" type="id" />
+    <item name="fixture_boundary_message" type="id" />
+    <item name="fixture_popup_panel" type="id" />
+    <item name="fixture_popup_message" type="id" />
+    <item name="fixture_popup_close" type="id" />
+</resources>

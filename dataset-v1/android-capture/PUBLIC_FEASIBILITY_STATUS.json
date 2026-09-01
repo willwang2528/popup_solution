@@ -1,8 +1,8 @@
 {
-  "version": "1.1.2",
-  "updated_at": "2026-09-01T13:03:08+08:00",
+  "version": "1.1.3",
+  "updated_at": "2026-09-01T13:34:00+08:00",
   "status": "blocked_no_real_android_captures",
-  "tooling_status": "collector_apk_and_v1_1_finalizer_tested_no_device",
+  "tooling_status": "collector_fixture_apks_and_v1_1_finalizer_tested_no_device",
   "host_device_tooling": {
     "adb_available": true,
     "emulator_available": false,
@@ -20,14 +20,26 @@
     "host_tool_tests_passed": 4,
     "v1_1_finalizer_tests_passed": 24,
     "full_repository_regression": {
-      "run": 233,
-      "passed": 231,
+      "run": 259,
+      "passed": 257,
       "skipped": 2,
       "failed": 0
     },
     "built_apk_contract_after_canonical_change": "passed_3_public_commit_bound",
     "collector_source_revision": "2ab1d10780bf9d81cc213cf065409ff1e6bfd8bd",
     "android_lint_status": "passed_no_issues"
+  },
+  "controlled_fixture_status": {
+    "installation_prerequisites_ready": true,
+    "device_capture_validated": false,
+    "apk_built_locally": true,
+    "application_id_count": 5,
+    "popup_template_family_count": 3,
+    "scenario_definition_count": 15,
+    "real_capture_bundle_count": 0,
+    "human_privacy_reviews_completed": false,
+    "automatic_actions": false,
+    "emits_gold": false
   },
   "real_capture_count": 0,
   "source_group_count": 0,

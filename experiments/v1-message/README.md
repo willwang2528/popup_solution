@@ -151,12 +151,16 @@ B1 popup-ROI、B2 exact PopSweeper、C1 共享视觉融合和可复现视觉模�
 [`pregold/freeze_operating_points.py`](./pregold/freeze_operating_points.py) 现提供
 K25/K50/K100 的 pre-gold selected-ID ledger 冻结入口；其 MG-PU severity 排序是
 明确的 proposed policy，不是现有 binary gate 或已验证策略，当前也没有生成 formal
-ledger。[`popup_eval/formal_k50.py`](./popup_eval/formal_k50.py) 是主确认端点的
-fail-closed finalizer：它只接受 `mg-pu-k50-v1` 对
+ledger。[`popup_eval/formal_k50_runner.py`](./popup_eval/formal_k50_runner.py) 是正式
+上游 runner：未来只消费 finalized adjudicated items、两方法冻结预测、逐项语义裁决、
+formal group map、budget receipts 与 attestation，递归拒绝 action／Recovery 字段，
+并在写出前把 report 交给现有 finalizer 验证。它当前没有读取真实 gold 或生成正式结果。
+[`popup_eval/formal_k50.py`](./popup_eval/formal_k50.py) 是主确认端点的 fail-closed
+finalizer：它只接受 `mg-pu-k50-v1` 对
 `seeded-random-k50-v1`，要求 adjudicated VPMA、formal group map、exact K、共享
 10,000 次 cluster bootstrap、相同冻结 hashes，以及逐方法 pixels/tokens/cost
-实际预算账本。它不会读取 gold 或自行运行 paired scorer；当前 formal paired report、
-Holm、BH 与 Pareto 均不存在，所以不会产生论文结果。冻结 ledger 与 finalizer
+实际预算账本。当前没有真实 finalized item、语义裁决、正式 budget receipt 或 group-map
+attestation，因此没有 formal paired report；Holm、BH 与 Pareto 也仍未实现，所以不会产生论文结果。冻结 ledger 与 finalizer
 都会重算两种 K 策略的 selected-ID 交集；集合不同时明确输出
 `budget_matched_not_item_matched` 及 overlap count/fraction，不能把等 K 误称为
 item-matched。

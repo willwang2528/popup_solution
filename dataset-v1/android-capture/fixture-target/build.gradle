@@ -1,0 +1,77 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "org.pmab.fixture"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "org.pmab.fixture"
+        minSdk 30
+        targetSdk 35
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    flavorDimensions "sourceApp"
+    productFlavors {
+        commerce {
+            dimension "sourceApp"
+            applicationIdSuffix ".commerce"
+            buildConfigField "String", "SOURCE_SLUG", '"commerce"'
+        }
+        media {
+            dimension "sourceApp"
+            applicationIdSuffix ".media"
+            buildConfigField "String", "SOURCE_SLUG", '"media"'
+        }
+        travel {
+            dimension "sourceApp"
+            applicationIdSuffix ".travel"
+            buildConfigField "String", "SOURCE_SLUG", '"travel"'
+        }
+        productivity {
+            dimension "sourceApp"
+            applicationIdSuffix ".productivity"
+            buildConfigField "String", "SOURCE_SLUG", '"productivity"'
+        }
+        education {
+            dimension "sourceApp"
+            applicationIdSuffix ".education"
+            buildConfigField "String", "SOURCE_SLUG", '"education"'
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+    lint {
+        abortOnError true
+        warningsAsErrors true
+    }
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+}

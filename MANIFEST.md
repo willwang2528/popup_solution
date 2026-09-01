@@ -15,6 +15,11 @@
 | `RESEARCH_RULES_AMENDMENT_V1.md` | 用户最新的 message-only v1 修订 | current override |
 | `RESEARCH_RULES_PROVENANCE.json` | 飞书 URL、revision、文档 ID 与原文 SHA-256 | verified provenance |
 | `AGENTS.md` | 仓库研究执行约束 | current |
+| `CLAIM_BOUNDARY_V1.json` | V1 范围、不可观测上限、首创性与效果主张的机器可读门 | current / fail-closed |
+| `idea-stage/IDEA_REPORT.md` | ARIS idea-discovery 全链路 canonical report、候选排序与淘汰理由 | current / pre-empirical |
+| `idea-stage/IDEA_REPORT_20260901_130818.md` | 2026-09-01 13:08 idea-discovery 不可变快照 | archived version |
+| `idea-stage/IDEA_REPORT.html` | canonical report 的单文件 academic HTML 阅读视图 | generated from current source / no separate claim review |
+| `idea-stage/docs/research_contract.md` | 当前选中 PMAB-Android idea、claim 门与下一执行步骤 | active / pre-empirical |
 | `RESEARCH_BRIEF.md` | v1 问题、假设、指标和贡献口径 | current / provisional |
 | `sources/PPT_SLIDE_14_EVIDENCE.md` | PPT 五级回证证据锚与 v1/进阶分层 | verified source note |
 | `sources/SOURCE_LEDGER.md` | PopSweeper/RICO 校验、join、许可与发布边界 | verified source ledger |
@@ -36,6 +41,9 @@
 | `dataset-v1/DATASET_MANIFEST.json` | v1 数据契约、cohort 和校验摘要 | current / provisional |
 | `dataset-v1/ANNOTATION_GUIDE.md` | popup presence/message/gap 标注协议 | current / provisional |
 | `dataset-v1/data/item.template.json` | 单 item 模板与 v1 no-action 示例 | generated source template |
+| `dataset-v1/ITEM_UNION_EXAMPLE.md` | 单个 synthetic item 的 90+165=255 字段并集可读视图 | generated / machine checked / non-empirical |
+| `dataset-v1/scripts/build_item_union_example.py` | 从公开 catalog/crosswalk/template/fixture 生成并核验 item union 视图 | tested / no private input |
+| `dataset-v1/tests/test_build_item_union_example.py` | 255 行字段表、90/165 分布、presence/provenance、no-action、Recovery-status 完整性、中文表头与 stale-output 回归 | 9 tests passing |
 | `dataset-v1/schema/item.schema.json` | 单 item JSON Schema | current / provisional |
 | `dataset-v1/schema/source_to_item_crosswalk.json` | 90 文献字段 + 165 我方字段 = 255 映射 | generated / validated |
 | `dataset-v1/schema/field_catalog.json` | union 字段目录 | generated / validated |
@@ -68,11 +76,18 @@
 | `dataset-v1/android-capture/finalize_android_capture.py` | 单条终结与 5-group/3-template/3-strata 聚合可行性门 | tested / tooling only |
 | `dataset-v1/android-capture/PUBLIC_FEASIBILITY_STATUS.json` | 不含私有内容的 CAP-001 当前状态 | blocked / real capture count 0 |
 | `dataset-v1/android-capture/tests/test_capture_finalizer.py` | 截图完整性、provenance、同步、Java/Python typed canonical hash golden vector、null 碰撞与节点篡改拒绝、collector 值域／路径／package／focus 重算、无动作、递归标签泄漏、artifact-refinalizing 聚合、重复和 coverage 回归 | 24 tests passing |
+| `dataset-v1/android-capture/fixture-target/SCENARIO_CATALOG_V1.json` | 5 个受控 package、3 个模板族、15 个 positive/no-popup/boundary 场景 | definition only / installation prerequisites ready / device validation false |
+| `dataset-v1/android-capture/fixture-target/TARGET_BUILD_CONTRACT_V1.json` | fixture Gradle module、application IDs、模板、strata 与 no-action/no-gold 源码合同 | current / machine checked |
+| `dataset-v1/android-capture/fixture-target/validate_fixture_catalog.py` | 源码清单、场景覆盖、资格和 readiness 命名的 fail-closed 校验 | tested |
+| `dataset-v1/android-capture/fixture-target/tests/` | 目录边界、资格、源码合同、5 APK package/API/activity 回归 | 9 Python tests passing |
+| `dataset-v1/android-capture/fixture-target/src/` | 5-flavor 受控 Android target 与三类只读 popup renderer | 10 JVM tests + 5 APK build + lint pass / no device evidence |
 | `experiments/v1-message/pregold/freeze_operating_points.py` | gold-blind K25/K50/K100 MG-PU proposed-policy 与 seeded-random selected-ID ledger 冻结器 | tested / no formal ledger generated |
 | `experiments/v1-message/pregold/OPERATING_POINT_FREEZE.md` | operating-point 排序、hash、时间与私有输出合同 | current / pre-empirical |
 | `experiments/v1-message/pregold/tests/test_freeze_operating_points.py` | exact-K、排序、泄漏拒绝、覆盖、权限与不可覆盖回归 | 8 tests passing |
 | `experiments/v1-message/popup_eval/formal_k50.py` | 主 K50 对、formal group、adjudicated VPMA、cluster CI、coverage／hallucination／实际预算继续门 | tested finalizer / no formal result |
+| `experiments/v1-message/popup_eval/formal_k50_runner.py` | adjudicated item/prediction/semantic review/group/budget 到 formal K50 paired report 的 fail-closed 上游 | tested runner / no formal input |
 | `experiments/v1-message/tests/test_formal_k50.py` | 正式 hash／group／K／prediction／CI／预算与撤销主张门 | 11 tests passing |
+| `experiments/v1-message/tests/test_formal_k50_runner.py` | unresolved gold、prediction coverage、semantic hallucination、budget binding、动作/Recovery 与私有输出回归 | 7 tests passing |
 | `dataset-v1/scripts/build_crosswalk.py` | 生成 255 条 source-field crosswalk | tested generator |
 | `dataset-v1/scripts/materialize_schema_fixture.py` | 生成 3 条非经验 fixture | tested generator |
 | `dataset-v1/scripts/build_popsweeper_candidate_manifest.py` | 只读 ZIP 元数据并分层抽取来源候选 | tested generator |
@@ -84,6 +99,7 @@
 | `tests/test_annotation_pilot_protocol.py` | 固定批次、盲法、显式范围排除与无金标泄漏测试 | 6 tests passing |
 | `tests/test_annotation_agreement.py` | agreement、配对、范围排除、规范化与分歧导出测试 | 6 tests passing |
 | `tests/test_export_annotation_media.py` | 归档/member/CRC/RICO join/gitignore/冻结 pilot 测试 | 8 tests passing |
+| `tests/test_research_claim_boundary.py` | V1 message-only、不可观测上限、首创性和零实证状态回归 | 4 tests passing |
 | `dataset-v1/validation-result.json` | 当前 synthetic fixture 验证结果 | pass / non-empirical |
 | `dataset-v1/VALIDATION_REPORT_V1_MESSAGE.md` | v1 schema/fixture/negative mutation 验证说明 | pass / non-empirical |
 | `dataset-v1/work/literature_field_union.json` | 90 条文献原子字段工作集 | generated evidence |
@@ -162,6 +178,7 @@
 - `refine-logs/EXPERIMENT_TRACKER_*.md`
 - `refine-logs/REVIEW_SUMMARY_*.md`
 - `refine-logs/PIPELINE_SUMMARY_*.md`
+- `idea-stage/IDEA_REPORT_*.md`
 
 ## 历史或非发布入口
 

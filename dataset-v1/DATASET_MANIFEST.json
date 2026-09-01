@@ -1,6 +1,6 @@
 {
   "dataset_name": "Popup Message Union Dataset",
-  "schema_version": "1.1.0-provisional",
+  "schema_version": "1.1.1-provisional",
   "active_profile": "popup_message_judgment_v1",
   "unit": "one_action_free_popup_message_observation",
   "status": "v1_contract_visual_bank_and_method_snapshots_ready_human_message_and_gap_pending",
@@ -24,6 +24,8 @@
     "human_adjudicated_structure_visual_gap_items": 0,
     "real_app_items": 0,
     "controlled_fixture_items": 0,
+    "controlled_fixture_scenario_definitions": 15,
+    "controlled_fixture_application_ids": 5,
     "synthetic_schema_fixture_items": 3,
     "paper_reconstruction_items": 0,
     "ios_items": 0
@@ -131,6 +133,8 @@
   ],
   "contracts": {
     "item_schema": "schema/item.schema.json",
+    "readable_item_union_view": "ITEM_UNION_EXAMPLE.md",
+    "readable_item_union_generator": "scripts/build_item_union_example.py",
     "field_catalog": "schema/field_catalog.json",
     "source_to_item_crosswalk": "schema/source_to_item_crosswalk.json",
     "union_qa_rules": "schema/qa_rules.json",
@@ -150,7 +154,11 @@
     "local_vision_ocr_adapter": "../experiments/v1-message/ocr/README.md",
     "local_vision_ocr_public_summary": "../experiments/v1-message/ocr/PUBLIC_RUN_SUMMARY.json",
     "visual_evidence_freeze_status": "../experiments/v1-message/visual/VISUAL_EVIDENCE_PROTOCOL_V1.json",
-    "visual_evidence_public_summary": "../experiments/v1-message/visual/PUBLIC_VISUAL_BANK_SUMMARY.json"
+    "visual_evidence_public_summary": "../experiments/v1-message/visual/PUBLIC_VISUAL_BANK_SUMMARY.json",
+    "android_fixture_scenario_catalog": "android-capture/fixture-target/SCENARIO_CATALOG_V1.json",
+    "android_fixture_build_contract": "android-capture/fixture-target/TARGET_BUILD_CONTRACT_V1.json",
+    "formal_k50_upstream_runner": "../experiments/v1-message/popup_eval/formal_k50_runner.py",
+    "v1_claim_boundary": "../CLAIM_BOUNDARY_V1.json"
   },
   "validation": {
     "status": "pass_implemented_checks",
@@ -166,6 +174,16 @@
     "errors": 0,
     "dataset_pipeline_tests_passing": 84,
     "evaluation_harness_tests_passing": 78,
+    "readable_item_union_tests_passing": 9,
+    "formal_k50_runner_tests_passing": 7,
+    "controlled_fixture_contract_tests_passing": 9,
+    "controlled_fixture_jvm_tests_passing": 10,
+    "full_public_subtree_python_regression": {
+      "run": 259,
+      "passed": 257,
+      "skipped": 2,
+      "failed": 0
+    },
     "synthetic_smoke_methods_passing": 8,
     "local_vision_ocr_tests_passing_authorized_host": 7,
     "real_local_media_export": {
@@ -203,6 +221,7 @@
       "eight-method smoke results are synthetic pipeline checks and are not paper-result eligible",
       "structure-visual gap audit has a frozen contract but no human audit values",
       "the shared B1/C1/MG-PU visual bank and five-method pre-gold snapshots are frozen, but human gold and scoring remain pending",
+      "the controlled Android fixture has five buildable application IDs and three template families, but device_capture_validated remains false and it contributes zero real captures or human gold",
       "papers.jsonl now has public source entries for all 14 papers, but frozen local field locators still require per-field re-audit before any evidence-level upgrade",
       "no empirical real-app episodes yet",
       "no iOS capability or episode record yet"
@@ -240,7 +259,7 @@
     "work/MODEL_PREANNOTATION_STATUS.md": "682f687191e61a2764efe4b2f5b562c03a4da80cc33eeceb1007cb24ccc08fa5",
     "work/model-preannotation-a-summary.md": "62a4363507d185da964fb4193f28243075e9cad272b3fb0a6d0d2793597b0d11",
     "work/model-preannotation-b-summary.md": "2ed9ae8ac1ea1b72461b1ce41e7abfbe2a6fb1b7c40f45ac2e9a2691c1dae19f",
-    "../experiments/v1-message/README.md": "2675410eebf4983d49f165fa9db30598ec496e177ad40f6c00959ad171f4a88f",
+    "../experiments/v1-message/README.md": "279e8dd859483e3041dbf6f7955df0248b8b280a211100d8c227cbd901d954ec",
     "../experiments/v1-message/BASELINE_IMPLEMENTATION_MATRIX.md": "2c2fb9b19806157b70a1daa318d06ad7588f87b93e8fa2a1423bc849ded6fb8a",
     "../experiments/v1-message/run_eval.py": "32ff298f0dda1a07e62acb69b8cd47e0122caa504a1803bfb0c42bcb9fbbbda4",
     "../experiments/v1-message/popup_eval/baselines.py": "68083ee2a9d3b021efa6f071be7d20356ed9c90c4103d326b1057b4e8db678f2",
@@ -285,7 +304,18 @@
     "../experiments/v1-message/ocr/tests/test_ocr_adapter.py": "27e28236a8786e036a5fdd09e74f0826feb0391335dd53a04c3ce25ff5eeed53",
     "../experiments/v1-message/ocr/PUBLIC_RUN_SUMMARY.json": "ec9a6da0dff061c318c2e752bc9f244c7e4b3f9f858764ac9c2753cbd16598d4",
     "../experiments/v1-message/ocr/compute/local-macos-pmj-ocr.env-spec.json": "a5ce55cc070bc1937c12094b090207d78a3291a82d3289cd45164dc19e831782",
-    "../experiments/v1-message/ocr/compute/local-macos-pmj-ocr.md": "b977b0c42c123b95080c3c0d4fdce4248e4f8a7306761f0feb2ec9d0c40f230f"
+    "../experiments/v1-message/ocr/compute/local-macos-pmj-ocr.md": "b977b0c42c123b95080c3c0d4fdce4248e4f8a7306761f0feb2ec9d0c40f230f",
+    "ITEM_UNION_EXAMPLE.md": "4178337d93e941e805ff6018cf208e95ac3c893a5bfbfc658580da0c528bfab1",
+    "scripts/build_item_union_example.py": "7fb1d793cc35e2a3b29c982116ef0ba7acf4ab5807d41d5a4cd9010e18afd6fc",
+    "tests/test_build_item_union_example.py": "49d38050206e4bee34561d6dfad66de7af2bc636bb3e139d5f35b8d065ed9e1f",
+    "android-capture/fixture-target/SCENARIO_CATALOG_V1.json": "253f867bba19949b7891e643720c03fc12ebadd7e6089a24b7e1d28adc39d429",
+    "android-capture/fixture-target/TARGET_BUILD_CONTRACT_V1.json": "86a222884fe993f66c06044b4a96ab1a75e27edde859daae6c98aeed6454f7b1",
+    "android-capture/fixture-target/validate_fixture_catalog.py": "7f7d6f3936aa2cbc62786d19c4c4d031960665b83f073a33d2accefbe4d36bce",
+    "android-capture/fixture-target/tests/test_fixture_catalog.py": "50b2572cb5cfc230e108dcf19e5f99d13148b81949d24a9b3e5dd45580fde905",
+    "android-capture/fixture-target/tests/test_built_fixture_apks.py": "88c6c52d465f63c4af5ccc56b03b373d1a3157c0b545bc08810d4abd35c73e97",
+    "../experiments/v1-message/popup_eval/formal_k50_runner.py": "43ced6ce3852542b670f068bdac6993729453073c677bf9e6bce36d49278eaa9",
+    "../experiments/v1-message/tests/test_formal_k50_runner.py": "5f2de1538738668eb8513fe18c7860cf4188c593f0eb67717a4d082e369cd9fe",
+    "../CLAIM_BOUNDARY_V1.json": "c7bf8206212fa7aabca51dc25c0b986de6b78d44162cedd8f6fcd1d946d35f7b"
   },
   "N": {
     "value": null,

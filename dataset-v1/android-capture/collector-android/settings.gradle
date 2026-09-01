@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "pmab-android-collector"
 include(":app")
+include(":fixtureTarget")
+project(":fixtureTarget").projectDir = file("../fixture-target")

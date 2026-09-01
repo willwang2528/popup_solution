@@ -4,6 +4,8 @@
 
 本目录当前已有可编译的 Android 30+ `AccessibilityService` 采集器、主机触发/回读工具和经过测试的 V1.1 终结器（合同修订 1.1.2），但没有连接过真实设备，也没有真实 Android capture。公开状态因此仍是 `blocked_no_real_android_captures`；它不构成人工金标、论文结果、公开 benchmark 或视障用户体验证据。
 
+[`fixture-target/`](./fixture-target/) 提供受控采集目标的源码、场景目录和构建合同：5 个唯一 package、3 个弹窗模板族、每组 positive/no-popup/boundary，共 15 个 `definition_only` 场景。其状态是 `installation_prerequisites_ready=true`、`device_capture_validated=false`；它只用于后续真实采集 dry run，不能替代 AccessibilityService 设备证据或人工复核。
+
 ## 采集器边界
 
 `collector-android/` 只暴露由系统以签名级 `BIND_ACCESSIBILITY_SERVICE` 权限绑定的服务。服务读取 interactive windows、view IDs、AccessibilityNodeInfo 字段和默认显示器截图；请求只能通过 debug APK 的 app-private `files/capture_requests/` 目录注入。它没有 Activity、网络权限、悬浮窗权限，也不请求触摸探索、按键过滤或手势能力；编译产物测试还拒绝 `performAction`、`performGlobalAction` 和 `dispatchGesture` 符号。

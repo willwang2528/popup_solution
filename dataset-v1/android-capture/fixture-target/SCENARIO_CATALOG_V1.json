@@ -1,0 +1,279 @@
+{
+  "catalog_schema_version": "1.0.0",
+  "catalog_id": "PMAB-CONTROLLED-FIXTURE-CATALOG-V1",
+  "record_kind": "controlled_fixture_scenario_catalog",
+  "purpose": "capture_pipeline_dry_run_only",
+  "implementation_status": "android_target_implemented",
+  "installation_prerequisites_ready": true,
+  "device_capture_validated": false,
+  "verification_status": {
+    "real_device_accessibility_verified": false,
+    "real_capture_bundle_count": 0,
+    "human_privacy_reviews_completed": false
+  },
+  "eligibility": {
+    "is_capture_record": false,
+    "cap001_eligible": false,
+    "paper_result_eligible": false,
+    "human_gold_eligible": false,
+    "human_gold_count": 0
+  },
+  "required_runtime_evidence": {
+    "android_api_min": 30,
+    "collector_mode": "accessibilityservice_node_snapshot",
+    "screen_reader_enabled": true,
+    "screenshot": true,
+    "tree_before": true,
+    "tree_after": true,
+    "human_privacy_review": true
+  },
+  "source_app_groups": [
+    {
+      "source_group_id": "fixture-source-commerce",
+      "app_group_id": "fixture-app-commerce",
+      "target_package": "org.pmab.fixture.commerce",
+      "implementation_status": "android_flavor_implemented"
+    },
+    {
+      "source_group_id": "fixture-source-media",
+      "app_group_id": "fixture-app-media",
+      "target_package": "org.pmab.fixture.media",
+      "implementation_status": "android_flavor_implemented"
+    },
+    {
+      "source_group_id": "fixture-source-travel",
+      "app_group_id": "fixture-app-travel",
+      "target_package": "org.pmab.fixture.travel",
+      "implementation_status": "android_flavor_implemented"
+    },
+    {
+      "source_group_id": "fixture-source-productivity",
+      "app_group_id": "fixture-app-productivity",
+      "target_package": "org.pmab.fixture.productivity",
+      "implementation_status": "android_flavor_implemented"
+    },
+    {
+      "source_group_id": "fixture-source-education",
+      "app_group_id": "fixture-app-education",
+      "target_package": "org.pmab.fixture.education",
+      "implementation_status": "android_flavor_implemented"
+    }
+  ],
+  "template_families": [
+    {
+      "template_family_id": "fixture-centered-modal",
+      "ui_primitive": "android.app.AlertDialog",
+      "accessibility_expectation": "separate accessible window with message and close control",
+      "implementation_status": "activity_renderer_implemented"
+    },
+    {
+      "template_family_id": "fixture-bottom-panel",
+      "ui_primitive": "android.app.Dialog with bottom gravity",
+      "accessibility_expectation": "bottom-aligned accessible dialog window",
+      "implementation_status": "activity_renderer_implemented"
+    },
+    {
+      "template_family_id": "fixture-fullscreen-modal",
+      "ui_primitive": "android.app.Dialog with match-parent bounds",
+      "accessibility_expectation": "full-screen accessible dialog window",
+      "implementation_status": "activity_renderer_implemented"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "commerce.popup",
+      "source_group_id": "fixture-source-commerce",
+      "app_group_id": "fixture-app-commerce",
+      "target_package": "org.pmab.fixture.commerce",
+      "template_family_id": "fixture-centered-modal",
+      "intended_stratum": "popup_candidate",
+      "launch": {"component": "org.pmab.fixture.commerce/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "commerce.popup"}},
+      "expected_observation": {"popup_presence": "present", "accessibility_profile": "fully_exposed_modal_message", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "commerce.no-popup",
+      "source_group_id": "fixture-source-commerce",
+      "app_group_id": "fixture-app-commerce",
+      "target_package": "org.pmab.fixture.commerce",
+      "template_family_id": "fixture-centered-modal",
+      "intended_stratum": "no_popup_candidate",
+      "launch": {"component": "org.pmab.fixture.commerce/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "commerce.no-popup"}},
+      "expected_observation": {"popup_presence": "absent", "accessibility_profile": "host_content_only", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "commerce.boundary",
+      "source_group_id": "fixture-source-commerce",
+      "app_group_id": "fixture-app-commerce",
+      "target_package": "org.pmab.fixture.commerce",
+      "template_family_id": "fixture-centered-modal",
+      "intended_stratum": "boundary_candidate",
+      "launch": {"component": "org.pmab.fixture.commerce/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "commerce.boundary"}},
+      "expected_observation": {"popup_presence": "ambiguous", "accessibility_profile": "visually_salient_non_modal_card", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "media.popup",
+      "source_group_id": "fixture-source-media",
+      "app_group_id": "fixture-app-media",
+      "target_package": "org.pmab.fixture.media",
+      "template_family_id": "fixture-bottom-panel",
+      "intended_stratum": "popup_candidate",
+      "launch": {"component": "org.pmab.fixture.media/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "media.popup"}},
+      "expected_observation": {"popup_presence": "present", "accessibility_profile": "fully_exposed_modal_message", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "media.no-popup",
+      "source_group_id": "fixture-source-media",
+      "app_group_id": "fixture-app-media",
+      "target_package": "org.pmab.fixture.media",
+      "template_family_id": "fixture-bottom-panel",
+      "intended_stratum": "no_popup_candidate",
+      "launch": {"component": "org.pmab.fixture.media/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "media.no-popup"}},
+      "expected_observation": {"popup_presence": "absent", "accessibility_profile": "host_content_only", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "media.boundary",
+      "source_group_id": "fixture-source-media",
+      "app_group_id": "fixture-app-media",
+      "target_package": "org.pmab.fixture.media",
+      "template_family_id": "fixture-bottom-panel",
+      "intended_stratum": "boundary_candidate",
+      "launch": {"component": "org.pmab.fixture.media/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "media.boundary"}},
+      "expected_observation": {"popup_presence": "ambiguous", "accessibility_profile": "visually_salient_non_modal_card", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "travel.popup",
+      "source_group_id": "fixture-source-travel",
+      "app_group_id": "fixture-app-travel",
+      "target_package": "org.pmab.fixture.travel",
+      "template_family_id": "fixture-fullscreen-modal",
+      "intended_stratum": "popup_candidate",
+      "launch": {"component": "org.pmab.fixture.travel/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "travel.popup"}},
+      "expected_observation": {"popup_presence": "present", "accessibility_profile": "fully_exposed_modal_message", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "travel.no-popup",
+      "source_group_id": "fixture-source-travel",
+      "app_group_id": "fixture-app-travel",
+      "target_package": "org.pmab.fixture.travel",
+      "template_family_id": "fixture-fullscreen-modal",
+      "intended_stratum": "no_popup_candidate",
+      "launch": {"component": "org.pmab.fixture.travel/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "travel.no-popup"}},
+      "expected_observation": {"popup_presence": "absent", "accessibility_profile": "host_content_only", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "travel.boundary",
+      "source_group_id": "fixture-source-travel",
+      "app_group_id": "fixture-app-travel",
+      "target_package": "org.pmab.fixture.travel",
+      "template_family_id": "fixture-fullscreen-modal",
+      "intended_stratum": "boundary_candidate",
+      "launch": {"component": "org.pmab.fixture.travel/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "travel.boundary"}},
+      "expected_observation": {"popup_presence": "ambiguous", "accessibility_profile": "visually_salient_non_modal_card", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "productivity.popup",
+      "source_group_id": "fixture-source-productivity",
+      "app_group_id": "fixture-app-productivity",
+      "target_package": "org.pmab.fixture.productivity",
+      "template_family_id": "fixture-centered-modal",
+      "intended_stratum": "popup_candidate",
+      "launch": {"component": "org.pmab.fixture.productivity/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "productivity.popup"}},
+      "expected_observation": {"popup_presence": "present", "accessibility_profile": "fully_exposed_modal_message", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "productivity.no-popup",
+      "source_group_id": "fixture-source-productivity",
+      "app_group_id": "fixture-app-productivity",
+      "target_package": "org.pmab.fixture.productivity",
+      "template_family_id": "fixture-centered-modal",
+      "intended_stratum": "no_popup_candidate",
+      "launch": {"component": "org.pmab.fixture.productivity/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "productivity.no-popup"}},
+      "expected_observation": {"popup_presence": "absent", "accessibility_profile": "host_content_only", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "productivity.boundary",
+      "source_group_id": "fixture-source-productivity",
+      "app_group_id": "fixture-app-productivity",
+      "target_package": "org.pmab.fixture.productivity",
+      "template_family_id": "fixture-centered-modal",
+      "intended_stratum": "boundary_candidate",
+      "launch": {"component": "org.pmab.fixture.productivity/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "productivity.boundary"}},
+      "expected_observation": {"popup_presence": "ambiguous", "accessibility_profile": "visually_salient_non_modal_card", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "education.popup",
+      "source_group_id": "fixture-source-education",
+      "app_group_id": "fixture-app-education",
+      "target_package": "org.pmab.fixture.education",
+      "template_family_id": "fixture-bottom-panel",
+      "intended_stratum": "popup_candidate",
+      "launch": {"component": "org.pmab.fixture.education/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "education.popup"}},
+      "expected_observation": {"popup_presence": "present", "accessibility_profile": "fully_exposed_modal_message", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "education.no-popup",
+      "source_group_id": "fixture-source-education",
+      "app_group_id": "fixture-app-education",
+      "target_package": "org.pmab.fixture.education",
+      "template_family_id": "fixture-bottom-panel",
+      "intended_stratum": "no_popup_candidate",
+      "launch": {"component": "org.pmab.fixture.education/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "education.no-popup"}},
+      "expected_observation": {"popup_presence": "absent", "accessibility_profile": "host_content_only", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    },
+    {
+      "scenario_id": "education.boundary",
+      "source_group_id": "fixture-source-education",
+      "app_group_id": "fixture-app-education",
+      "target_package": "org.pmab.fixture.education",
+      "template_family_id": "fixture-bottom-panel",
+      "intended_stratum": "boundary_candidate",
+      "launch": {"component": "org.pmab.fixture.education/org.pmab.fixture.FixtureActivity", "extras": {"scenario_id": "education.boundary"}},
+      "expected_observation": {"popup_presence": "ambiguous", "accessibility_profile": "visually_salient_non_modal_card", "real_accessibility_snapshot_required": true, "screenshot_required": true, "screen_reader_required": true},
+      "definition_only": true,
+      "formal_data_eligible": false,
+      "human_gold_eligible": false
+    }
+  ]
+}

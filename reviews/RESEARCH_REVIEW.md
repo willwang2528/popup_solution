@@ -121,6 +121,17 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 
 同时新增两类 fail-closed 回归：物理删除 `popup_present_gt`、stratum、source ID 后输出必须不变；新增未登记 manifest／artifact 字段则整批拒绝。修正后的 30 项本机重放仍为 4 judged、26 abstain，逐项决定／ROI／消息在排除运行时字段后相同。经验主张变化仍为 `NONE`。
 
+## PMAB 合同与受控 fixture 增量审阅
+
+第 14 次调用只披露聚合的 V1 边界、255 字段计数、正式 K50 输入门、受控 Android fixture 构建事实和全部为零的经验计数；工具关闭，没有发送截图、消息文本、逐项数据、人工标签、凭据或私有文件。Claude 判断 V1 不可观测上限、broad-first 撤回、synthetic union item 和 formal K50 fail-closed runner 均没有新增强制问题，也明确指出这些事实不支持 empirical、superiority、usability、dismissal 或 Recovery 主张。
+
+唯一强制问题是 `device_capture_ready=true` 的字段名会脱离 README 被机器读取，从而把“安装前条件已具备”误写成“设备采集已验证”。该字段已测试先行拆成：
+
+- `installation_prerequisites_ready=true`；
+- `device_capture_validated=false`。
+
+Validator 要求前者为 true，并在后者被改为 true 时 fail closed；catalog、机器摘要和 README 均使用同一命名。第 15 次同线程复核确认强制修改已满足，最终 verdict 为 `PROCEED`，mandatory blocker 为 0。经验主张变化仍为 `NONE`；真实 Android capture、human gold、formal result 和 paper result 继续全部为 0。
+
 ## Trace metadata
 
 - Review thread：`3d76b654-220f-41c8-965d-424b0be7c2c8`
@@ -133,6 +144,8 @@ Reviewer 认为当前计划在 pre-empirical 阶段可执行，理由包括：
 - Real collector source-reading job（timeout/provisional）：`48b3db97d19b433796ec20462c8a5ead`
 - Bounded collector review job：`5a97eb92f2c04a1fb9c682440950bca0`
 - Visual bank / C1 fatal-gate job：`762b47f9867245b18f082a33d2b16164`
+- PMAB contract / union / K50 / fixture gate job：`43d3cd07957a4cc9acd55261ff325eea`
+- Fixture readiness-field recheck job：`4161a87c339f48e3b696f6d317f8e5d3`
 - Local complete trace：`.aris/traces/research-review/2026-09-01_run01/`
 
 完整请求／回复／模型／时间／任务标识保存在本地 trace；本公开文档只保留最小化、可审计的研究结论与标识。

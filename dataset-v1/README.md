@@ -45,10 +45,12 @@ identity + provenance + scenario + environment
 - [`schema/source_to_item_crosswalk.json`](./schema/source_to_item_crosswalk.json)：冻结的 255 条来源映射；
 - [`data/item.template.json`](./data/item.template.json)：positive v1 模板；
 - [`data/items.schema-fixture.jsonl`](./data/items.schema-fixture.jsonl)：positive、no-popup、abstain 三条 synthetic fixture；
+- [`ITEM_UNION_EXAMPLE.md`](./ITEM_UNION_EXAMPLE.md)：从公开 catalog、crosswalk、template 和 fixture 动态生成的单-item 255 字段并集视图；明确非经验、非 gold、no-action；
 - [`candidates/popsweeper_candidates_n120.jsonl`](./candidates/popsweeper_candidates_n120.jsonl)：固定 seed 的 120 条真实来源候选；只有 presence 标签，消息标注待完成，原图不随仓库分发；
 - [`candidates/popsweeper_candidates_n120.summary.json`](./candidates/popsweeper_candidates_n120.summary.json)：2105 张来源图片的清点与 60 positive/60 negative 抽样配额；
 - [`../sources/SOURCE_LEDGER.md`](../sources/SOURCE_LEDGER.md)：PopSweeper/RICO 校验、join、数量差异与第三方媒体发布边界；
 - [`scripts/materialize_schema_fixture.py`](./scripts/materialize_schema_fixture.py)：fixture 生成器；
+- [`scripts/build_item_union_example.py`](./scripts/build_item_union_example.py)：生成并检查单-item union 视图，不读取 private 媒体；
 - [`scripts/popsweeper_source_audit.py`](./scripts/popsweeper_source_audit.py)：归档完整性、安全与成员清点；不解压；
 - [`scripts/build_popsweeper_candidate_manifest.py`](./scripts/build_popsweeper_candidate_manifest.py)：只读 ZIP 元数据并生成 adapter-only 候选清单；
 - [`scripts/export_annotation_media.py`](./scripts/export_annotation_media.py)：校验两份归档 SHA-256、全部 ZIP 成员路径和冻结 pilot→候选 member 精确映射后，向 gitignored 本地目录导出标注媒体；

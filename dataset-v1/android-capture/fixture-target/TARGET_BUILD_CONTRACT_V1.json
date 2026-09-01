@@ -1,0 +1,47 @@
+{
+  "contract_schema_version": "1.0.0",
+  "gradle_project_path": ":fixtureTarget",
+  "activity_class": "org.pmab.fixture.FixtureActivity",
+  "scenario_router_class": "org.pmab.fixture.core.ScenarioRouter",
+  "flavor_dimension": "sourceApp",
+  "source_slugs": [
+    "commerce",
+    "media",
+    "travel",
+    "productivity",
+    "education"
+  ],
+  "application_ids": [
+    "org.pmab.fixture.commerce",
+    "org.pmab.fixture.media",
+    "org.pmab.fixture.travel",
+    "org.pmab.fixture.productivity",
+    "org.pmab.fixture.education"
+  ],
+  "template_families": [
+    "fixture-centered-modal",
+    "fixture-bottom-panel",
+    "fixture-fullscreen-modal"
+  ],
+  "strata": [
+    "popup_candidate",
+    "no_popup_candidate",
+    "boundary_candidate"
+  ],
+  "min_sdk": 30,
+  "target_sdk": 35,
+  "automatic_actions": false,
+  "emits_gold": false,
+  "requires_real_accessibility_validation": true,
+  "source_files": [
+    "build.gradle",
+    "src/main/AndroidManifest.xml",
+    "src/main/java/org/pmab/fixture/FixtureActivity.java",
+    "src/main/java/org/pmab/fixture/core/ScenarioPlan.java",
+    "src/main/java/org/pmab/fixture/core/ScenarioRouter.java",
+    "src/main/res/drawable/ic_pmab_fixture.xml",
+    "src/main/res/values/ids.xml",
+    "src/main/res/values/strings.xml",
+    "src/main/res/xml/data_extraction_rules.xml"
+  ]
+}

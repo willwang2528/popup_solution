@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "task_profile": "popup_message_judgment_v1",
+  "target_population": "blind_and_low_vision_screen_reader_users",
+  "primary_scope": [
+    "popup_presence",
+    "visible_message"
+  ],
+  "observability_ceiling": {
+    "tree_absent_or_incomplete": "tree_only_cannot_recover_missing_facts",
+    "visible_pixels_available": "visual_message_fallback_allowed",
+    "no_authorized_channel_exposes_fact": "must_abstain"
+  },
+  "claims": {
+    "universal_popup_solution": false,
+    "dismissal_or_recovery": false,
+    "user_experience_improved": false,
+    "first_problem_formulation": "contradicted_by_prior_work",
+    "first_exact_benchmark": "provisional_not_established",
+    "method_superiority": "not_tested"
+  },
+  "evidence_counts": {
+    "real_android_captures": 0,
+    "human_gold": 0,
+    "formal_baseline_results": 0,
+    "paper_results": 0
+  },
+  "source_anchors": [
+    "sources/PPT_SLIDE_14_EVIDENCE.md",
+    "idea-stage/NOVELTY_REPORT.md",
+    "idea-stage/IDEA_REPORT.md",
+    "idea-stage/docs/research_contract.md"
+  ]
+}

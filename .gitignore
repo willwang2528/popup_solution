@@ -18,6 +18,9 @@ dataset-v1/android-capture/results/
 dataset-v1/android-capture/collector-android/.gradle/
 dataset-v1/android-capture/collector-android/**/build/
 dataset-v1/android-capture/collector-android/local.properties
+dataset-v1/android-capture/**/.gradle/
+dataset-v1/android-capture/**/build/
+dataset-v1/android-capture/**/local.properties
 experiments/v1-message/features/private/
 experiments/v1-message/ocr/results/
 experiments/v1-message/ocr/.build/
